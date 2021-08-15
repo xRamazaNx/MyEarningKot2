@@ -7,16 +7,16 @@ import android.widget.LinearLayout
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import kotlinx.coroutines.delay
+import ru.developer.press.myearningkot.App.Companion.dao
 import ru.developer.press.myearningkot.ProvideDataRows
 import ru.developer.press.myearningkot.adapters.AdapterRow.Companion.animatedDuration
 import ru.developer.press.myearningkot.database.Card
-import ru.developer.press.myearningkot.database.DataController
 import ru.developer.press.myearningkot.database.Page
 import ru.developer.press.myearningkot.helpers.*
 import ru.developer.press.myearningkot.helpers.scoups.*
 import ru.developer.press.myearningkot.model.*
 
-open class CardViewModel(context: Context, var card: Card) : ViewModel(),
+open class CardViewModel(var card: Card) : ViewModel(),
     ProvideDataRows {
 
     // статус занесения изменений карточки в базу данных
@@ -28,7 +28,6 @@ open class CardViewModel(context: Context, var card: Card) : ViewModel(),
     val displayParam = DisplayParam()
     val cardLiveData = liveData(card)
     val totalLiveData = liveData(card)
-    private var copyRowList: MutableList<Row>? = null
 
     var columnLDList = mutableListOf<MyLiveData<Column>>()
 
@@ -291,12 +290,10 @@ open class CardViewModel(context: Context, var card: Card) : ViewModel(),
 
     }
 
-    private val dataController = DataController(context)
-
     fun addRow(end: () -> Unit) {
         runOnViewModel {
             val addRow = card.addRow()
-            dataController.addRow(addRow)
+            dao.addRow(addRow)
             sortList()
             main { end.invoke() }
             delay(animatedDuration)
@@ -373,19 +370,17 @@ open class CardViewModel(context: Context, var card: Card) : ViewModel(),
         updateTypeControlColumn(card.columns[columnPosition])
     }
 
-    fun copySelectedCell(isCut: Boolean): Cell? {
+    fun getCopySelectedCell(isCut: Boolean): Cell? {
         card.rows.forEach {
             it.cellList.forEachIndexed { index, cell ->
                 if (cell.isSelect) {
+                    val copy = cell.copy()
                     if (isCut) {
                         cell.clear()
                         updateTypeControlColumn(index)
                         updateTotals()
                     }
-                    // заного назначаю чтоб меню создалось заного и иконка вставки если надо станет серой или белой
-                    selectMode.value =
-                        SelectMode.CELL
-                    return cell
+                    return copy
                 }
             }
         }
@@ -428,7 +423,7 @@ open class CardViewModel(context: Context, var card: Card) : ViewModel(),
         io {
             updatedCardStatus.postValue(true)
             card.calcTotals()
-            dataController.updateRow(row)
+            dao.updateRow(row)
             updatedCardStatus.postValue(false)
         }
     }
@@ -450,27 +445,22 @@ open class CardViewModel(context: Context, var card: Card) : ViewModel(),
             }
             delay(animatedDuration)
             card.deleteRows(deletedRows)
-            dataController.deleteRows(deletedRows)
+            dao.deleteRows(deletedRows)
             sortList()
             selectMode.postValue(SelectMode.NONE)
         }
         // сортировка листа и обновлении происходит после анимации удаления
     }
 
-    fun copySelectedRows() {
-        if (copyRowList == null)
-            copyRowList = mutableListOf()
-        copyRowList?.clear()
-        copyRowList?.addAll(card.getSelectedRows())
-    }
+    fun getSelectedRows(): List<Row> = card.getSelectedRows()
 
-    fun pasteRows() {
+    fun pasteRows(copyRowList: List<Row>?) {
         runOnViewModel {
             // самый нижний элемент чтобы вставить туда
             val indexLastRow = sortedRows.indexOfLast { it.status == Row.Status.SELECT }
             copyRowList?.let { copyList ->
 
-                if (isCapabilityPaste()) {
+                if (isCapabilityPaste(copyRowList)) {
                     // выделенные строки ниже которых надо добавить
                     card.getSelectedRows().forEach { it.status = Row.Status.NONE }
                     // отдельный лист чтоб копировать элементы а не ссылки на них потому что в копилист бывают ссылки
@@ -482,7 +472,7 @@ open class CardViewModel(context: Context, var card: Card) : ViewModel(),
                     card.rows.addAll(indexLastRow + 1, list)
                     card.calcTotals()
                     list.forEach {
-                        dataController.addRow(it)
+                        dao.addRow(it)
                     }
                     updateTypeControl()
                     sortList()
@@ -494,7 +484,7 @@ open class CardViewModel(context: Context, var card: Card) : ViewModel(),
         }
     }
 
-    fun isCapabilityPaste(): Boolean {
+    fun isCapabilityPaste(copyRowList: List<Row>?): Boolean {
         var capability = false
         copyRowList?.let { copyList ->
             val copyFirstRow = copyList[0]
@@ -524,14 +514,14 @@ open class CardViewModel(context: Context, var card: Card) : ViewModel(),
     }
 
     fun duplicateRows() {
-        copySelectedRows()
+        val selectedRows = getSelectedRows()
         val rows = card.rows
         rows.forEach {
             it.status = Row.Status.NONE
         }
         sortList()
         sortedRows.last().status = Row.Status.SELECT
-        pasteRows()
+        pasteRows(selectedRows)
     }
 
     fun updateEditCellRow() {
@@ -547,20 +537,17 @@ open class CardViewModel(context: Context, var card: Card) : ViewModel(),
     }
 }
 
-class ViewModelMainFactory(
-    private val context: Context,
-    private val pageList: MutableList<Page>
-) :
+class ViewModelMainFactory(private val pageList: MutableList<Page>) :
     ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return MainViewModel(context, pageList) as T
+        return MainViewModel(pageList) as T
     }
 }
 
 class ViewModelCardFactory(private val context: Context, private val card: Card) :
     ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return CardViewModel(context, card) as T
+        return CardViewModel(card) as T
     }
 }
 //

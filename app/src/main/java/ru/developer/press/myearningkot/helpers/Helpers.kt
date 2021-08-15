@@ -2,6 +2,7 @@ package ru.developer.press.myearningkot.helpers
 
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.graphics.BitmapFactory
@@ -27,8 +28,8 @@ import androidx.lifecycle.*
 import androidx.lifecycle.Observer
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.list_item_change_layout.view.*
-import kotlinx.coroutines.*
 import org.jetbrains.anko.*
+import ru.developer.press.myearningkot.App
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.model.Column
 import ru.developer.press.myearningkot.model.NumberTypePref
@@ -38,6 +39,10 @@ import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
+
+fun Activity.app(): App {
+    return application as App
+}
 
 abstract class MyLiveData<T>(t: T?) : MutableLiveData<T>() {
     init {
@@ -326,29 +331,24 @@ fun View.animateColor(
     valueAnimator.start()
 }
 
-fun log(log: Any?) {
-    Log.d("RamLog", log.toString())
-}
-
 fun Any.log(message: String) {
     Log.d(this::class.qualifiedName, message)
 }
 
+@MainThread
 fun Context.showImageTest(text: String, imagePath: String) {
-    runOnUiThread {
-        AlertDialog.Builder(this).apply {
-            setView(verticalLayout {
-                addView(ImageView(this@runOnUiThread).apply {
-                    post {
-                        val scaled = BitmapFactory.decodeFile(imagePath)
-                        setImageBitmap(scaled)
-                    }
-                })
-                addView(TextView(this@runOnUiThread).apply {
-                    setText(text)
-                })
-            }
-            )
-        }.show()
-    }
+    AlertDialog.Builder(this).apply {
+        setView(verticalLayout {
+            addView(ImageView(this@showImageTest).apply {
+                post {
+                    val scaled = BitmapFactory.decodeFile(imagePath)
+                    setImageBitmap(scaled)
+                }
+            })
+            addView(TextView(this@showImageTest).apply {
+                setText(text)
+            })
+        }
+        )
+    }.show()
 }

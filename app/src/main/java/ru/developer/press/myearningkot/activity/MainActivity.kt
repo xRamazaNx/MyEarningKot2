@@ -1,6 +1,5 @@
 package ru.developer.press.myearningkot.activity
 
-import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
@@ -41,11 +40,12 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textColorResource
+import org.jetbrains.anko.toast
 import ru.developer.press.myearningkot.*
-import ru.developer.press.myearningkot.App.Companion.app
+import ru.developer.press.myearningkot.App.Companion.authUser
+import ru.developer.press.myearningkot.App.Companion.dao
 import ru.developer.press.myearningkot.adapters.AdapterViewPagerToMain
 import ru.developer.press.myearningkot.database.Card
-import ru.developer.press.myearningkot.database.DataController
 import ru.developer.press.myearningkot.database.FireStore
 import ru.developer.press.myearningkot.database.Page
 import ru.developer.press.myearningkot.databinding.ActivityMainBinding
@@ -78,16 +78,36 @@ class MainActivity : AppCompatActivity(), ProvideDataCards {
             }
         }
     private var initializerViewModel: Job = runOnMaim {
-        val pageList = io {
-            DataController(this@MainActivity).getPageList()
-        }
+        val pageList = io { dao.getPageList() }
         viewModel = ViewModelProvider(
             this@MainActivity,
-            ViewModelMainFactory(this@MainActivity, pageList)
+            ViewModelMainFactory(pageList)
         ).get(
             MainViewModel::class.java
         )
         root.progressBar.visibility = GONE
+
+        viewModel.calcAllCards()
+        viewInit()
+        App.fireStoreChanged.observe(this, singleObserver { refData ->
+            if (refData.refType == FireStore.RefType.PAGE) {
+                when (refData.updatedType) {
+                    ADDED -> {
+                    }
+                    MODIFIED -> {
+                        viewModel.changedPage(refData.refIds.refId) {
+                            runOnUiThread {
+                                val position = tabs.selectedTabPosition
+                                initTabAndViewPager()
+                                selectTab(position)
+                            }
+                        }
+                    }
+                    REMOVED -> {
+                    }
+                }
+            }
+        })
     }
 
     private lateinit var viewModel: MainViewModel
@@ -100,33 +120,10 @@ class MainActivity : AppCompatActivity(), ProvideDataCards {
         setContentView(root.root)
         setSupportActionBar(root.toolbar)
         // он должен быть тут первым а то статусбар внизу оказывается из-за поздней инициализации
-        initDrawer()
+//        initDrawer()
         root.toolbar.setTitleTextColor(getColorFromRes(R.color.colorOnPrimary))
 
         initializerViewModel.start()
-        initializerViewModel.invokeOnCompletion {
-            viewModel.calcAllCards()
-            viewInit()
-            App.fireStoreChanged.observe(this, singleObserver { refData ->
-                if (refData.refType == FireStore.RefType.PAGE) {
-                    when (refData.updatedType) {
-                        ADDED -> {
-                        }
-                        MODIFIED -> {
-                            viewModel.changedPage(refData.refIds.refId) {
-                                runOnUiThread {
-                                    val position = tabs.selectedTabPosition
-                                    initTabAndViewPager()
-                                    selectTab(position)
-                                }
-                            }
-                        }
-                        REMOVED -> {
-                        }
-                    }
-                }
-            })
-        }
     }
 
     private fun viewInit() {
@@ -218,7 +215,7 @@ class MainActivity : AppCompatActivity(), ProvideDataCards {
 //            footerDivider = true
             headerDivider = true
 
-            val currentUser = app().authUser.currentUser
+            val currentUser = authUser.currentUser
             accountHeader {
 
                 this.closeOnClick = false
@@ -246,7 +243,7 @@ class MainActivity : AppCompatActivity(), ProvideDataCards {
                     }
                     textColorRes = R.color.textColorTertiary
                 }
-                onProfileChanged { view: View, profile, _ ->
+                onProfileChanged { view: View, _, _ ->
                     if (currentUser == null) {
                         login()
                     } else {
@@ -336,7 +333,7 @@ class MainActivity : AppCompatActivity(), ProvideDataCards {
             // Successfully signed in
             if (it.resultCode == RESULT_OK) {
                 response?.let {
-                    initDrawer()
+//                    initDrawer()
                     viewModel.loginSuccess()
                 }
                 return@registerForActivityResult
@@ -383,12 +380,12 @@ class MainActivity : AppCompatActivity(), ProvideDataCards {
     }
 
     private fun logOut() {
-        AuthUI.getInstance().signOut(this)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    initDrawer()
-                }
-            }
+//        AuthUI.getInstance().signOut(this)
+//            .addOnCompleteListener { task ->
+//                if (task.isSuccessful) {
+//                    initDrawer()
+//                }
+//            }
     }
 
     override fun getCard(position: Int): Card {
@@ -504,17 +501,11 @@ class MainActivity : AppCompatActivity(), ProvideDataCards {
             }
 
         })
-        runOnUiThread {
-            toolbar.post {
-                if (tabs.tabCount > 1)
-                    toolbar.menu.findItem(R.id.deletePage)?.icon?.setTint(getColorFromRes(R.color.colorIconItemMenu))
-                else
-                    toolbar.menu.findItem(R.id.deletePage)?.icon?.setTint(getColorFromRes(R.color.colorControlNormal))
-            }
+        toolbar.post {
+            val colorRes =
+                if (tabs.tabCount > 1) R.color.colorIconItemMenu
+                else R.color.colorControlNormal
+            toolbar.menu.findItem(R.id.deletePage)?.icon?.setTint(getColorFromRes(colorRes))
         }
     }
 }
-
-
-fun Context.toast(message: CharSequence) =
-    Toast.makeText(this, message, Toast.LENGTH_SHORT).show()

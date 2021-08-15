@@ -17,7 +17,6 @@ import org.jetbrains.anko.backgroundColorResource
 import org.jetbrains.anko.backgroundResource
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.adapters.AdapterRow
-import ru.developer.press.myearningkot.databinding.ActivityCardBinding
 import ru.developer.press.myearningkot.helpers.*
 import ru.developer.press.myearningkot.helpers.scoups.inflatePlate
 import ru.developer.press.myearningkot.helpers.scoups.updateTotalAmount
@@ -25,7 +24,6 @@ import ru.developer.press.myearningkot.viewmodels.CardViewModel
 
 @SuppressLint("Registered")
 abstract class BasicCardActivity : AppCompatActivity() {
-    private lateinit var root: ActivityCardBinding
     protected lateinit var adapter: AdapterRow
     lateinit var columnContainer: LinearLayout
     abstract var viewModel: CardViewModel?
@@ -33,8 +31,7 @@ abstract class BasicCardActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        root = ActivityCardBinding.inflate(layoutInflater)
-        setContentView(root.root)
+        setContentView(R.layout.activity_card)
         columnContainer = LinearLayout(this).also {
             it.layoutParams =
                 LinearLayout.LayoutParams(
@@ -43,13 +40,13 @@ abstract class BasicCardActivity : AppCompatActivity() {
                 )
         }
 
-        setSupportActionBar(root.toolbar)
+        setSupportActionBar(toolbar)
         supportActionBar?.setHomeButtonEnabled(true)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        root.toolbar.setTitleTextColor(getColorFromRes(R.color.colorOnPrimary))
+        toolbar.setTitleTextColor(getColorFromRes(R.color.colorOnPrimary))
 
         // для того что бы тоталвью не пропускал сквозь себя клики на ресайклер с записями
-        root.totalAmountView.root.callOnClick()
+        totalAmountView.callOnClick()
 
     }
 

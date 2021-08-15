@@ -1,9 +1,10 @@
 package ru.developer.press.myearningkot.helpers
 
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.*
-
 
 private fun coroutine(dispatcher: CoroutineDispatcher, run: suspend () -> Unit) =
     CoroutineScope(dispatcher).launch { run.invoke() }
@@ -16,6 +17,9 @@ fun runOnMaim(run: suspend () -> Unit) = coroutine(Dispatchers.Main) { run.invok
 
 fun ViewModel.runOnViewModel(run: suspend () -> Unit) = viewModelScope.launch { run.invoke() }
 
-suspend fun <T> main(block: suspend () -> T): T = withContext(Dispatchers.Main) { block.invoke() }
+fun LifecycleOwner.runOnLifeCycle(run: suspend () -> Unit) = lifecycleScope.launch { run.invoke() }
 
-suspend fun <T> io(block: suspend () -> T): T = withContext(Dispatchers.IO) { block.invoke() }
+suspend fun <T> main(block: suspend CoroutineScope.() -> T): T =
+    withContext(Dispatchers.Main, block)
+
+suspend fun <T> io(block: suspend CoroutineScope.() -> T): T = withContext(Dispatchers.IO, block)

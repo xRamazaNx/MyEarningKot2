@@ -32,6 +32,8 @@ open class Ref {
     var refId: String = UUID.randomUUID().toString()
     var dateCreate = System.currentTimeMillis()
     var dateChange: Long = dateCreate
+    var isSaveOnFire: Boolean = false
+    var isDelete: Boolean = false
 }
 
 open class BelongIds(

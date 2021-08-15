@@ -1,10 +1,9 @@
 package ru.developer.press.myearningkot.viewmodels
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import ru.developer.press.myearningkot.AdapterPageInterface
+import ru.developer.press.myearningkot.App.Companion.dao
 import ru.developer.press.myearningkot.database.Card
-import ru.developer.press.myearningkot.database.DataController
 import ru.developer.press.myearningkot.database.Page
 import ru.developer.press.myearningkot.helpers.*
 import ru.developer.press.myearningkot.helpers.scoups.updateTypeControlColumn
@@ -12,7 +11,7 @@ import ru.developer.press.myearningkot.model.NumberColumn
 
 // этот класс создается (ViewModelProviders.of(this).get(Class::class.java))
 // и существует пока существует активити до уничтожения он только обновляет данные представления
-class MainViewModel(context: Context, list: MutableList<Page>) : ViewModel(),
+class MainViewModel(list: MutableList<Page>) : ViewModel(),
     AdapterPageInterface {
 
     companion object {
@@ -21,7 +20,6 @@ class MainViewModel(context: Context, list: MutableList<Page>) : ViewModel(),
 
     private var openedCardId: String = ""
     private val pageList: MutableList<MyLiveData<Page>> = mutableListOf()
-    private val dataController = DataController(context)
 
     init {
         list.forEach {
@@ -32,7 +30,6 @@ class MainViewModel(context: Context, list: MutableList<Page>) : ViewModel(),
             openedCardId = idCard
             openCardEvent.call(idCard)
         }
-
     }
 
     val openCardEvent = SingleLiveEvent<String>()
@@ -73,7 +70,7 @@ class MainViewModel(context: Context, list: MutableList<Page>) : ViewModel(),
             val pageLiveData = pageList[indexPage]
             val page = pageLiveData.value!!
 
-            val card: Card = dataController.getSampleCard(sampleID)
+            val card: Card = dao.getSampleCard(sampleID)
             // для того что бы удвлить времянки
             card.rows.clear()
             // добавляем в базу данных новую Card присовение ид очень важно
@@ -82,7 +79,7 @@ class MainViewModel(context: Context, list: MutableList<Page>) : ViewModel(),
                 card.name = name
             card.isUpdating = true
             // добавляем в базу
-            dataController.addCard(card)
+            dao.addCard(card)
             // узнать позицию для добавления во вкладку и для ее обновления во вью... а ее надо узнавать смотря какая сортировка
             val position = getPositionCardInPage(indexPage, card)
             // добавляем во вкладку
@@ -101,7 +98,7 @@ class MainViewModel(context: Context, list: MutableList<Page>) : ViewModel(),
                 mainBlock.invoke(null)
                 false
             } ?: kotlin.run {
-                val page: Page = dataController.addPage(pageName, pageList.size)
+                val page: Page = dao.addPage(pageName, pageList.size)
                 pageList.add(main { liveData(page) })
                 mainBlock.invoke(page)
             }
@@ -163,7 +160,7 @@ class MainViewModel(context: Context, list: MutableList<Page>) : ViewModel(),
         val find = page.value!!.cards.find { it.value!!.refId == openedCardId }
         find?.let {
             runOnViewModel {
-                val card = dataController.getCard(openedCardId)
+                val card = dao.getCard(openedCardId)
                 openedCardId = ""
                 card.isUpdating = true
                 it.postValue(card)
@@ -185,14 +182,14 @@ class MainViewModel(context: Context, list: MutableList<Page>) : ViewModel(),
 
     fun loginSuccess() {
         runOnViewModel {
-            dataController.syncRefs()
+            dao.syncRefs()
         }
     }
 
     fun changedPage(id: String, updateViewPager: () -> Unit) {
         synchronized(pageList) {
             runOnViewModel {
-                val pageDB = dataController.getPage(id)
+                val pageDB = dao.getPage(id)
                 val find = pageList.find { it.value!!.name == pageDB!!.name }
                 if (find == null) {
                     pageList.add(liveData(pageDB))
@@ -211,7 +208,7 @@ class MainViewModel(context: Context, list: MutableList<Page>) : ViewModel(),
         runOnViewModel {
             val pageLiveData = pageList[tabPosition]
             pageList.removeAt(tabPosition)
-            dataController.deletePage(pageLiveData.value!!)
+            dao.deletePage(pageLiveData.value!!)
             main {
                 updateView.invoke(tabPosition)
             }

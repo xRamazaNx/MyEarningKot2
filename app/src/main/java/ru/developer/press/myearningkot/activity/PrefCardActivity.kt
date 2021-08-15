@@ -16,7 +16,6 @@ import android.widget.*
 import androidx.activity.result.ActivityResultLauncher
 import androidx.core.view.forEach
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import com.google.android.material.appbar.AppBarLayout
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_card.*
@@ -30,19 +29,17 @@ import kotlinx.coroutines.*
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent
 import org.jetbrains.anko.backgroundColorResource
 import org.jetbrains.anko.matchParent
+import org.jetbrains.anko.toast
 import org.jetbrains.anko.wrapContent
+import ru.developer.press.myearningkot.App.Companion.dao
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.database.Card
-import ru.developer.press.myearningkot.database.DataController
 import ru.developer.press.myearningkot.dialogs.DialogBasicPrefCard
 import ru.developer.press.myearningkot.dialogs.DialogSetName
 import ru.developer.press.myearningkot.dialogs.myDialog
-import ru.developer.press.myearningkot.helpers.io
-import ru.developer.press.myearningkot.helpers.main
+import ru.developer.press.myearningkot.helpers.*
 import ru.developer.press.myearningkot.helpers.prefLayouts.*
 import ru.developer.press.myearningkot.helpers.prefLayouts.ElementPrefType.*
-import ru.developer.press.myearningkot.helpers.runOnMaim
-import ru.developer.press.myearningkot.helpers.showItemChangeDialog
 import ru.developer.press.myearningkot.model.*
 import ru.developer.press.myearningkot.viewmodels.CardViewModel
 import ru.developer.press.myearningkot.viewmodels.ViewModelCardFactory
@@ -90,7 +87,6 @@ class PrefCardInfo(
 
 class PrefCardActivity : BasicCardActivity() {
 
-    private lateinit var dataController: DataController
     private val totalContainer: LinearLayout
         get() {
             return if (totalContainerDisableScroll.childCount > 0)
@@ -113,7 +109,6 @@ class PrefCardActivity : BasicCardActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        dataController = DataController(this@PrefCardActivity)
         title = intent.getStringExtra(TITLE_PREF_ACTIVITY)
         fbAddRow.visibility = GONE
         supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_check)
@@ -121,15 +116,14 @@ class PrefCardActivity : BasicCardActivity() {
         visibleHideElements()
         disableBehavior()
 
-        lifecycleScope.launch(Dispatchers.Default) {
+        runOnLifeCycle {
             val prefCardJson = intent.getStringExtra(PREF_CARD_INFO_JSON)
             prefCardInfo = Gson().fromJson(prefCardJson, PrefCardInfo::class.java)
 
-            val dataController = DataController(this@PrefCardActivity)
             val card: Card = if (prefCardInfo.cardCategory == PrefCardInfo.CardCategory.CARD) {
-                dataController.getCard(prefCardInfo.idCard)
+                dao.getCard(prefCardInfo.idCard)
             } else {
-                dataController.getSampleCard(prefCardInfo.idCard)
+                dao.getSampleCard(prefCardInfo.idCard)
             }
             main {
                 viewModel = ViewModelProvider(
@@ -402,13 +396,13 @@ class PrefCardActivity : BasicCardActivity() {
     }
 
     private fun setCardOfResult() {
-        lifecycleScope.launch {
+        runOnLifeCycle {
             progressBar.visibility = VISIBLE
             val card = viewModel?.card
             if (prefCardInfo.cardCategory == PrefCardInfo.CardCategory.CARD) {
-                dataController.updateCard(card!!)
+                dao.updateCard(card!!)
             } else
-                dataController.updateSample(card!!)
+                dao.updateSample(card!!)
 
             val data = Intent()
             data.putExtra(CARD_ID, prefCardInfo.idCard)

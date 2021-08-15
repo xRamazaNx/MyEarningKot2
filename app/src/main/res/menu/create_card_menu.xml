@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
         android:id="@+id/new_sample"
-        android:title="@string/new_sample" />
+        android:icon="@drawable/ic_add_big"
+        android:title="@string/new_sample"
+        android:visible="true"
+        app:showAsAction="ifRoom" />
 </menu>

@@ -4,9 +4,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.core.animation.doOnEnd
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.card.view.*
 import ru.developer.press.myearningkot.R
@@ -47,22 +44,20 @@ class AdapterCard(private val cards: MutableList<MyLiveData<Card>>) :
                 itemView.setShowTotalInfo(c.isShowTotalInfo)
 
                 if (c.isUpdating) {
-                    itemView.animate().alpha(0f).setUpdateListener {
-                        it.doOnEnd {
-                            itemView.animate().alpha(1f)
-                            c.isUpdating = false
-                        }
+                    itemView.animate().alpha(0f).withEndAction {
+                        itemView.animate().alpha(1f)
+                        c.isUpdating = false
                     }
                 }
 
             })
 
-            val colorFromRes = itemView.context.getColorFromRes(R.color.colorSelectCard)
-            itemView.animateColor(
-                Color.Transparent.toArgb(),
-                colorFromRes,
-                ItemAnimator.animateDuration
-            )
+//            val colorFromRes = itemView.context.getColorFromRes(R.color.colorSelectCard)
+//            itemView.animateColor(
+//                Color.Transparent.toArgb(),
+//                colorFromRes,
+//                ItemAnimator.animateDuration
+//            )
         }
 
         private fun setLongClick(idCard: String) {

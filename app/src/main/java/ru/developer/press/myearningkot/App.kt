@@ -12,7 +12,6 @@ import com.bugsnag.android.Bugsnag
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
-import kotlinx.coroutines.*
 import ru.developer.press.myearningkot.adapters.animationAdd
 import ru.developer.press.myearningkot.adapters.animationDelete
 import ru.developer.press.myearningkot.database.DataController
@@ -21,33 +20,21 @@ import ru.developer.press.myearningkot.helpers.*
 import ru.developer.press.myearningkot.model.*
 
 class App : Application(), ActivityLifecycleCallbacks {
-
-    lateinit var authUser: FirebaseAuth
-
     companion object {
-        fun Activity.app(): App {
-            return application as App
-        }
-
+        lateinit var dao: DataController
+        lateinit var authUser: FirebaseAuth
         var fireStoreChanged = liveData<UpdatedRefData>()
     }
 
     var currentActivity: AppCompatActivity? = null
     var copyCell: Cell? = null
-        set(value) {
-            if (value == null)
-                field = value
-            else
-                field = Cell().apply {
-                    sourceValue = value.sourceValue
-                    type = value.type
-                }
-        }
+    var copyRowList: List<Row>? = null
+
     private val pref: SharedPreferences
         get() = getSharedPreferences("app.setting", Context.MODE_PRIVATE)
 
     override fun onCreate() {
-        val dataController = DataController(applicationContext)
+        dao = DataController(applicationContext)
         authUser = Firebase.auth
 
         runOnIO {
@@ -70,10 +57,10 @@ class App : Application(), ActivityLifecycleCallbacks {
             Bugsnag.init(applicationContext)
             val isFirst = pref.getBoolean(prefFirstKey, true)
             if (isFirst) {
-                dataController.createDefaultSamplesJob(applicationContext)
+                dao.createDefaultSamplesJob(applicationContext)
                 pref.edit().putBoolean(prefFirstKey, false).apply()
             }
-            dataController.syncRefs()
+//            dao.syncRefs()
             super.onCreate()
         }
     }

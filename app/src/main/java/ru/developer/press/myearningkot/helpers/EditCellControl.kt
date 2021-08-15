@@ -2,9 +2,9 @@ package ru.developer.press.myearningkot.helpers
 
 import com.jaredrummler.android.colorpicker.ColorPickerDialog
 import com.jaredrummler.android.colorpicker.ColorPickerDialogListener
+import org.jetbrains.anko.toast
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.activity.CardActivity
-import ru.developer.press.myearningkot.activity.toast
 import ru.developer.press.myearningkot.dialogs.DialogEditCell
 import ru.developer.press.myearningkot.dialogs.DialogEditImageCell
 import ru.developer.press.myearningkot.dialogs.editCellTag

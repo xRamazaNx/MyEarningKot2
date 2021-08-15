@@ -1,6 +1,6 @@
 package ru.developer.press.myearningkot.viewmodels
 
-import android.content.Context
+import android.annotation.SuppressLint
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -9,29 +9,32 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.widget.PopupMenu
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.sample_card_item.view.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import org.jetbrains.anko.*
+import org.jetbrains.anko.dip
+import org.jetbrains.anko.matchParent
+import org.jetbrains.anko.wrapContent
+import ru.developer.press.myearningkot.App.Companion.dao
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.activity.CreateCardActivity
 import ru.developer.press.myearningkot.activity.PrefCardInfo
 import ru.developer.press.myearningkot.activity.startPrefActivity
 import ru.developer.press.myearningkot.database.Card
-import ru.developer.press.myearningkot.database.DataController
 import ru.developer.press.myearningkot.dialogs.MyDialog
 import ru.developer.press.myearningkot.dialogs.myDialog
 import ru.developer.press.myearningkot.helpers.bindTitleOfColumn
+import ru.developer.press.myearningkot.helpers.main
+import ru.developer.press.myearningkot.helpers.runOnIO
+import ru.developer.press.myearningkot.helpers.runOnViewModel
 import ru.developer.press.myearningkot.model.NumerationColumn
 import splitties.alertdialog.appcompat.negativeButton
 import splitties.alertdialog.appcompat.positiveButton
 
+@SuppressLint("InflateParams")
 class CreateCardViewModel : ViewModel() {
     fun updateSamples(update: () -> Unit) {
-        viewModelScope.launch {
-            sampleList = dataController.getSampleList().toMutableList()
+        runOnViewModel {
+            sampleList = dao.getSampleList().toMutableList()
             update.invoke()
         }
     }
@@ -46,8 +49,8 @@ class CreateCardViewModel : ViewModel() {
             sampleList.find { it.refId == id }!!
         }
         adapterForSamples.deleteCard = { deleteId ->
-            viewModelScope.launch(Dispatchers.IO) {
-                dataController.deleteSample(deleteId)
+            runOnViewModel {
+                dao.deleteSample(deleteId)
                 sampleList.remove(sampleList.find { it.refId == deleteId })
             }
 
@@ -61,13 +64,7 @@ class CreateCardViewModel : ViewModel() {
         return adapterForSamples
     }
 
-    suspend fun create(context: Context) {
-        dataController = DataController(context)
-        sampleList = dataController.getSampleList().toMutableList()
-    }
-
-    private lateinit var dataController: DataController
-    private lateinit var sampleList: MutableList<Card>
+    lateinit var sampleList: MutableList<Card>
 
     class AdapterForSamples(val list: MutableList<SampleItem>) :
         RecyclerView.Adapter<AdapterForSamples.SampleCardHolder>() {
@@ -168,10 +165,10 @@ class CreateCardViewModel : ViewModel() {
                                     setTitle("Удалить шаблон \"${sampleItem.card.name}\"?")
                                     setMessage("")
                                     positiveButton(R.string.DELETE) {
-                                        doAsync {
+                                        runOnIO {
                                             deleteCard.invoke(sampleItem.card.refId)
                                             list.remove(sampleItem)
-                                            uiThread {
+                                            main {
                                                 notifyItemRemoved(adapterPosition)
                                             }
                                         }

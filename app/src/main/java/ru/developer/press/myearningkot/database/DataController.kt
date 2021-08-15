@@ -4,8 +4,6 @@ import android.content.Context
 import androidx.room.Transaction
 import com.google.firebase.firestore.DocumentChange.Type.*
 import com.google.gson.Gson
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import ru.developer.press.myearningkot.App
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.database.FireStore.RefType.PAGE

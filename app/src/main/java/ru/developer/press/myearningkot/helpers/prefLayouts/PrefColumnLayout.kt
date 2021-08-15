@@ -8,7 +8,6 @@ import android.widget.RadioGroup
 import android.widget.SeekBar
 import android.widget.TextView
 import androidx.core.widget.addTextChangedListener
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ernestoyaquello.dragdropswiperecyclerview.listener.OnItemDragListener
 import kotlinx.android.synthetic.main.pref_column_date.view.*
@@ -21,11 +20,11 @@ import kotlinx.android.synthetic.main.toolbar_pref.view.*
 import kotlinx.android.synthetic.main.width_seek_bar_layout.view.*
 import kotlinx.coroutines.*
 import org.jetbrains.anko.*
+import ru.developer.press.myearningkot.App.Companion.dao
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.activity.PrefCardActivity
 import ru.developer.press.myearningkot.adapters.AdapterRecyclerPhoneParams
 import ru.developer.press.myearningkot.adapters.ParamModel
-import ru.developer.press.myearningkot.database.DataController
 import ru.developer.press.myearningkot.helpers.*
 import ru.developer.press.myearningkot.model.*
 import splitties.alertdialog.appcompat.alertDialog
@@ -614,7 +613,6 @@ class PrefListColumnLayout(
 ) : PrefTextColumnLayout(column, prefColumnChangedCallback) {
 
     override fun initBasicPref(view: View) {
-        val dataController = DataController(view.context)
         val context = view.context
         initSeekBarAndToolbarButtons(view)
         val typePref = (columnList[0] as ListColumn).typePref
@@ -626,8 +624,8 @@ class PrefListColumnLayout(
         val listTextView = view.list_change
         val editList = view.edit_list
 
-        (context as PrefCardActivity).lifecycleScope.launch {
-            var allList: MutableList<ListType> = dataController.getAllListType()
+        (context as PrefCardActivity).runOnLifeCycle {
+            var allList: MutableList<ListType> = dao.getAllListType()
             val typeIndex = typePref.listTypeIndex
             val listType: ListType? = if (typeIndex == -1) null else allList[typeIndex]
             fun updateListTextView() {
@@ -660,11 +658,11 @@ class PrefListColumnLayout(
                     runOnMaim {
                         if (index == -1) {
                             io {
-                                dataController.addListType(ListType().apply {
+                                dao.addListType(ListType().apply {
                                     listName = newList
                                 })
                             }
-                            allList = dataController.getAllListType()
+                            allList = dao.getAllListType()
                             columnList.filterIsInstance(ListColumn::class.java).forEach {
                                 it.typePref.listTypeIndex = allList.size - 1
                             }

@@ -12,12 +12,10 @@ import android.widget.LinearLayout
 import kotlinx.android.synthetic.main.activity_card.view.*
 import ru.developer.press.myearningkot.helpers.liveData
 
-
 class ScrollContainer(
     context: Context, attributeSet: AttributeSet
 ) : LinearLayout(context, attributeSet) {
     private lateinit var motionEventFromActionDown: MotionEvent
-    var dragNdropMode: Boolean = false
     private var isMove: Boolean = false
     private var moveSize = 0f
     val isLong = liveData(false)
@@ -32,7 +30,6 @@ class ScrollContainer(
 
     init {
         horizontalScrollView?.isSmoothScrollingEnabled = true
-
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
@@ -54,15 +51,6 @@ class ScrollContainer(
         if (isMove || ev.action == MotionEvent.ACTION_UP) {
             hand.removeCallbacks(mLongPressed)
         }
-//        logD("clickEvent x = ${ev.x} ")
-//        logD("clickEvent y = ${ev.y} ")
-//
-//        logD("clickEvent x = ${motionEventFromActionDown.x} ")
-//        logD("clickEvent y = ${motionEventFromActionDown.y} ")
-//        logD("clickEvent !isMove = ${!isMove} ")
-//        logD("clickEvent ev.pointerCount = ${ev.pointerCount} ")
-//        logD("clickEvent ev.action = ${ev.action} ")
-//        logD("clickEvent \n ///////////////////////////////////// \n ")
 
         // при прикосновении 2 пальцами происходит ошибка pointerIndex out of range
         if (!isMove && ev.pointerCount == 1 && ev.action == MotionEvent.ACTION_UP) {

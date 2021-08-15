@@ -8,14 +8,17 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import kotlinx.android.synthetic.main.activity_card.*
 import kotlinx.android.synthetic.main.create_card_activity.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.android.synthetic.main.create_card_activity.recycler
+import kotlinx.android.synthetic.main.create_card_activity.toolbar
 import org.jetbrains.anko.toast
+import ru.developer.press.myearningkot.App.Companion.dao
 import ru.developer.press.myearningkot.R
+import ru.developer.press.myearningkot.helpers.getColorFromRes
 import ru.developer.press.myearningkot.helpers.main
+import ru.developer.press.myearningkot.helpers.runOnLifeCycle
 import ru.developer.press.myearningkot.viewmodels.CreateCardViewModel
 
 class CreateCardActivity : AppCompatActivity() {
@@ -33,7 +36,7 @@ class CreateCardActivity : AppCompatActivity() {
             if (data != null) {
                 val id = data.getStringExtra(CARD_ID) ?: ""
                 if (id.isNotEmpty()) {
-                    lifecycleScope.launch {
+                    runOnLifeCycle {
                         viewModel.updateSamples {
                             adapter.updateItem(id)
                         }
@@ -45,15 +48,18 @@ class CreateCardActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.create_card_activity)
-        lifecycleScope.launch(Dispatchers.IO) {
+
+        setSupportActionBar(toolbar)
+        toolbar.setTitleTextColor(getColorFromRes(R.color.colorOnPrimary))
+
+        runOnLifeCycle {
 
             viewModel = ViewModelProvider(
                 this@CreateCardActivity,
                 ViewModelProvider.NewInstanceFactory()
-            ).get(CreateCardViewModel::class.java)
-                .apply {
-                    create(this@CreateCardActivity)
-                }
+            ).get(CreateCardViewModel::class.java).apply {
+                sampleList = dao.getSampleList().toMutableList()
+            }
             adapter = viewModel.getAdapter()
             main {
                 recycler.layoutManager = LinearLayoutManager(this@CreateCardActivity)
@@ -80,8 +86,8 @@ class CreateCardActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.sample_item_menu, menu)
-        return true
+        menuInflater.inflate(R.menu.create_card_menu, menu)
+        return super.onCreateOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

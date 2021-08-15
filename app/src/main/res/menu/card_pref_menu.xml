@@ -6,8 +6,13 @@
         android:id="@+id/deleteColumn"
         android:icon="@drawable/ic_delete_forever"
         android:title="@string/DELETE"
-        app:showAsAction="always" />
+        app:showAsAction="never" />
 
+    <item
+        android:id="@+id/renameElement"
+        android:icon="@drawable/ic_rename"
+        android:title="@string/rename"
+        app:showAsAction="always" />
     <item
         android:id="@+id/moveToLeft"
         android:icon="@drawable/ic_move_to_left"
@@ -21,11 +26,6 @@
         app:showAsAction="always" />
 
     <item
-        android:id="@+id/renameElement"
-        android:icon="@drawable/ic_rename"
-        android:title="@string/rename"
-        app:showAsAction="always" />
-    <item
         android:id="@+id/elementSetting"
         android:icon="@drawable/ic_pref_element"
         android:title="@string/selected_element_pref"
@@ -37,7 +37,7 @@
         android:icon="@drawable/ic_add_total"
         android:title="@string/add_total"
         android:visible="true"
-        app:showAsAction="always" />
+        app:showAsAction="never" />
 
     <item
         android:id="@+id/addColumn"
@@ -45,13 +45,13 @@
         android:icon="@drawable/ic_add_column_right"
         android:title="@string/add_column"
         android:visible="true"
-        app:showAsAction="always" />
+        app:showAsAction="never" />
 
 
     <item
         android:id="@+id/basicPref"
         android:icon="@drawable/ic_more_setting"
         android:title="@string/general_pref"
-        app:showAsAction="always"
+        app:showAsAction="never"
         tools:ignore="AlwaysShowAction" />
 </menu>
