@@ -8,6 +8,7 @@ import ru.developer.press.myearningkot.database.Page
 import ru.developer.press.myearningkot.helpers.*
 import ru.developer.press.myearningkot.helpers.scoups.updateTypeControlColumn
 import ru.developer.press.myearningkot.model.NumberColumn
+import java.util.concurrent.atomic.AtomicBoolean
 
 // этот класс создается (ViewModelProviders.of(this).get(Class::class.java))
 // и существует пока существует активити до уничтожения он только обновляет данные представления
@@ -16,19 +17,39 @@ class MainViewModel(list: MutableList<Page>) : ViewModel(),
 
     companion object {
         var cardClick: (cardId: String) -> Unit = {}
+        var cardLongClick: (cardId: String) -> Unit = {}
+        var isSelectMode: AtomicBoolean = AtomicBoolean(false)
     }
+
+    private val selectedCardIds = mutableSetOf<String>()
 
     private var openedCardId: String = ""
     private val pageList: MutableList<MyLiveData<Page>> = mutableListOf()
+    var currentPagePosition = 0 // TODO: 21.08.2021  назначать при переключении
 
     init {
+        isSelectMode.set(false)
+
         list.forEach {
             pageList.add(liveData(it))
         }
         // нажали на карточку
         cardClick = { idCard ->
-            openedCardId = idCard
-            openCardEvent.call(idCard)
+            if (isSelectMode.get()) {
+                cardLongClick.invoke(idCard)
+            } else {
+                openedCardId = idCard
+                openCardEvent.call(idCard)
+            }
+        }
+
+        cardLongClick = { idCard ->
+            if (selectedCardIds.contains(idCard)) {
+                selectedCardIds.remove(idCard)
+            } else {
+                selectedCardIds.add(idCard)
+            }
+            isSelectMode.set(selectedCardIds.isNotEmpty())
         }
     }
 
@@ -194,7 +215,9 @@ class MainViewModel(list: MutableList<Page>) : ViewModel(),
                 if (find == null) {
                     pageList.add(liveData(pageDB))
                     pageList.sortBy { it.value?.position }
-                    updateViewPager.invoke()
+                    main {
+                        updateViewPager.invoke()
+                    }
                 } else {
                     // на всякий пожарный
                     find.value!!.refId = pageDB!!.refId

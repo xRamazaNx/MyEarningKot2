@@ -8,9 +8,22 @@
     android:layout_marginTop="16dp"
     android:layout_marginEnd="8dp"
     android:background="@drawable/background_for_card"
-    android:paddingStart="8dp"
-    android:paddingEnd="8dp"
-    android:paddingBottom="8dp">
+    android:padding="4dp">
+
+    <ImageView
+        android:background="@color/colorSelectCard"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:layout_alignTop="@id/_all"
+        android:layout_alignBottom="@id/_all"
+        android:layout_alignParentEnd="true"
+        android:paddingEnd="8dp"
+        android:paddingStart="8dp"
+        android:contentDescription="selected"
+        android:elevation="0dp"
+
+        android:src="@drawable/ic_select_card"
+        tools:ignore="HardcodedText" />
 
     <LinearLayout
         android:id="@+id/_all"
@@ -19,8 +32,10 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
-
         android:layout_alignParentBottom="false"
+        android:background="@color/colorBackgroundCard"
+
+        android:elevation="1dp"
         android:orientation="vertical">
 
         <TextView
@@ -30,8 +45,9 @@
             android:layout_gravity="center_horizontal"
             android:gravity="center"
             android:paddingStart="16dp"
-            android:paddingTop="8dp"
+            android:paddingTop="4dp"
             android:paddingEnd="16dp"
+            android:paddingBottom="4dp"
             android:textColor="@color/textColorPrimary"
             android:textSize="18sp"
             android:textStyle="bold"
@@ -51,6 +67,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:gravity="center"
+            android:padding="4dp"
             android:textColor="@color/textColorSecondary"
             android:textSize="14sp"
             tools:text="4 октября  -  4 ноября" />

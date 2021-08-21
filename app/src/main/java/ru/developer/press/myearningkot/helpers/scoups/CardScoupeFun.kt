@@ -67,7 +67,7 @@ fun Card.addRow(
         }
     }
 ): Row {
-    row.status = Row.Status.ADDED
+    row.status = Status.ADDED
     rows.add(row)
     updateTypeControlRow(rows.size - 1)
     calcTotals()
@@ -330,7 +330,7 @@ fun Card.unSelectCell(): Int {
 
 fun Card.unSelectRows() {
     rows.forEach {
-        it.status = Row.Status.NONE
+        it.status = Status.NONE
     }
 }
 
@@ -353,7 +353,7 @@ fun Card.deleteRow(row: Row) {
 fun Card.getSelectedRows(): MutableList<Row> {
     val selRows = mutableListOf<Row>()
     rows.forEach {
-        if (it.status == Row.Status.SELECT)
+        if (it.status == Status.SELECT)
             selRows.add(it)
     }
     return selRows

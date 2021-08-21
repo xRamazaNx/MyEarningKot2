@@ -31,6 +31,7 @@ import kotlinx.android.synthetic.main.list_item_change_layout.view.*
 import org.jetbrains.anko.*
 import ru.developer.press.myearningkot.App
 import ru.developer.press.myearningkot.R
+import ru.developer.press.myearningkot.logD
 import ru.developer.press.myearningkot.model.Column
 import ru.developer.press.myearningkot.model.NumberTypePref
 import ru.developer.press.myearningkot.model.NumerationColumn
@@ -351,4 +352,21 @@ fun Context.showImageTest(text: String, imagePath: String) {
         }
         )
     }.show()
+}
+
+inline fun <T> tryCatch(tryBlock: () -> T?, catchBlock: () -> T? = { null }): T? {
+    return try {
+        tryBlock.invoke()
+    } catch (ex: Exception) {
+        logD(ex.fillInStackTrace().toString())
+        catchBlock.invoke()
+    }
+}
+
+inline fun tryCatch(tryBlock: () -> Unit) {
+    try {
+        tryBlock.invoke()
+    } catch (ex: Exception) {
+        logD(ex.fillInStackTrace().toString())
+    }
 }

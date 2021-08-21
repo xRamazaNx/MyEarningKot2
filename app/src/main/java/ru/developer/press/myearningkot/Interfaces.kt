@@ -9,6 +9,7 @@ import ru.developer.press.myearningkot.helpers.MyLiveData
 import ru.developer.press.myearningkot.model.Column
 import ru.developer.press.myearningkot.model.Prefs
 import ru.developer.press.myearningkot.model.Row
+import ru.developer.press.myearningkot.model.Status
 
 // для viewPage обратная связь реализатор PageViewModel
 interface AdapterPageInterface {

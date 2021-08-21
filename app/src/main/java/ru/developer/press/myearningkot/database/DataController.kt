@@ -15,6 +15,7 @@ import ru.developer.press.myearningkot.helpers.scoups.calcTotals
 import ru.developer.press.myearningkot.helpers.scoups.updateTypeControl
 import ru.developer.press.myearningkot.model.ListType
 import ru.developer.press.myearningkot.model.Row
+import ru.developer.press.myearningkot.model.Status
 import ru.developer.press.myearningkot.model.Total
 
 val gson = Gson()
@@ -42,7 +43,7 @@ class DataController(context: Context) {
         // add rows
         val rowRefs: List<JsonValue> = rowDao.getAllOf(card.refId)
         val rows = rowRefs.fold(mutableListOf<Row>()) { list, rowRef ->
-            list.add(gson.fromJson(rowRef.json, Row::class.java).apply { status = Row.Status.NONE })
+            list.add(gson.fromJson(rowRef.json, Row::class.java).apply { status = Status.NONE })
             list
         }
         card.rows.addAll(rows)

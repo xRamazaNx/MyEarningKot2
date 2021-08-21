@@ -68,7 +68,7 @@ class PageFragment : Fragment() {
 
     private fun iniAdapter(page: Page) {
         runOnLifeCycle {
-            adapterCard = AdapterCard(page.cards)
+            adapterCard = AdapterCard(requireContext(), page.cards)
             main {
                 recycler?.adapter = adapterCard
             }

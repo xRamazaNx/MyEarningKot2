@@ -297,7 +297,7 @@ open class CardViewModel(var card: Card) : ViewModel(),
             sortList()
             main { end.invoke() }
             delay(animatedDuration)
-            addRow.status = Row.Status.NONE
+            addRow.status = Status.NONE
             addRow.elementView.animation = null
             card.calcTotals()
             main { end.invoke() }
@@ -340,7 +340,7 @@ open class CardViewModel(var card: Card) : ViewModel(),
         rowSelectPosition = rowPosition
         val row = this.sortedRows[rowPosition]
         val oldStatus = row.status
-        row.status = if (oldStatus == Row.Status.SELECT) Row.Status.NONE else Row.Status.SELECT
+        row.status = if (oldStatus == Status.SELECT) Status.NONE else Status.SELECT
 
         // присваиваем cell только если не было выделено
         selectMode.value?.let {
@@ -434,9 +434,9 @@ open class CardViewModel(var card: Card) : ViewModel(),
 
     fun deleteRows(updateView: (position: Int) -> Unit) {
         runOnViewModel {
-            val deletedRows = sortedRows.filter { it.status == Row.Status.SELECT }
+            val deletedRows = sortedRows.filter { it.status == Status.SELECT }
             deletedRows.forEach {
-                it.status = Row.Status.DELETED
+                it.status = Status.DELETED
                 main {
                     updateView(
                         sortedRows.indexOf(it)
@@ -457,16 +457,16 @@ open class CardViewModel(var card: Card) : ViewModel(),
     fun pasteRows(copyRowList: List<Row>?) {
         runOnViewModel {
             // самый нижний элемент чтобы вставить туда
-            val indexLastRow = sortedRows.indexOfLast { it.status == Row.Status.SELECT }
+            val indexLastRow = sortedRows.indexOfLast { it.status == Status.SELECT }
             copyRowList?.let { copyList ->
 
                 if (isCapabilityPaste(copyRowList)) {
                     // выделенные строки ниже которых надо добавить
-                    card.getSelectedRows().forEach { it.status = Row.Status.NONE }
+                    card.getSelectedRows().forEach { it.status = Status.NONE }
                     // отдельный лист чтоб копировать элементы а не ссылки на них потому что в копилист бывают ссылки
                     val list = copyList.fold(mutableListOf<Row>()) { mutableList, row ->
                         mutableList.apply {
-                            add(row.copy().also { it.status = Row.Status.ADDED })
+                            add(row.copy().also { it.status = Status.ADDED })
                         }
                     }
                     card.rows.addAll(indexLastRow + 1, list)
@@ -517,10 +517,10 @@ open class CardViewModel(var card: Card) : ViewModel(),
         val selectedRows = getSelectedRows()
         val rows = card.rows
         rows.forEach {
-            it.status = Row.Status.NONE
+            it.status = Status.NONE
         }
         sortList()
-        sortedRows.last().status = Row.Status.SELECT
+        sortedRows.last().status = Status.SELECT
         pasteRows(selectedRows)
     }
 

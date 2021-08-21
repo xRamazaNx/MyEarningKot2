@@ -23,14 +23,12 @@ interface Backgrounder {
 
     fun setBackground(backgroundRes: Int) {
         currentBackground = backgroundRes
-        val drawable =
-            elementView.let { ContextCompat.getDrawable(it.context, currentBackground) }
+        val drawable = elementView.let { ContextCompat.getDrawable(it.context, currentBackground) }
         elementView.background = drawable
     }
 }
 
 // для отображения записи внутри карточки
-
 class DisplayParam {
     var width: Int = 0
     var height: Int = 0

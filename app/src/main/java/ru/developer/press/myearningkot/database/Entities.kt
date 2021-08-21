@@ -99,6 +99,10 @@ open class Card(var pageId: String, var name: String = "") : Ref(), ProvideCardP
 
     @Ignore
     @get:Exclude
+    var isSelect = false
+
+    @Ignore
+    @get:Exclude
     val rows = mutableListOf<Row>()
 
     @Ignore

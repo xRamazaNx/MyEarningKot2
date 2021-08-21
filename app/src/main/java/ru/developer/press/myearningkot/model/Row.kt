@@ -10,6 +10,18 @@ import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.database.BelongIds
 
 class Row(pageId: String, cardId: String) : BelongIds(pageId, cardId), Backgrounder {
+
+    @Transient
+    var status = Status.NONE
+
+    @Transient
+    override var currentBackground: Int = -1
+
+    @Transient
+    override lateinit var elementView: View
+
+    var cellList = mutableListOf<Cell>()
+
     fun crossOut(itemView: View, isCrossOut: Boolean) {
         val frameLayout = itemView as FrameLayout
         if (isCrossOut) {
@@ -23,18 +35,6 @@ class Row(pageId: String, cardId: String) : BelongIds(pageId, cardId), Backgroun
         }
     }
 
-    @Transient
-    var status = Status.NONE
-
-    @Transient
-    override var currentBackground: Int = -1
-
-    @Transient
-    override lateinit var elementView: View
-
-    var cellList = mutableListOf<Cell>()
-
-
     fun copy(): Row {
         return Row(pageId, cardId).also { copyRow ->
             copyRow.dateChange = dateChange
@@ -43,12 +43,5 @@ class Row(pageId: String, cardId: String) : BelongIds(pageId, cardId), Backgroun
                 copyRow.cellList.add(cell.copy())
             }
         }
-    }
-
-    enum class Status {
-        SELECT,
-        DELETED,
-        NONE,
-        ADDED
     }
 }

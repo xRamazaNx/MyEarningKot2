@@ -30,7 +30,6 @@ import ru.developer.press.myearningkot.viewmodels.CardViewModel.SelectMode
 import ru.developer.press.myearningkot.viewmodels.ViewModelCardFactory
 import java.lang.Runnable
 
-
 open class CardActivity : BasicCardActivity() {
     private val editCardRegister =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -191,10 +190,10 @@ open class CardActivity : BasicCardActivity() {
                 removeSelectedRows()
             }
             R.id.cutRow -> {
-                cutSelectedRows()
+                copySelectedRows(true)
             }
             R.id.copyRow -> {
-                copySelectedRows()
+                copySelectedRows(false)
             }
             R.id.pasteRow -> {
                 pasteRows()
@@ -211,8 +210,10 @@ open class CardActivity : BasicCardActivity() {
     }
 
     private fun duplicateRows() {
-        viewModel?.duplicateRows()
-        scrollToPosition(viewModel!!.card.rows.size)
+        viewModel?.apply {
+            duplicateRows()
+            scrollToPosition(sortedRows.size)
+        }
     }
 
     private fun pasteRows() {
@@ -223,14 +224,12 @@ open class CardActivity : BasicCardActivity() {
 
     }
 
-    private fun cutSelectedRows() {
+    private fun copySelectedRows(isCut: Boolean) {
         app().copyRowList = viewModel?.getSelectedRows()
-        removeSelectedRows()
-    }
-
-    private fun copySelectedRows() {
-        app().copyRowList = viewModel?.getSelectedRows()
-        viewModel?.selectMode?.value = SelectMode.ROW
+        if (isCut)
+            removeSelectedRows()
+        else
+            viewModel?.selectMode?.value = SelectMode.ROW
     }
 
     private fun copySelectedCell(isCut: Boolean) {
@@ -255,7 +254,6 @@ open class CardActivity : BasicCardActivity() {
         viewModel?.deleteRows { position ->
             adapter.notifyItemChanged(position)
         }
-
     }
 
     // выполняем что ни будь и рекуклер обновляется после конца анимации
@@ -289,12 +287,6 @@ open class CardActivity : BasicCardActivity() {
             // animations running.
             Handler(Looper.getMainLooper()).post(waitForAnimationsToFinishRunnable)
         }
-//
-//
-//
-//
-//
-
 
     private fun hideUnnecessaryElementsFromTotalAmount() {
         totalAmountView.apply {
@@ -329,9 +321,8 @@ open class CardActivity : BasicCardActivity() {
 
             override fun onAnimationStart(p0: Animator?) {
             }
-
-
         }
+
         totalAmountView.animate().setListener(animListener)
         appBar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
 
@@ -413,20 +404,8 @@ open class CardActivity : BasicCardActivity() {
 
             fbAddRow.setOnClickListener {
                 viewModel?.apply {
-                    when (selectMode.value!!) {
-                        // если нажали в режиме выбора ячейки
-                        SelectMode.CELL -> {
-                            fbAddRow.openSpeedDialMenu()
-                        }
-                        // если нажали в режиме выбора строк
-                        SelectMode.ROW -> {
-                            fbAddRow.openSpeedDialMenu()
-                        }
-                        // если нажали в простое
-                        else ->
-                            addRow {
-                                scrollToPosition(sortedRows.size)
-                            }
+                    addRow {
+                        scrollToPosition(sortedRows.size)
                     }
                 }
             }
@@ -464,5 +443,4 @@ open class CardActivity : BasicCardActivity() {
 
         }.editCell()
     }
-
 }

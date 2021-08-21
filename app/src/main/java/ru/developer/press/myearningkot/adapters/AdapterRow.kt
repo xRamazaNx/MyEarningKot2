@@ -24,6 +24,7 @@ import ru.developer.press.myearningkot.helpers.getColorFromRes
 import ru.developer.press.myearningkot.helpers.prefLayouts.setSelectBackground
 import ru.developer.press.myearningkot.model.Column
 import ru.developer.press.myearningkot.model.Row
+import ru.developer.press.myearningkot.model.Status
 import ru.developer.press.myearningkot.model.SwitchColumn
 
 class AdapterRow(
@@ -147,7 +148,6 @@ class AdapterRow(
                         }
                     }
                 }
-
             }
         }
 
@@ -188,7 +188,7 @@ class RowHolder(view: View) : DragDropSwipeAdapter.ViewHolder(view), RowDataList
         rowNumber?.text = (layoutPosition + 1).toString()
 
         when (row.status) {
-            Row.Status.SELECT -> {
+            Status.SELECT -> {
 //                rowNumber?.text = "✔"
                 rowNumber?.setTextColor(
                     ContextCompat.getColor(
@@ -197,8 +197,8 @@ class RowHolder(view: View) : DragDropSwipeAdapter.ViewHolder(view), RowDataList
                     )
                 )
 
-                val isPrevSelect = previousRow?.status == Row.Status.SELECT
-                val isSecondSelect = secondRow?.status == Row.Status.SELECT
+                val isPrevSelect = previousRow?.status == Status.SELECT
+                val isSecondSelect = secondRow?.status == Status.SELECT
                 if (isPrevSelect && isSecondSelect)
                     row.setBackground(R.drawable.row_selected_background_border)
                 else if (isPrevSelect) {
@@ -209,7 +209,7 @@ class RowHolder(view: View) : DragDropSwipeAdapter.ViewHolder(view), RowDataList
                     row.setBackground(R.drawable.row_selected_background)
                 }
             }
-            Row.Status.ADDED -> {
+            Status.ADDED -> {
                 if (row.elementView.animation == null) {
                     row.elementView.startAnimation(animationAdd)
                     row.elementView.animateColor(
@@ -219,7 +219,7 @@ class RowHolder(view: View) : DragDropSwipeAdapter.ViewHolder(view), RowDataList
                     )
                 }
             }
-            Row.Status.DELETED -> {
+            Status.DELETED -> {
                 if (row.elementView.animation == null) {
                     row.elementView.animateColor(
                         Color.TRANSPARENT,

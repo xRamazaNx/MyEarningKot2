@@ -158,12 +158,9 @@ abstract class BasicCardActivity : AppCompatActivity() {
 
     protected fun setShowTotalInfo(showTotalInfo: Boolean) {
         totalAmountView.setShowTotalInfo(showTotalInfo)
-//        if (showTotalInfo)
-//            addTotal.visibility = VISIBLE
-//        else
-//            addTotal.visibility = GONE
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     protected fun notifyAdapter() {
         adapter.notifyDataSetChanged()
     }

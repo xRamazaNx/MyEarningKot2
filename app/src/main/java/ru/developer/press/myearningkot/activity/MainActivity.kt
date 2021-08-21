@@ -1,13 +1,10 @@
 package ru.developer.press.myearningkot.activity
 
 import android.content.Intent
-import android.graphics.drawable.ColorDrawable
-import android.net.Uri
 import android.os.Bundle
 import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import android.view.View.GONE
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
@@ -18,19 +15,11 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
-import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager2.widget.MarginPageTransformer
-import co.zsmb.materialdrawerkt.builders.accountHeader
-import co.zsmb.materialdrawerkt.builders.drawer
-import co.zsmb.materialdrawerkt.draweritems.badgeable.primaryItem
-import co.zsmb.materialdrawerkt.draweritems.badgeable.secondaryItem
-import co.zsmb.materialdrawerkt.draweritems.expandable.expandableItem
-import co.zsmb.materialdrawerkt.draweritems.profile.profile
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.ErrorCodes
 import com.firebase.ui.auth.IdpResponse
-import com.github.zawadz88.materialpopupmenu.popupMenu
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
@@ -42,7 +31,6 @@ import org.jetbrains.anko.dip
 import org.jetbrains.anko.textColorResource
 import org.jetbrains.anko.toast
 import ru.developer.press.myearningkot.*
-import ru.developer.press.myearningkot.App.Companion.authUser
 import ru.developer.press.myearningkot.App.Companion.dao
 import ru.developer.press.myearningkot.adapters.AdapterViewPagerToMain
 import ru.developer.press.myearningkot.database.Card
@@ -77,7 +65,7 @@ class MainActivity : AppCompatActivity(), ProvideDataCards {
                 }
             }
         }
-    private var initializerViewModel: Job = runOnMaim {
+    private var initializerViewModel: Job = runOnLifeCycle {
         val pageList = io { dao.getPageList() }
         viewModel = ViewModelProvider(
             this@MainActivity,
@@ -96,11 +84,9 @@ class MainActivity : AppCompatActivity(), ProvideDataCards {
                     }
                     MODIFIED -> {
                         viewModel.changedPage(refData.refIds.refId) {
-                            runOnUiThread {
-                                val position = tabs.selectedTabPosition
-                                initTabAndViewPager()
-                                selectTab(position)
-                            }
+                            val position = tabs.selectedTabPosition
+                            initTabAndViewPager()
+                            selectTab(position)
                         }
                     }
                     REMOVED -> {
@@ -139,7 +125,7 @@ class MainActivity : AppCompatActivity(), ProvideDataCards {
 
         initTabAndViewPager()
         // настройка fb при скрытии и показе тулбара
-        root.appBar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
+        root.appBar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { _, verticalOffset ->
 
             val heightToolbar = root.toolbar.height
 
@@ -203,126 +189,126 @@ class MainActivity : AppCompatActivity(), ProvideDataCards {
         linkViewPagerAndTabs()
     }
 
-    private fun initDrawer() {
-        val textColor = R.color.textColorPrimary
-
-        drawer = drawer {
-            selectedItem = -1
-            toolbar = root.toolbar
-            sliderBackgroundColorRes = R.color.colorPrimary
-            actionBarDrawerToggleAnimated = true
-//            headerViewRes = R.layout.card_view
-//            footerDivider = true
-            headerDivider = true
-
-            val currentUser = authUser.currentUser
-            accountHeader {
-
-                this.closeOnClick = false
-                this.emailTypeface =
-                    ResourcesCompat.getFont(this@MainActivity, R.font.roboto_light)!!
-                selectionListEnabledForSingleProfile = false
-                currentHidden = true
-//                selectionSecondLine = "This is not an email!" // вместо него показан маил
-                threeSmallProfileImages = false
-                textColorRes = textColor
-                backgroundDrawable = ColorDrawable(getColorFromRes(R.color.colorBackground))
-
-                var name = "Гость"
-                var email = ""
-                var iconUri: Uri? = null
-                if (currentUser != null) {
-                    val email1 = currentUser.email!!
-                    name = currentUser.displayName ?: email1.substringBeforeLast('@')
-                    email = email1
-                    iconUri = currentUser.photoUrl
-                }
-                profile(name, email) {
-                    iconUri?.let {
-                        this.iconUri = it
-                    }
-                    textColorRes = R.color.textColorTertiary
-                }
-                onProfileChanged { view: View, _, _ ->
-                    if (currentUser == null) {
-                        login()
-                    } else {
-                        popupMenu {
-                            section {
-                                item {
-                                    this.label = "Выйти"
-                                    this.callback = {
-                                        logOut()
-                                    }
-                                }
-                            }
-                        }.show(this@MainActivity, view)
-                    }
-                    false
-                }
-            }
-            //
-            expandableItem {
-                nameRes = R.string.sort
-                selectable = false
-                textColorRes = textColor
-                arrowColorRes = textColor
-                iconDrawable = getDrawableRes(R.drawable.ic_sort)!!
-                arrowRotationAngle = Pair(90, 0)
-
-                primaryItem(getString(R.string.to_date_create)) {
-                    onClick { view, position, drawerItem ->
-                        true
-                    }
-                    selectedColorRes = R.color.colorTransparent
-                    selectedTextColorRes = R.color.colorAccent
-                    textColorRes = textColor
-                    level = 2
-                    selectedIconDrawable = getDrawableRes(R.drawable.ic_create_selected)!!
-                    iconDrawable = getDrawableRes(R.drawable.ic_create)!!
-                }
-                primaryItem(getString(R.string.to_date_modify)) {
-                    onClick { view, position, drawerItem ->
-                        true
-                    }
-                    selectedColorRes = R.color.colorTransparent
-                    selectedTextColorRes = R.color.colorAccent
-                    textColorRes = textColor
-                    selectedIconDrawable = getDrawableRes(R.drawable.ic_edit_selected)!!
-                    iconDrawable = getDrawableRes(R.drawable.ic_edit)!!
-                    level = 2
-                }
-
-            }
-            secondaryItem(getString(R.string.settings_label)) {
-                selectable = false
-                textColorRes = textColor
-                iconDrawable = getDrawableRes(R.drawable.ic_setting)!!
-                onClick { _ ->
-                    true
-                }
-                // значок с надписью с право от item
-//                badge("111") {
-//                    cornersDp = 0
-//                    color = 0xFF0099FF
-//                    colorPressed = 0xFFCC99FF
+//    private fun initDrawer() {
+//        val textColor = R.color.textColorPrimary
+//
+//        drawer = drawer {
+//            selectedItem = -1
+//            toolbar = root.toolbar
+//            sliderBackgroundColorRes = R.color.colorPrimary
+//            actionBarDrawerToggleAnimated = true
+////            headerViewRes = R.layout.card_view
+////            footerDivider = true
+//            headerDivider = true
+//
+//            val currentUser = authUser.currentUser
+//            accountHeader {
+//
+//                this.closeOnClick = false
+//                this.emailTypeface =
+//                    ResourcesCompat.getFont(this@MainActivity, R.font.roboto_light)!!
+//                selectionListEnabledForSingleProfile = false
+//                currentHidden = true
+////                selectionSecondLine = "This is not an email!" // вместо него показан маил
+//                threeSmallProfileImages = false
+//                textColorRes = textColor
+//                backgroundDrawable = ColorDrawable(getColorFromRes(R.color.colorBackground))
+//
+//                var name = "Гость"
+//                var email = ""
+//                var iconUri: Uri? = null
+//                if (currentUser != null) {
+//                    val email1 = currentUser.email!!
+//                    name = currentUser.displayName ?: email1.substringBeforeLast('@')
+//                    email = email1
+//                    iconUri = currentUser.photoUrl
 //                }
-            }
-            // нижний отдельный бар
-//            footer {
-//                // о программе
-//                primaryItem(getString(R.string.info_programm)) {
-//                    textColorRes = textColor
-//                    iconDrawable = getDrawable(R.drawable.ic_info)!!
-//                    onClick { _ ->
-//                        true
+//                profile(name, email) {
+//                    iconUri?.let {
+//                        this.iconUri = it
 //                    }
+//                    textColorRes = R.color.textColorTertiary
+//                }
+//                onProfileChanged { view: View, _, _ ->
+//                    if (currentUser == null) {
+//                        login()
+//                    } else {
+//                        popupMenu {
+//                            section {
+//                                item {
+//                                    this.label = "Выйти"
+//                                    this.callback = {
+//                                        logOut()
+//                                    }
+//                                }
+//                            }
+//                        }.show(this@MainActivity, view)
+//                    }
+//                    false
 //                }
 //            }
-        }
-        drawer.actionBarDrawerToggle.drawerArrowDrawable.color =
-            getColorFromRes(R.color.colorOnPrimary)
-    }
+//            //
+//            expandableItem {
+//                nameRes = R.string.sort
+//                selectable = false
+//                textColorRes = textColor
+//                arrowColorRes = textColor
+//                iconDrawable = getDrawableRes(R.drawable.ic_sort)!!
+//                arrowRotationAngle = Pair(90, 0)
+//
+//                primaryItem(getString(R.string.to_date_create)) {
+//                    onClick { view, position, drawerItem ->
+//                        true
+//                    }
+//                    selectedColorRes = R.color.colorTransparent
+//                    selectedTextColorRes = R.color.colorAccent
+//                    textColorRes = textColor
+//                    level = 2
+//                    selectedIconDrawable = getDrawableRes(R.drawable.ic_create_selected)!!
+//                    iconDrawable = getDrawableRes(R.drawable.ic_create)!!
+//                }
+//                primaryItem(getString(R.string.to_date_modify)) {
+//                    onClick { view, position, drawerItem ->
+//                        true
+//                    }
+//                    selectedColorRes = R.color.colorTransparent
+//                    selectedTextColorRes = R.color.colorAccent
+//                    textColorRes = textColor
+//                    selectedIconDrawable = getDrawableRes(R.drawable.ic_edit_selected)!!
+//                    iconDrawable = getDrawableRes(R.drawable.ic_edit)!!
+//                    level = 2
+//                }
+//
+//            }
+//            secondaryItem(getString(R.string.settings_label)) {
+//                selectable = false
+//                textColorRes = textColor
+//                iconDrawable = getDrawableRes(R.drawable.ic_setting)!!
+//                onClick { _ ->
+//                    true
+//                }
+//                // значок с надписью с право от item
+////                badge("111") {
+////                    cornersDp = 0
+////                    color = 0xFF0099FF
+////                    colorPressed = 0xFFCC99FF
+////                }
+//            }
+//            // нижний отдельный бар
+////            footer {
+////                // о программе
+////                primaryItem(getString(R.string.info_program)) {
+////                    textColorRes = textColor
+////                    iconDrawable = getDrawable(R.drawable.ic_info)!!
+////                    onClick { _ ->
+////                        true
+////                    }
+////                }
+////            }
+//        }
+//        drawer.actionBarDrawerToggle.drawerArrowDrawable.color =
+//            getColorFromRes(R.color.colorOnPrimary)
+//    }
 
     private val loginRegister =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {

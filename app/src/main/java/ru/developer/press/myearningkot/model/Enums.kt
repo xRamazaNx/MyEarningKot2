@@ -37,11 +37,17 @@ fun getColumnTypeEnumList(): MutableList<ColumnType> = mutableListOf<ColumnType>
 
 
 enum class SortMethod {
-
     UP,
     DOWN
 }
 
 enum class InputTypeNumberColumn {
     MANUAL, FORMULA
+}
+
+enum class Status {
+    SELECT,
+    DELETED,
+    NONE,
+    ADDED
 }
