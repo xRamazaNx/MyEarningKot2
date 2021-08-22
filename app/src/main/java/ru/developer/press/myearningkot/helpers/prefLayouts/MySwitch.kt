@@ -1,9 +1,7 @@
 package ru.developer.press.myearningkot.helpers.prefLayouts
 
 import android.content.Context
-import android.graphics.BlendMode
-import android.graphics.BlendModeColorFilter
-import android.graphics.PorterDuff
+import android.graphics.*
 import android.os.Build
 import android.util.AttributeSet
 import androidx.appcompat.widget.SwitchCompat
@@ -37,8 +35,8 @@ class MySwitch : SwitchCompat {
         }
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                thumbDrawable.setColorFilter(BlendModeColorFilter(thumbColor, BlendMode.MULTIPLY))
-                trackDrawable.setColorFilter(BlendModeColorFilter(trackColor, BlendMode.MULTIPLY))
+                thumbDrawable.colorFilter = PorterDuffColorFilter(thumbColor, PorterDuff.Mode.MULTIPLY)
+                trackDrawable.colorFilter = PorterDuffColorFilter(trackColor, PorterDuff.Mode.MULTIPLY)
             } else {
                 thumbDrawable.setColorFilter(thumbColor, PorterDuff.Mode.MULTIPLY)
                 trackDrawable.setColorFilter(trackColor, PorterDuff.Mode.MULTIPLY)
