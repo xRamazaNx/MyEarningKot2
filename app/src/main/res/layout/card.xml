@@ -12,8 +12,8 @@
 
     <ImageView
         android:background="@color/colorSelectCard"
-        android:layout_width="52dp"
-        android:layout_height="52dp"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
         android:layout_alignTop="@id/_all"
         android:layout_alignBottom="@id/_all"
         android:layout_alignParentEnd="true"

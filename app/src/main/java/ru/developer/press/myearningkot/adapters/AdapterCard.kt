@@ -24,7 +24,7 @@ class AdapterCard(
 ) :
     RecyclerView.Adapter<AdapterCard.CardHolder>() {
     private val selectedColor = context.getColorFromRes(R.color.colorSelectCard)
-    private val selectCardDistance = context.dip(-52).toFloat()
+    private val selectCardDistance = context.dip(-42).toFloat()
     private lateinit var inflater: LayoutInflater
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CardHolder {
         if (!this::inflater.isInitialized) {
