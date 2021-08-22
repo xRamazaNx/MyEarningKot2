@@ -114,13 +114,13 @@
 
             android:id="@+id/textSizeDown"
 
-            android:tint="@color/colorSecondary"
             android:layout_width="40dp"
             android:layout_height="match_parent"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
             android:background="?android:attr/selectableItemBackground"
-            android:src="@drawable/ic_down" />
+            android:src="@drawable/ic_down"
+            app:tint="@color/colorSecondary" />
 
         <TextView
             android:id="@+id/textSize"
@@ -135,14 +135,14 @@
         <ImageButton
 
             android:id="@+id/textSizeUp"
-            android:tint="@color/colorSecondary"
             android:layout_width="40dp"
             android:layout_height="match_parent"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
             android:background="?android:attr/selectableItemBackground"
             android:rotation="180"
-            android:src="@drawable/ic_down" />
+            android:src="@drawable/ic_down"
+            app:tint="@color/colorSecondary" />
 
     </LinearLayout>
 

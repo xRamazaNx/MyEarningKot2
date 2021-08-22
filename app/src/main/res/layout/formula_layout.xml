@@ -79,7 +79,7 @@
             android:background="?attr/selectableItemBackground"
             android:padding="16sp"
             android:src="@drawable/ic_back"
-            android:tint="@color/colorRedButton" />
+            app:tint="@color/colorRedButton" />
     </LinearLayout>
 
     <LinearLayout

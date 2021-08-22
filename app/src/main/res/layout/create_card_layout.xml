@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/create_card_1_layout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -75,13 +76,13 @@
             android:textSize="16sp" />
 
         <ImageButton
-            android:tint="@color/textColorPrimary"
             android:id="@+id/editSampleButton"
             android:layout_width="40dp"
             android:layout_height="match_parent"
             android:layout_marginStart="16dp"
             android:background="?android:attr/selectableItemBackground"
-            android:src="@drawable/ic_setting" />
+            android:src="@drawable/ic_setting"
+            app:tint="@color/textColorPrimary" />
     </LinearLayout>
 
 

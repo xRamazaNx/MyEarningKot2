@@ -24,7 +24,6 @@
         android:textColor="@color/textColorPrimary" />
 
     <ImageButton
-        android:tint="@color/colorIconItemMenu"
         android:id="@+id/moveItem"
         android:padding="8dp"
         android:background="@color/colorTransparent"
@@ -32,7 +31,8 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
 
-        android:contentDescription="@string/move" />
+        android:contentDescription="@string/move"
+        app:tint="@color/colorIconItemMenu" />
 
 
 </LinearLayout>

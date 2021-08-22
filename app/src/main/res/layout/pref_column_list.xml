@@ -72,7 +72,7 @@
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
                         android:src="@drawable/ic_edit"
-                        android:tint="@color/colorAccent" />
+                        app:tint="@color/colorAccent" />
                 </LinearLayout>
 
             </LinearLayout>

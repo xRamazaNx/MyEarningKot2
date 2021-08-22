@@ -61,9 +61,9 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:background="?android:attr/selectableItemBackground"
-            android:tint="@color/colorRedButton"
             app:srcCompat="@drawable/ic_set_default"
-            android:contentDescription="@string/reset" />
+            android:contentDescription="@string/reset"
+            app:tint="@color/colorRedButton" />
 
     </LinearLayout>
 
