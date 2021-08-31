@@ -8,7 +8,7 @@
     android:layout_marginTop="16dp"
     android:layout_marginEnd="8dp"
     android:background="@drawable/background_for_card"
-    android:padding="4dp">
+    android:padding="2dp">
 
     <ImageView
         android:background="@color/colorSelectCard"
@@ -53,13 +53,13 @@
             android:textStyle="bold"
             tools:text="у напарника на работе" />
 
-        <FrameLayout
-            android:id="@+id/divide_line"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@drawable/gradient"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp" />
+<!--        <FrameLayout-->
+<!--            android:id="@+id/divide_line"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="1dp"-->
+<!--            android:background="@drawable/gradient"-->
+<!--            android:paddingTop="8dp"-->
+<!--            android:paddingBottom="8dp" />-->
 
         <TextView
             android:id="@+id/datePeriodCard"

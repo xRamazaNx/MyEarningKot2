@@ -4,12 +4,14 @@ package ru.developer.press.myearningkot.viewmodels
 
 import android.content.Context
 import android.widget.LinearLayout
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import kotlinx.coroutines.delay
 import ru.developer.press.myearningkot.App.Companion.dao
 import ru.developer.press.myearningkot.ProvideDataRows
 import ru.developer.press.myearningkot.adapters.AdapterRow.Companion.animatedDuration
+import ru.developer.press.myearningkot.adapters.DiffRows
 import ru.developer.press.myearningkot.database.Card
 import ru.developer.press.myearningkot.database.Page
 import ru.developer.press.myearningkot.helpers.*
@@ -17,7 +19,9 @@ import ru.developer.press.myearningkot.helpers.scoups.*
 import ru.developer.press.myearningkot.model.*
 
 open class CardViewModel(var card: Card) : ViewModel(),
-    ProvideDataRows {
+        ProvideDataRows {
+
+    lateinit var diffRowsUpdater: DiffRows
 
     // статус занесения изменений карточки в базу данных
     val updatedCardStatus: MyLiveData<Boolean> = liveData(false)
@@ -313,9 +317,9 @@ open class CardViewModel(var card: Card) : ViewModel(),
     }
 
     fun cellClicked(
-        rowPosition: Int,
-        cellPosition: Int,
-        function: (Boolean) -> Unit
+            rowPosition: Int,
+            cellPosition: Int,
+            function: (Boolean) -> Unit
     ) {
 
         this.rowSelectPosition = rowPosition
@@ -332,7 +336,7 @@ open class CardViewModel(var card: Card) : ViewModel(),
             }
         }
         selectMode.value =
-            SelectMode.CELL
+                SelectMode.CELL
         function(isDoubleTap)
     }
 
@@ -351,10 +355,10 @@ open class CardViewModel(var card: Card) : ViewModel(),
             }
             if (card.getSelectedRows().isEmpty())
                 selectMode.value =
-                    SelectMode.NONE
+                        SelectMode.NONE
             else
                 selectMode.value =
-                    SelectMode.ROW
+                        SelectMode.ROW
         }
         function(rowPosition)
     }
@@ -363,7 +367,7 @@ open class CardViewModel(var card: Card) : ViewModel(),
         card.unSelectCell()
         card.unSelectRows()
         selectMode.value =
-            SelectMode.NONE
+                SelectMode.NONE
     }
 
     fun updateTypeControlColumn(columnPosition: Int) {
@@ -432,14 +436,14 @@ open class CardViewModel(var card: Card) : ViewModel(),
         return card.getSelectedCell()?.type
     }
 
-    fun deleteRows(updateView: (position: Int) -> Unit) {
-        runOnViewModel {
+    suspend fun deleteRows(updateView: (position: Int) -> Unit) {
+        io {
             val deletedRows = sortedRows.filter { it.status == Status.SELECT }
             deletedRows.forEach {
                 it.status = Status.DELETED
                 main {
                     updateView(
-                        sortedRows.indexOf(it)
+                            sortedRows.indexOf(it)
                     )
                 }
             }
@@ -447,6 +451,7 @@ open class CardViewModel(var card: Card) : ViewModel(),
             card.deleteRows(deletedRows)
             dao.deleteRows(deletedRows)
             sortList()
+            updateAdapter()
             selectMode.postValue(SelectMode.NONE)
         }
         // сортировка листа и обновлении происходит после анимации удаления
@@ -524,12 +529,37 @@ open class CardViewModel(var card: Card) : ViewModel(),
         pasteRows(selectedRows)
     }
 
-    fun updateEditCellRow() {
-        runOnViewModel {
-            val row = sortedRows[rowSelectPosition]
-            updateRowToDB(row)
-            updateTotals()
-        }
+    fun editCell(activity: AppCompatActivity) {
+        val column = card.columns[cellSelectPosition]
+        val selectCell = sortList()[rowSelectPosition].cellList[cellSelectPosition]
+
+        EditCellControl(
+                activity,
+                column,
+                selectCell.sourceValue
+        ) { newValue ->
+            runOnViewModel {
+                selectCell.sourceValue = newValue
+
+                val row = sortedRows[rowSelectPosition]
+                updateRowToDB(row)
+                updateTotals()
+
+                updateTypeControlColumn(cellSelectPosition)
+
+                if (column is NumberColumn) {
+                    card.columns.filterIsInstance<NumberColumn>().forEach {
+                        updateTypeControlColumn(it)
+                    }
+                }
+                updateAdapter()
+            }
+
+        }.editCell()
+    }
+
+    private suspend fun updateAdapter() {
+        diffRowsUpdater.checkDiffAndUpdate(sortedRows)
     }
 
     enum class SelectMode {
@@ -538,14 +568,14 @@ open class CardViewModel(var card: Card) : ViewModel(),
 }
 
 class ViewModelMainFactory(private val pageList: MutableList<Page>) :
-    ViewModelProvider.NewInstanceFactory() {
+        ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return MainViewModel(pageList) as T
     }
 }
 
 class ViewModelCardFactory(private val context: Context, private val card: Card) :
-    ViewModelProvider.NewInstanceFactory() {
+        ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return CardViewModel(card) as T
     }

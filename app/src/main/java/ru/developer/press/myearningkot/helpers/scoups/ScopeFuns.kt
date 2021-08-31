@@ -52,11 +52,9 @@ fun Card.inflatePlate(plateView: View) {
     // добавляем в главный лейаут для тоталов
     if (enableHorizontalScrollTotal) {
         totalContainerScroll.addView(totalContainer)
-//        totalContainerScroll.addView(addTotalImageButton)
         totalContainerDisableScroll.visibility = GONE
     } else {
         totalContainerDisableScroll.addView(totalContainer)
-//        totalContainerDisableScroll.addView(addTotalImageButton)
         totalContainerScroll.visibility = GONE
     }
     // контейнер для всех значений
@@ -72,10 +70,6 @@ fun Card.inflatePlate(plateView: View) {
             weight = 1f
         }
         valueLayout.layoutParams = layoutParams
-        if (index == totals.size - 1) {
-            valueLayout._verLine.visibility = GONE
-        }
-
         val title = TextView(context).apply {
             this.layoutParams = layoutParams
             gravity = Gravity.CENTER
@@ -92,6 +86,10 @@ fun Card.inflatePlate(plateView: View) {
         valueLayout.totalValue.text = totalItem.value
         totalTitleLayout.addView(title)
         totalValueLayout.addView(valueLayout)
+
+        if (index == totals.size - 1) {
+            valueLayout._verLine.visibility = GONE
+        }
     }
 
 }

@@ -34,12 +34,16 @@ class MySwitch : SwitchCompat {
             trackColor = context.getColorFromRes(R.color.textColorSecondary)
         }
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                thumbDrawable.colorFilter = PorterDuffColorFilter(thumbColor, PorterDuff.Mode.MULTIPLY)
-                trackDrawable.colorFilter = PorterDuffColorFilter(trackColor, PorterDuff.Mode.MULTIPLY)
-            } else {
-                thumbDrawable.setColorFilter(thumbColor, PorterDuff.Mode.MULTIPLY)
-                trackDrawable.setColorFilter(trackColor, PorterDuff.Mode.MULTIPLY)
+            post {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    thumbDrawable.colorFilter =
+                        PorterDuffColorFilter(thumbColor, PorterDuff.Mode.MULTIPLY)
+                    trackDrawable.colorFilter =
+                        PorterDuffColorFilter(trackColor, PorterDuff.Mode.MULTIPLY)
+                } else {
+                    thumbDrawable.setColorFilter(thumbColor, PorterDuff.Mode.MULTIPLY)
+                    trackDrawable.setColorFilter(trackColor, PorterDuff.Mode.MULTIPLY)
+                }
             }
         } catch (e: NullPointerException) {
             e.printStackTrace()

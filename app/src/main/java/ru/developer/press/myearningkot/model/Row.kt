@@ -35,13 +35,35 @@ class Row(pageId: String, cardId: String) : BelongIds(pageId, cardId), Backgroun
         }
     }
 
-    fun copy(): Row {
+    fun copy(saveAll: Boolean = false): Row {
         return Row(pageId, cardId).also { copyRow ->
-            copyRow.dateChange = dateChange
-            copyRow.status = Status.NONE
+            if (saveAll) {
+                copyRow.refId = refId
+                copyRow.dateCreate = dateCreate
+                copyRow.dateChange = dateChange
+                copyRow.isSaveOnFire = isSaveOnFire
+                copyRow.isDelete = isDelete
+            }
             cellList.forEach { cell ->
                 copyRow.cellList.add(cell.copy())
             }
         }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (other !is Row)
+            return false
+
+        return cellList == other.cellList
+                && super.equals(other as BelongIds)
+    }
+
+    override fun hashCode(): Int {
+        var result = super.hashCode()
+        result = 31 * result + status.hashCode()
+        result = 31 * result + currentBackground
+        result = 31 * result + elementView.hashCode()
+        result = 31 * result + cellList.hashCode()
+        return result
     }
 }

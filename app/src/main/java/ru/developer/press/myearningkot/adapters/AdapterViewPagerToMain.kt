@@ -21,10 +21,6 @@ class AdapterViewPagerToMain(
         pages.forEach {
             addPage(it.value!!.refId)
         }
-
-        PageFragment.getPageLiveData = {
-            pages.find { liveData -> liveData.value!!.refId == it }!!.value!!
-        }
     }
 
     override fun getItemCount(): Int {

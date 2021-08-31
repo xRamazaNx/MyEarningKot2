@@ -1,10 +1,10 @@
 package ru.developer.press.myearningkot.helpers
 
+import androidx.appcompat.app.AppCompatActivity
 import com.jaredrummler.android.colorpicker.ColorPickerDialog
 import com.jaredrummler.android.colorpicker.ColorPickerDialogListener
 import org.jetbrains.anko.toast
 import ru.developer.press.myearningkot.R
-import ru.developer.press.myearningkot.activity.CardActivity
 import ru.developer.press.myearningkot.dialogs.DialogEditCell
 import ru.developer.press.myearningkot.dialogs.DialogEditImageCell
 import ru.developer.press.myearningkot.dialogs.editCellTag
@@ -14,7 +14,7 @@ import ru.developer.press.myearningkot.model.InputTypeNumberColumn
 import ru.developer.press.myearningkot.model.NumberColumn
 
 class EditCellControl(
-    private val activity: CardActivity,
+    private val activity: AppCompatActivity,
     private val column: Column,
     sourceValue: String,
     private val changed: (sourceValue: String) -> Unit

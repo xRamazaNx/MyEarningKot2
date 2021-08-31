@@ -7,19 +7,17 @@ import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.findViewTreeLifecycleOwner
 import kotlinx.android.synthetic.main.card_basic_pref_layout.view.*
 import kotlinx.coroutines.delay
 import org.jetbrains.anko.layoutInflater
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.database.Card
-import ru.developer.press.myearningkot.helpers.getValutaTypeList
-import ru.developer.press.myearningkot.helpers.runOnMaim
-import ru.developer.press.myearningkot.helpers.setAlertButtonColors
-import ru.developer.press.myearningkot.helpers.showItemChangeDialog
+import ru.developer.press.myearningkot.helpers.*
 
 class DialogBasicPrefCard(
-    val card: Card,
-    val basicPrefEvent: () -> Unit
+    private val card: Card,
+    private val basicPrefEvent: () -> Unit
 ) : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -127,12 +125,11 @@ class DialogBasicPrefCard(
     }
 
     private fun updateCard() {
-        runOnMaim {
+        runOnLifeCycle {
             delay(250)
             basicPrefEvent()
         }
     }
-
 
     override fun onResume() {
         super.onResume()

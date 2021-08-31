@@ -6,9 +6,6 @@ import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.model.ColumnType
 
 class PrefSelectedControl {
-    var showWidthSeekBar: ((List<SelectedElement>)) -> Unit = {}
-    var hideWidthSeekBar: ((List<SelectedElement>)) -> Unit = {}
-
     val isRenameMode: Boolean
         get() {
             var r = false
@@ -121,10 +118,6 @@ class PrefSelectedControl {
             }
         }
         selectCallback?.setVisiblePrefButton(isSelect)
-        if (selectedElement.elementType == ElementType.COLUMN || selectedElement.elementType == ElementType.TOTAL)
-            showWidthSeekBar.invoke(selectedElementList)
-        else
-            hideWidthSeekBar.invoke(selectedElementList)
     }
 
     private fun unSelect(selectedElement: SelectedElement) {
@@ -134,12 +127,6 @@ class PrefSelectedControl {
         }
 
         selectCallback?.setVisiblePrefButton(isSelect)
-
-        val find =
-            selectedElementList.find { it.elementType == ElementType.COLUMN || it.elementType == ElementType.TOTAL }
-        if (find == null)
-            hideWidthSeekBar.invoke(selectedElementList)
-
     }
 
     fun unSelectAll(): Boolean {
@@ -151,7 +138,6 @@ class PrefSelectedControl {
             unSelect(it)
         }
         selectCallback?.setVisiblePrefButton(isSelect)
-        hideWidthSeekBar.invoke(selectedElementList)
         return isContain
     }
 

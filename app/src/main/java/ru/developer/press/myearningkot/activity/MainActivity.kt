@@ -11,20 +11,14 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.LinearLayout
 import android.widget.TableLayout
 import android.widget.TextView
-import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager2.widget.MarginPageTransformer
-import com.firebase.ui.auth.AuthUI
-import com.firebase.ui.auth.ErrorCodes
-import com.firebase.ui.auth.IdpResponse
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.google.firebase.firestore.DocumentChange.Type.*
-import com.mikepenz.materialdrawer.Drawer
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
 import org.jetbrains.anko.dip
@@ -38,7 +32,7 @@ import ru.developer.press.myearningkot.database.FireStore
 import ru.developer.press.myearningkot.database.Page
 import ru.developer.press.myearningkot.databinding.ActivityMainBinding
 import ru.developer.press.myearningkot.dialogs.DialogSetName
-import ru.developer.press.myearningkot.dialogs.myDialog
+import ru.developer.press.myearningkot.dialogs.choiceDialog
 import ru.developer.press.myearningkot.helpers.*
 import ru.developer.press.myearningkot.viewmodels.MainViewModel
 import ru.developer.press.myearningkot.viewmodels.ViewModelMainFactory
@@ -46,32 +40,32 @@ import splitties.alertdialog.appcompat.negativeButton
 import splitties.alertdialog.appcompat.positiveButton
 
 class MainActivity : AppCompatActivity(), ProvideDataCards {
-    private lateinit var drawer: Drawer
+    //    private lateinit var drawer: Drawer
     private lateinit var adapterViewPagerToMain: AdapterViewPagerToMain
-    private val registerForActivityResult =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            val id: String? = it.data?.getStringExtra(CreateCardActivity.createCardID)
-            val name = it.data?.getStringExtra(CreateCardActivity.createCardName)
-            if (id != null) {
-                if (id.isNotEmpty()) {
-                    val indexPage = tabs.selectedTabPosition
-                    viewModel.createCard(indexPage, id, name ?: "") { positionCard ->
-                        adapterViewPagerToMain.insertCardToPosition(
+
+    private val activityResultHelper = ActivityResultHelper(this) {
+        val id: String? = it.data?.getStringExtra(CreateCardActivity.createCardID)
+        val name = it.data?.getStringExtra(CreateCardActivity.createCardName)
+        if (id != null) {
+            if (id.isNotEmpty()) {
+                val indexPage = tabs.selectedTabPosition
+                viewModel.createCard(indexPage, id, name ?: "") { positionCard ->
+                    adapterViewPagerToMain.insertCardToPosition(
                             indexPage,
                             positionCard
-                        )
-                        root.appBar.setExpanded(false, true)
-                    }
+                    )
+                    root.appBar.setExpanded(false, true)
                 }
             }
         }
+    }
     private var initializerViewModel: Job = runOnLifeCycle {
         val pageList = io { dao.getPageList() }
         viewModel = ViewModelProvider(
-            this@MainActivity,
-            ViewModelMainFactory(pageList)
+                this@MainActivity,
+                ViewModelMainFactory(pageList)
         ).get(
-            MainViewModel::class.java
+                MainViewModel::class.java
         )
         root.progressBar.visibility = GONE
 
@@ -117,9 +111,9 @@ class MainActivity : AppCompatActivity(), ProvideDataCards {
         viewModel.openCardEvent.observe(this, { id ->
             // для дальнейшего обновления когда опять выйду в маин
             val intent =
-                Intent(this@MainActivity, CardActivity::class.java).apply {
-                    putExtra(CARD_ID, id)
-                }
+                    Intent(this@MainActivity, CardActivity::class.java).apply {
+                        putExtra(CARD_ID, id)
+                    }
             startActivity(intent)
         })
 
@@ -135,37 +129,37 @@ class MainActivity : AppCompatActivity(), ProvideDataCards {
                 val animator = animate().setDuration(400)
                 if (isShow) {
                     animator
-                        .translationX(0f)
-                        .alpha(1f)
-                        .start()
+                            .translationX(0f)
+                            .alpha(1f)
+                            .start()
                 } else if (isHide) {
 
                     animator
-                        .translationX((resources.displayMetrics.widthPixels / 2).toFloat())
-                        .alpha(0f)
-                        .start()
+                            .translationX((resources.displayMetrics.widthPixels / 2).toFloat())
+                            .alpha(0f)
+                            .start()
                 }
             }
         })
         // настройка клика fb
         root.fbMain.setOnClickListener {
-            registerForActivityResult.launch(Intent(this, CreateCardActivity::class.java))
+            activityResultHelper.launch(Intent(this, CreateCardActivity::class.java))
         }
 
         root.addPageButton.setOnClickListener {
             DialogSetName().setTitle(getString(R.string.create_page))
-                .setPositiveListener { pageName ->
-                    viewModel.addPage(pageName) { page: Page? ->
-                        if (page == null) {
-                            toast("Вкладка с таким именем существует!")
-                        } else {
-                            adapterViewPagerToMain.addPage(page.refId)
-                            linkViewPagerAndTabs()
-                            selectTab(root.tabs.tabCount - 1)
+                    .setPositiveListener { pageName ->
+                        viewModel.addPage(pageName) { page: Page? ->
+                            if (page == null) {
+                                toast("Вкладка с таким именем существует!")
+                            } else {
+                                adapterViewPagerToMain.addPage(page.refId)
+                                linkViewPagerAndTabs()
+                                selectTab(root.tabs.tabCount - 1)
+                            }
                         }
-                    }
 
-                }.show(supportFragmentManager, "setName")
+                    }.show(supportFragmentManager, "setName")
         }
     }
 
@@ -177,9 +171,9 @@ class MainActivity : AppCompatActivity(), ProvideDataCards {
 
     private fun initTabAndViewPager() {
         this.adapterViewPagerToMain = AdapterViewPagerToMain(
-            supportFragmentManager,
-            lifecycle,
-            viewModel
+                supportFragmentManager,
+                lifecycle,
+                viewModel
         )
         val viewPager = root.viewPager
         viewPager.offscreenPageLimit = 5
@@ -310,69 +304,69 @@ class MainActivity : AppCompatActivity(), ProvideDataCards {
 //            getColorFromRes(R.color.colorOnPrimary)
 //    }
 
-    private val loginRegister =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+//    private val loginRegister =
+//            ActivityResultHelper(this) {
+//
+//                val data = it.data
+//                val response: IdpResponse? = IdpResponse.fromResultIntent(data)
+//                val toast: Toast
+//                // Successfully signed in
+//                if (it.resultCode == RESULT_OK) {
+//                    response?.let {
+////                    initDrawer()
+//                        viewModel.loginSuccess()
+//                    }
+//                    return@ActivityResultHelper
+//                } else {
+//                    // Sign in failed
+//                    if (response == null) {
+//                        // User pressed back button
+//                        toast = Toast.makeText(this, "Ошибка авторизации!", Toast.LENGTH_LONG)
+//                        toast.show()
+//                        return@ActivityResultHelper
+//                    }
+//                    if (response.error?.errorCode == ErrorCodes.NO_NETWORK) {
+//                        toast = Toast.makeText(
+//                            this,
+//                            "Проверьте подключение и повторите попытку",
+//                            Toast.LENGTH_LONG
+//                        )
+//                        toast.show()
+//                        return@ActivityResultHelper
+//                    }
+//                    if (response.error?.errorCode == ErrorCodes.UNKNOWN_ERROR) {
+//                        toast = Toast.makeText(this, "Неизвестная ошибка!", Toast.LENGTH_LONG)
+//                        toast.show()
+//                        return@ActivityResultHelper
+//                    }
+//                }
+//                toast = Toast.makeText(this, "Что то пошло не так!", Toast.LENGTH_LONG)
+//                toast.show()
+//
+//            }
 
-            val data = it.data
-            val response: IdpResponse? = IdpResponse.fromResultIntent(data)
-            val toast: Toast
-            // Successfully signed in
-            if (it.resultCode == RESULT_OK) {
-                response?.let {
-//                    initDrawer()
-                    viewModel.loginSuccess()
-                }
-                return@registerForActivityResult
-            } else {
-                // Sign in failed
-                if (response == null) {
-                    // User pressed back button
-                    toast = Toast.makeText(this, "Ошибка авторизации!", Toast.LENGTH_LONG)
-                    toast.show()
-                    return@registerForActivityResult
-                }
-                if (response.error?.errorCode == ErrorCodes.NO_NETWORK) {
-                    toast = Toast.makeText(
-                        this,
-                        "Проверьте подключение и повторите попытку",
-                        Toast.LENGTH_LONG
-                    )
-                    toast.show()
-                    return@registerForActivityResult
-                }
-                if (response.error?.errorCode == ErrorCodes.UNKNOWN_ERROR) {
-                    toast = Toast.makeText(this, "Неизвестная ошибка!", Toast.LENGTH_LONG)
-                    toast.show()
-                    return@registerForActivityResult
-                }
-            }
-            toast = Toast.makeText(this, "Что то пошло не так!", Toast.LENGTH_LONG)
-            toast.show()
+//    private fun login() {
+//        val build: Intent = AuthUI
+//                .getInstance()
+//                .createSignInIntentBuilder()
+//                .setIsSmartLockEnabled(false)
+//                .setAvailableProviders(
+//                    listOf(
+//                        AuthUI.IdpConfig.GoogleBuilder().build()
+//                    )
+//                )
+//                .build()
+//        loginRegister.launch(build)
+//    }
 
-        }
-
-    private fun login() {
-        val build: Intent = AuthUI
-            .getInstance()
-            .createSignInIntentBuilder()
-            .setIsSmartLockEnabled(false)
-            .setAvailableProviders(
-                listOf(
-                    AuthUI.IdpConfig.GoogleBuilder().build()
-                )
-            )
-            .build()
-        loginRegister.launch(build)
-    }
-
-    private fun logOut() {
+//    private fun logOut() {
 //        AuthUI.getInstance().signOut(this)
 //            .addOnCompleteListener { task ->
 //                if (task.isSuccessful) {
 //                    initDrawer()
 //                }
 //            }
-    }
+//    }
 
     override fun getCard(position: Int): Card {
         return viewModel.getCardInPage(root.tabs.selectedTabPosition, position)
@@ -401,7 +395,7 @@ class MainActivity : AppCompatActivity(), ProvideDataCards {
                     toast(getString(R.string.warning_about_deleting_single_page))
                     return false
                 }
-                myDialog {
+                choiceDialog {
                     setTitle(getString(R.string.warning))
                     setMessage(getString(R.string.warning_about_delete_page))
                     positiveButton(R.string.DELETE) {
@@ -453,9 +447,9 @@ class MainActivity : AppCompatActivity(), ProvideDataCards {
             tab.customView = tabTextView
             tab.view.apply {
                 layoutParams =
-                    LinearLayout.LayoutParams(WRAP_CONTENT, MATCH_PARENT).apply {
-                        weight = 0f
-                    }
+                        LinearLayout.LayoutParams(WRAP_CONTENT, MATCH_PARENT).apply {
+                            weight = 0f
+                        }
             }
             if (position == 0) {
                 tab.view.post {
@@ -489,8 +483,8 @@ class MainActivity : AppCompatActivity(), ProvideDataCards {
         })
         toolbar.post {
             val colorRes =
-                if (tabs.tabCount > 1) R.color.colorIconItemMenu
-                else R.color.colorControlNormal
+                    if (tabs.tabCount > 1) R.color.colorIconItemMenu
+                    else R.color.colorControlNormal
             toolbar.menu.findItem(R.id.deletePage)?.icon?.setTint(getColorFromRes(colorRes))
         }
     }

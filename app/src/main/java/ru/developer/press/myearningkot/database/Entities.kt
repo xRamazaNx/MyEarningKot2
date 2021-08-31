@@ -34,11 +34,30 @@ open class Ref {
     var dateChange: Long = dateCreate
     var isSaveOnFire: Boolean = false
     var isDelete: Boolean = false
+
+    override fun equals(other: Any?): Boolean {
+        if (other !is Ref)
+            return false
+        return refId == other.refId
+                && dateCreate == other.dateCreate
+                && dateChange == other.dateChange
+                && isSaveOnFire == other.isSaveOnFire
+                && isDelete == other.isDelete
+    }
+
+    override fun hashCode(): Int {
+        var result = refId.hashCode()
+        result = 31 * result + dateCreate.hashCode()
+        result = 31 * result + dateChange.hashCode()
+        result = 31 * result + isSaveOnFire.hashCode()
+        result = 31 * result + isDelete.hashCode()
+        return result
+    }
 }
 
 open class BelongIds(
-    var pageId: String,
-    var cardId: String
+        var pageId: String,
+        var cardId: String
 ) : Ref() {
     companion object {
         fun withPage(refId: String): BelongIds {
@@ -47,11 +66,25 @@ open class BelongIds(
             }
         }
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (other !is BelongIds)
+            return false
+        return pageId == other.pageId
+                && cardId == other.cardId
+                && super.equals(other as Ref)
+    }
+
+    override fun hashCode(): Int {
+        var result = pageId.hashCode()
+        result = 31 * result + cardId.hashCode()
+        return result
+    }
 }
 
 @Entity
 class Page(
-    var name: String = ""
+        var name: String = ""
 ) : Ref() {
     var position = 0
 
@@ -68,12 +101,12 @@ class Page(
 }
 
 @Entity(
-    foreignKeys = [ForeignKey(
-        entity = Page::class,
-        parentColumns = arrayOf("refId"),
-        childColumns = arrayOf("pageId"),
-        onDelete = ForeignKey.CASCADE
-    )]
+        foreignKeys = [ForeignKey(
+                entity = Page::class,
+                parentColumns = arrayOf("refId"),
+                childColumns = arrayOf("pageId"),
+                onDelete = ForeignKey.CASCADE
+        )]
 )
 open class Card(var pageId: String, var name: String = "") : Ref(), ProvideCardPropertyForCell {
     constructor() : this("")
@@ -132,36 +165,36 @@ open class JsonValue(pageId: String, cardId: String) : BelongIds(pageId, cardId)
 }
 
 @Entity(
-    foreignKeys = [ForeignKey(
-        entity = Card::class,
-        parentColumns = arrayOf("refId"),
-        childColumns = arrayOf("cardId"),
-        onDelete = ForeignKey.CASCADE
-    )]
+        foreignKeys = [ForeignKey(
+                entity = Card::class,
+                parentColumns = arrayOf("refId"),
+                childColumns = arrayOf("cardId"),
+                onDelete = ForeignKey.CASCADE
+        )]
 )
 class ColumnJson(pageId: String, cardId: String) : JsonValue(pageId, cardId) {
     constructor() : this("", "")
 }
 
 @Entity(
-    foreignKeys = [ForeignKey(
-        entity = Card::class,
-        parentColumns = arrayOf("refId"),
-        childColumns = arrayOf("cardId"),
-        onDelete = ForeignKey.CASCADE
-    )]
+        foreignKeys = [ForeignKey(
+                entity = Card::class,
+                parentColumns = arrayOf("refId"),
+                childColumns = arrayOf("cardId"),
+                onDelete = ForeignKey.CASCADE
+        )]
 )
 class RowJson(pageId: String, cardId: String) : JsonValue(pageId, cardId) {
     constructor() : this("", "")
 }
 
 @Entity(
-    foreignKeys = [ForeignKey(
-        entity = Card::class,
-        parentColumns = arrayOf("refId"),
-        childColumns = arrayOf("cardId"),
-        onDelete = ForeignKey.CASCADE
-    )]
+        foreignKeys = [ForeignKey(
+                entity = Card::class,
+                parentColumns = arrayOf("refId"),
+                childColumns = arrayOf("cardId"),
+                onDelete = ForeignKey.CASCADE
+        )]
 )
 class TotalJson(pageId: String, cardId: String) : JsonValue(pageId, cardId) {
     constructor() : this("", "")
@@ -194,8 +227,8 @@ fun Total.totalJson(): TotalJson {
 }
 
 data class UpdatedRefData(
-    val refIds: BelongIds,
-    val refType: FireStore.RefType,
-    val updatedType: DocumentChange.Type
+        val refIds: BelongIds,
+        val refType: FireStore.RefType,
+        val updatedType: DocumentChange.Type
 )
 

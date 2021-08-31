@@ -9,6 +9,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.widget.PopupMenu
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.sample_card_item.view.*
 import org.jetbrains.anko.dip
@@ -20,12 +21,9 @@ import ru.developer.press.myearningkot.activity.CreateCardActivity
 import ru.developer.press.myearningkot.activity.PrefCardInfo
 import ru.developer.press.myearningkot.activity.startPrefActivity
 import ru.developer.press.myearningkot.database.Card
-import ru.developer.press.myearningkot.dialogs.MyDialog
-import ru.developer.press.myearningkot.dialogs.myDialog
-import ru.developer.press.myearningkot.helpers.bindTitleOfColumn
-import ru.developer.press.myearningkot.helpers.main
-import ru.developer.press.myearningkot.helpers.runOnIO
-import ru.developer.press.myearningkot.helpers.runOnViewModel
+import ru.developer.press.myearningkot.dialogs.ChoiceDialog
+import ru.developer.press.myearningkot.dialogs.choiceDialog
+import ru.developer.press.myearningkot.helpers.*
 import ru.developer.press.myearningkot.model.NumerationColumn
 import splitties.alertdialog.appcompat.negativeButton
 import splitties.alertdialog.appcompat.positiveButton
@@ -45,9 +43,7 @@ class CreateCardViewModel : ViewModel() {
             list.add(AdapterForSamples.SampleItem(card))
             list
         })
-        adapterForSamples.getCard = { id: String ->
-            sampleList.find { it.refId == id }!!
-        }
+
         adapterForSamples.deleteCard = { deleteId ->
             runOnViewModel {
                 dao.deleteSample(deleteId)
@@ -66,11 +62,9 @@ class CreateCardViewModel : ViewModel() {
 
     lateinit var sampleList: MutableList<Card>
 
-    class AdapterForSamples(val list: MutableList<SampleItem>) :
-        RecyclerView.Adapter<AdapterForSamples.SampleCardHolder>() {
+    class AdapterForSamples(val list: MutableList<SampleItem>) : RecyclerView.Adapter<AdapterForSamples.SampleCardHolder>() {
 
         lateinit var deleteCard: (String) -> Unit
-        lateinit var getCard: (String) -> Card
         var selectId: String? = null
 
         data class SampleItem(var card: Card) {
@@ -80,9 +74,10 @@ class CreateCardViewModel : ViewModel() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SampleCardHolder {
             val context = parent.context
             val view: View = LayoutInflater.from(context)
-                .inflate(R.layout.sample_card_item, null).apply {
-                    layoutParams = LinearLayout.LayoutParams(matchParent, wrapContent)
-                }
+                    .inflate(R.layout.sample_card_item, null)
+                    .apply {
+                        layoutParams = LinearLayout.LayoutParams(matchParent, wrapContent)
+                    }
 
             return SampleCardHolder(view)
         }
@@ -127,10 +122,8 @@ class CreateCardViewModel : ViewModel() {
                 val columnContainer = itemView.sampleColumnContainer
                 columnContainer.removeAllViews()
                 sampleItem.card.columns.forEach {
-                    if (it is NumerationColumn)
-                        return@forEach
-                    val title: TextView =
-                        LayoutInflater.from(context)
+                    if (it is NumerationColumn) return@forEach
+                    val title: TextView = LayoutInflater.from(context)
                             .inflate(R.layout.title_column, null) as TextView
                     bindTitleOfColumn(it, title)
                     val layoutParams = title.layoutParams
@@ -151,21 +144,19 @@ class CreateCardViewModel : ViewModel() {
                         val activity = context as CreateCardActivity
                         when (it.itemId) {
                             R.id.edit_sample -> {
-
-                                activity.editSampleRegister.startPrefActivity(
-                                    PrefCardInfo.CardCategory.SAMPLE,
-                                    activity = activity,
-                                    card = getCard(sampleItem.card.refId),
-                                    title = view.context.getString(R.string.setting_sample)
-                                )
+                                activity.editSampleRegister.startPrefActivity(PrefCardInfo.CardCategory.SAMPLE,
+                                                                              activity,
+                                                                              sampleItem.card.refId,
+                                                                              view.context.getString(
+                                                                                      R.string.setting_sample))
                             }
                             R.id.delete_sample -> {
-                                var myDialog: MyDialog? = null
-                                myDialog = myDialog {
+                                var choiceDialog: ChoiceDialog? = null
+                                choiceDialog = choiceDialog {
                                     setTitle("Удалить шаблон \"${sampleItem.card.name}\"?")
                                     setMessage("")
                                     positiveButton(R.string.DELETE) {
-                                        runOnIO {
+                                        itemView.findViewTreeLifecycleOwner()?.runOnLifeCycle {
                                             deleteCard.invoke(sampleItem.card.refId)
                                             list.remove(sampleItem)
                                             main {
@@ -174,14 +165,12 @@ class CreateCardViewModel : ViewModel() {
                                         }
                                     }
                                     negativeButton(R.string.cancel) {
-                                        myDialog?.dismiss()
+                                        choiceDialog?.dismiss()
                                     }
                                 }
-                                myDialog.negativeButtonColorRes = R.color.colorRed
-                                myDialog.show(
-                                    activity.supportFragmentManager,
-                                    "delete_sample_wrong"
-                                )
+                                choiceDialog.negativeButtonColorRes = R.color.colorRed
+                                choiceDialog.show(activity.supportFragmentManager,
+                                                  "delete_sample_wrong")
                             }
                         }
                         true
@@ -189,8 +178,7 @@ class CreateCardViewModel : ViewModel() {
                 }
                 if (sampleItem.isSelect) {
                     itemView.sampleContainer.setBackgroundResource(R.drawable.row_selected_background)
-                } else
-                    itemView.sampleContainer.setBackgroundResource(R.drawable.background_for_card)
+                } else itemView.sampleContainer.setBackgroundResource(R.drawable.background_for_card)
             }
         }
     }

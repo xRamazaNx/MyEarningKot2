@@ -1,5 +1,6 @@
 package ru.developer.press.myearningkot
 
+import android.annotation.SuppressLint
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.Gravity
@@ -25,6 +26,7 @@ import ru.developer.press.myearningkot.database.Page
 import ru.developer.press.myearningkot.helpers.main
 import ru.developer.press.myearningkot.helpers.runOnLifeCycle
 
+@SuppressLint("NotifyDataSetChanged")
 class PageFragment : Fragment() {
     var page: Page? = null
     private var adapterCard: AdapterCard? = null
@@ -39,40 +41,32 @@ class PageFragment : Fragment() {
             }
             return pageFragment
         }
-
-        var getPageLiveData: ((String) -> Page)? = null
-
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        getPageLiveData?.let {
-            page = it.invoke(arguments?.getString(PAGE_ID)!!)
-        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         recycler = view.recyclerCards
-        iniAdapter(page!!)
-
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.main_cards_layout, null)
-    }
-
-    private fun iniAdapter(page: Page) {
         runOnLifeCycle {
-            adapterCard = AdapterCard(requireContext(), page.cards)
+            val pageId = arguments?.getString(PAGE_ID)
+            logD("page id = $pageId")
+            page = pageId?.let {
+                App.dao.getPage(it)
+            }
+            adapterCard = AdapterCard(requireContext(), page!!.cards)
             main {
                 recycler?.adapter = adapterCard
             }
         }
+
+    }
+
+    @SuppressLint("InflateParams")
+    override fun onCreateView(
+            inflater: LayoutInflater,
+            container: ViewGroup?,
+            savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.main_cards_layout, null)
     }
 
     fun insertToPosition(cardPosition: Int) {
@@ -90,9 +84,9 @@ class ImageFragment : Fragment() {
     var isErrorImage = false
     var imagePath: String? = null
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+            inflater: LayoutInflater,
+            container: ViewGroup?,
+            savedInstanceState: Bundle?
     ): View? {
         return context?.let { ctx ->
             FrameLayout(ctx).apply {
@@ -116,44 +110,44 @@ class ImageFragment : Fragment() {
         imageView.setOnClickListener {
             if (!isErrorImage)
                 StfalconImageViewer.Builder(
-                    activity,
-                    arrayOf(imagePath)
+                        activity,
+                        arrayOf(imagePath)
                 ) { view: ImageView, image: String? ->
                     Glide
-                        .with(this)
-                        .load(image)
-                        .fitCenter()
-                        .into(view)
+                            .with(this)
+                            .load(image)
+                            .fitCenter()
+                            .into(view)
                 }.show()
         }
         Glide
-            .with(this)
-            .load(imagePath)
-            .error(R.drawable.ic_image_error)
-            .listener(object : RequestListener<Drawable> {
-                override fun onLoadFailed(
-                    e: GlideException?,
-                    model: Any?,
-                    target: Target<Drawable>?,
-                    isFirstResource: Boolean
-                ): Boolean {
-                    isErrorImage = true
-                    return true
-                }
+                .with(this)
+                .load(imagePath)
+                .error(R.drawable.ic_image_error)
+                .listener(object : RequestListener<Drawable> {
+                    override fun onLoadFailed(
+                            e: GlideException?,
+                            model: Any?,
+                            target: Target<Drawable>?,
+                            isFirstResource: Boolean
+                    ): Boolean {
+                        isErrorImage = true
+                        return true
+                    }
 
-                override fun onResourceReady(
-                    resource: Drawable?,
-                    model: Any?,
-                    target: Target<Drawable>?,
-                    dataSource: DataSource?,
-                    isFirstResource: Boolean
-                ): Boolean {
-                    return false
-                }
+                    override fun onResourceReady(
+                            resource: Drawable?,
+                            model: Any?,
+                            target: Target<Drawable>?,
+                            dataSource: DataSource?,
+                            isFirstResource: Boolean
+                    ): Boolean {
+                        return false
+                    }
 
-            })
-            .fitCenter()
-            .into(imageView)
+                })
+                .fitCenter()
+                .into(imageView)
     }
 
 }

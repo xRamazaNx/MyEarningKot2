@@ -11,8 +11,8 @@ import ru.developer.press.myearningkot.helpers.getDate
 import ru.developer.press.myearningkot.helpers.getDecimalFormatNumber
 
 data class Cell(
-    @SerializedName("v")
-    var sourceValue: String = ""
+        @SerializedName("v")
+        var sourceValue: String = ""
 ) : Backgrounder {
 
     @Transient
@@ -40,28 +40,28 @@ data class Cell(
         when (typePref) {
             is NumberTypePref -> {
                 displayValue =
-                    if (sourceValue == "")
-                        ""
-                    else
-                        try {
-                            val value = Calc.evaluate(sourceValue)!!
-                            getDecimalFormatNumber(value, typePref)
-                        } catch (exception: Exception) {
-                            "Error numbers"
-                        }
+                        if (sourceValue == "")
+                            ""
+                        else
+                            try {
+                                val value = Calc.evaluate(sourceValue)!!
+                                getDecimalFormatNumber(value, typePref)
+                            } catch (exception: Exception) {
+                                "Error numbers"
+                            }
             }
             is DateTypePref -> {
                 displayValue =
-                    if (sourceValue == "")
-                        ""
-                    else {
-                        val timeML: Long = sourceValue.toLong()
-                        getDate(typePref.type, timeML, typePref.enableTime)
-                    }
+                        if (sourceValue == "")
+                            ""
+                        else {
+                            val timeML: Long = sourceValue.toLong()
+                            getDate(typePref.type, timeML, typePref.enableTime)
+                        }
             }
             is PhoneTypePref -> {
                 val typeValue =
-                    Gson().fromJson(sourceValue, PhoneTypeValue::class.java)
+                        Gson().fromJson(sourceValue, PhoneTypeValue::class.java)
                 val number = typeValue.phone
 
 //                val formatNumber = if (number.isNotEmpty())
@@ -105,15 +105,15 @@ data class Cell(
                 val imageTypeValue = Gson().fromJson(sourceValue, ImageTypeValue::class.java)
                 val imageUriList = imageTypeValue.imagePathList
                 displayValue =
-                    if (imageUriList.isEmpty())
-                        Uri.EMPTY.toString()
-                    else {
-                        val changeImage = imageTypeValue.changeImage
-                        if (changeImage > -1)
-                            imageUriList[changeImage]
-                        else
-                            imageUriList[0]
-                    }
+                        if (imageUriList.isEmpty())
+                            Uri.EMPTY.toString()
+                        else {
+                            val changeImage = imageTypeValue.changeImage
+                            if (changeImage > -1)
+                                imageUriList[changeImage]
+                            else
+                                imageUriList[0]
+                        }
 
             }
             else -> {
@@ -144,5 +144,23 @@ data class Cell(
                 ""
             }
         }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (other !is Cell)
+            return false
+        return sourceValue == other.sourceValue
+    }
+
+    override fun hashCode(): Int {
+        var result = sourceValue.hashCode()
+        result = 31 * result + currentBackground
+        result = 31 * result + elementView.hashCode()
+        result = 31 * result + type.hashCode()
+        result = 31 * result + isSelect.hashCode()
+        result = 31 * result + isPrefColumnSelect.hashCode()
+        result = 31 * result + cellTypeControl.hashCode()
+        result = 31 * result + displayValue.hashCode()
+        return result
     }
 }

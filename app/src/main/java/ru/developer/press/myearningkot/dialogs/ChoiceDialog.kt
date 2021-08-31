@@ -9,13 +9,13 @@ import androidx.fragment.app.DialogFragment
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.helpers.setAlertButtonColors
 
-fun myDialog(init: AlertDialog.Builder.() -> Unit): MyDialog {
-    return MyDialog().apply {
+fun choiceDialog(init: AlertDialog.Builder.() -> Unit): ChoiceDialog {
+    return ChoiceDialog().apply {
         setAlertConfig(init)
     }
 }
 
-class MyDialog : DialogFragment() {
+class ChoiceDialog : DialogFragment() {
     var positiveButtonColorRes = R.color.colorAccent
     var negativeButtonColorRes = R.color.colorAccent
 

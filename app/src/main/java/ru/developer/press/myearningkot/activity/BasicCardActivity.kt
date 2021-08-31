@@ -1,6 +1,7 @@
 package ru.developer.press.myearningkot.activity
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.view.View.GONE
@@ -10,17 +11,22 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.contains
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.Recycler
 import kotlinx.android.synthetic.main.activity_card.*
+import kotlinx.android.synthetic.main.card.*
 import kotlinx.android.synthetic.main.card.view.*
 import kotlinx.coroutines.*
 import org.jetbrains.anko.backgroundColorResource
-import org.jetbrains.anko.backgroundResource
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.adapters.AdapterRow
+import ru.developer.press.myearningkot.adapters.DiffRows
 import ru.developer.press.myearningkot.helpers.*
 import ru.developer.press.myearningkot.helpers.scoups.inflatePlate
 import ru.developer.press.myearningkot.helpers.scoups.updateTotalAmount
+import ru.developer.press.myearningkot.logD
 import ru.developer.press.myearningkot.viewmodels.CardViewModel
+
 
 @SuppressLint("Registered")
 abstract class BasicCardActivity : AppCompatActivity() {
@@ -32,12 +38,12 @@ abstract class BasicCardActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_card)
+        totalAmountView.backgroundColorResource = R.color.colorPrimary
+        _all.backgroundColorResource = R.color.colorPrimary
         columnContainer = LinearLayout(this).also {
             it.layoutParams =
-                LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.MATCH_PARENT
-                )
+                    LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.MATCH_PARENT)
         }
 
         setSupportActionBar(toolbar)
@@ -70,7 +76,6 @@ abstract class BasicCardActivity : AppCompatActivity() {
     private fun observePlate() {
         viewModel?.cardLiveData?.observe(this, {
             it.inflatePlate(totalAmountView)
-            totalAmountView.backgroundResource = R.drawable.background_for_card_in_card_activity
         })
     }
 
@@ -112,13 +117,13 @@ abstract class BasicCardActivity : AppCompatActivity() {
     protected open fun initRecyclerView() {
         recycler.apply {
 
-            layoutManager = LinearLayoutManager(this@BasicCardActivity)
+            layoutManager = CustomLinearLayoutManager(this@BasicCardActivity)
 
             this@BasicCardActivity.adapter = getAdapterForRecycler()
 
             adapter = this@BasicCardActivity.adapter
 
-            itemAnimator = ItemAnimator()
+//            itemAnimator = ItemAnimator()
 
         }
 //        tableView.horizontalScrollView.moveRowNumber =
@@ -126,7 +131,10 @@ abstract class BasicCardActivity : AppCompatActivity() {
     }
 
     protected fun getAdapterForRecycler(): AdapterRow {
-        return AdapterRow(null, viewModel!!, totalAmountView)
+        return AdapterRow(null, viewModel!!, totalAmountView).also {
+            it.setHasStableIds(true)
+            viewModel!!.diffRowsUpdater = DiffRows(viewModel!!.sortedRows, it)
+        }
     }
 
     @SuppressLint("InflateParams")
@@ -143,7 +151,7 @@ abstract class BasicCardActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        runOnMaim {
+        runMainOnLifeCycle {
             io {
                 while (true) {
                     if (viewModel != null) {
@@ -170,10 +178,18 @@ fun View.setShowTotalInfo(showTotalInfo: Boolean) {
     if (showTotalInfo) {
         totalContainerDisableScroll.visibility = VISIBLE
         totalContainerScroll.visibility = VISIBLE
-        divide_line.visibility = GONE
     } else {
         totalContainerDisableScroll.visibility = GONE
         totalContainerScroll.visibility = GONE
-        divide_line.visibility = GONE
+    }
+}
+
+private class CustomLinearLayoutManager(context: Context) : LinearLayoutManager(context) {
+    override fun onLayoutChildren(recycler: Recycler, state: RecyclerView.State) {
+        try {
+            super.onLayoutChildren(recycler, state)
+        } catch (e: IndexOutOfBoundsException) {
+            logD("Inconsistency detected")
+        }
     }
 }

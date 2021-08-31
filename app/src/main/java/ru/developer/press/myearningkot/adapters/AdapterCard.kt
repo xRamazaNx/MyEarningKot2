@@ -8,6 +8,7 @@ import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.android.synthetic.main.activity_card.view.*
 import kotlinx.android.synthetic.main.card.view.*
 import org.jetbrains.anko.backgroundResource
 import org.jetbrains.anko.dip

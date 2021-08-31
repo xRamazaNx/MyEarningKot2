@@ -29,7 +29,7 @@ fun Context.getPrefTextLayout(
 ): View {
 
     val view =
-        layoutInflater.inflate(R.layout.prefs_no_name, null)
+            layoutInflater.inflate(R.layout.prefs_no_name, null)
 
     fun init() {
         textPrefButtonsInit(view, prefForTextView, isWorkAlignPanel) {
@@ -61,7 +61,7 @@ fun Context.getPrefTotalLayout(
 
     widthColumnSeekBar.progress = firstTotal.width
     widthColumnSeekBar.setOnSeekBarChangeListener(object :
-        SeekBar.OnSeekBarChangeListener {
+                                                          SeekBar.OnSeekBarChangeListener {
         override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
             val progress = p0!!.progress
             if (progress > 30) {
@@ -294,9 +294,9 @@ fun textPrefButtonsInit(
         }
     }
     if (!isWorkAlignPanel) {
-        val colorFromRes = view.context.getColorFromRes(R.color.textColorSecondary)
         fun disable(imageButton: ImageButton) {
             setDefaultBackground(imageButton)
+            val colorFromRes = view.context.getColorFromRes(R.color.textColorSecondary)
             imageButton.setColorFilter(colorFromRes)
             imageButton.isClickable = false
 
@@ -394,27 +394,27 @@ fun textPrefButtonsInit(
     textColor.setOnClickListener {
         val activity = view.context as BasicCardActivity
         ColorPickerDialog
-            .newBuilder()
-            .setColor(firstPrefForTextView.color)
-            .setShowAlphaSlider(false)
-            .create().apply {
-                setColorPickerDialogListener(
-                    object : ColorPickerDialogListener {
-                        override fun onDialogDismissed(dialogId: Int) {
+                .newBuilder()
+                .setColor(firstPrefForTextView.color)
+                .setShowAlphaSlider(false)
+                .create().apply {
+                    setColorPickerDialogListener(
+                        object : ColorPickerDialogListener {
+                            override fun onDialogDismissed(dialogId: Int) {
 
-                        }
-
-                        override fun onColorSelected(dialogId: Int, color: Int) {
-                            prefForTextViewList.forEach {
-
-                                it.color = color
                             }
-                            initColorTextView()
-                            prefChanged()
-                        }
 
-                    })
-            }.show(activity.supportFragmentManager, "colorPicker")
+                            override fun onColorSelected(dialogId: Int, color: Int) {
+                                prefForTextViewList.forEach {
+
+                                    it.color = color
+                                }
+                                initColorTextView()
+                                prefChanged()
+                            }
+
+                        })
+                }.show(activity.supportFragmentManager, "colorPicker")
     }
 }
 

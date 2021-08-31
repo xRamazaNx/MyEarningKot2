@@ -1,7 +1,6 @@
 package ru.developer.press.myearningkot.activity
 
 import android.animation.Animator
-import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
@@ -21,8 +20,6 @@ import kotlinx.coroutines.*
 import ru.developer.press.myearningkot.*
 import ru.developer.press.myearningkot.App.Companion.dao
 import ru.developer.press.myearningkot.database.Card
-import ru.developer.press.myearningkot.dialogs.PICK_IMAGE_MULTIPLE
-import ru.developer.press.myearningkot.dialogs.editCellTag
 import ru.developer.press.myearningkot.helpers.*
 import ru.developer.press.myearningkot.model.*
 import ru.developer.press.myearningkot.viewmodels.CardViewModel
@@ -31,37 +28,38 @@ import ru.developer.press.myearningkot.viewmodels.ViewModelCardFactory
 import java.lang.Runnable
 
 open class CardActivity : BasicCardActivity() {
+
     private val editCardRegister =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            val data = it.data
-            if (data != null) {
-                val id = data.getStringExtra(CARD_ID) ?: ""
-                if (id.isNotEmpty()) {
-                    if (viewModel == null) {
-                        recreate()
-                    } else {
-                        viewModel?.runOnViewModel {
-                            val card = io {
-                                dao.getCard(id)
-                            }
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                val data = it.data
+                if (data != null) {
+                    val id = data.getStringExtra(CARD_ID) ?: ""
+                    if (id.isNotEmpty()) {
+                        if (viewModel == null) {
+                            recreate()
+                        } else {
+                            viewModel?.runOnViewModel {
+                                val card = io {
+                                    dao.getCard(id)
+                                }
 
-                            viewModel!!.updateCard(card)
-                            createTitles()
-                            updateHorizontalScrollSwitched()
-                            initRecyclerView()
-                            viewModel?.apply {
-                                selectMode.value = SelectMode.NONE
-                            }
+                                viewModel!!.updateCard(card)
+                                createTitles()
+                                updateHorizontalScrollSwitched()
+                                initRecyclerView()
+                                viewModel?.apply {
+                                    selectMode.value = SelectMode.NONE
+                                }
 
-                            onResume()
+                                onResume()
+                            }
                         }
                     }
                 }
             }
-        }
     override var viewModel: CardViewModel? = null
     private var isLongClick = false
-    private val launch = runOnMaim {
+    private val launch = runMainOnLifeCycle {
         val id = intent.getStringExtra(CARD_ID)!!
         val card = dao.getCard(id)
         createViewModel(card)
@@ -131,29 +129,16 @@ open class CardActivity : BasicCardActivity() {
 
     private fun createViewModel(card: Card) {
         viewModel = ViewModelProvider(
-            this, ViewModelCardFactory(
+                this, ViewModelCardFactory(
                 this,
                 card
-            )
+        )
         ).get(CardViewModel::class.java)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.card_main_menu, menu)
         return super.onCreateOptionsMenu(menu)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-//        if (requestCode == CARD_EDIT_JSON_REQ_CODE) {
-//            if (resultCode == Activity.RESULT_OK) {
-//
-//            }
-//        }
-        if (requestCode == PICK_IMAGE_MULTIPLE) {
-            supportFragmentManager.fragments.find { it.tag == editCellTag }
-                ?.onActivityResult(requestCode, resultCode, data)
-        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -166,10 +151,10 @@ open class CardActivity : BasicCardActivity() {
             }
             R.id.setting -> {
                 editCardRegister.startPrefActivity(
-                    PrefCardInfo.CardCategory.CARD,
-                    activity = this,
-                    card = viewModel!!.card,
-                    title = getString(R.string.setting)
+                        PrefCardInfo.CardCategory.CARD,
+                        activity = this,
+                        cardId = viewModel!!.card.refId,
+                        title = getString(R.string.setting)
                 )
             }
             // cell
@@ -251,19 +236,17 @@ open class CardActivity : BasicCardActivity() {
     }
 
     private fun removeSelectedRows() {
-        viewModel?.deleteRows { position ->
-            adapter.notifyItemChanged(position)
+        runMainOnLifeCycle {
+            viewModel?.apply {
+                deleteRows { position ->
+                    adapter.notifyItemChanged(position)
+                }
+            }
         }
     }
 
-    // выполняем что ни будь и рекуклер обновляется после конца анимации
-    private fun recyclerRunEvent(runEventRecycler: () -> Unit) { // ...
-        runEventRecycler()
-        Handler(Looper.getMainLooper()).post(waitForAnimationsToFinishRunnable)
-    }
-
     private val waitForAnimationsToFinishRunnable =
-        Runnable { waitForAnimationsToFinish() }
+            Runnable { waitForAnimationsToFinish() }
 
     // When the data in the recycler view is changed all views are animated. If the
 // recycler view is animating, this method sets up a listener that is called when the
@@ -280,25 +263,24 @@ open class CardActivity : BasicCardActivity() {
 
     // Listener that is called whenever the recycler view have finished animating one view.
     private val animationFinishedListener =
-        ItemAnimatorFinishedListener {
-            // The current animation have finished and there is currently no animation running,
-            // but there might still be more items that will be animated after this method returns.
-            // Post a message to the message queue for checking if there are any more
-            // animations running.
-            Handler(Looper.getMainLooper()).post(waitForAnimationsToFinishRunnable)
-        }
+            ItemAnimatorFinishedListener {
+                // The current animation have finished and there is currently no animation running,
+                // but there might still be more items that will be animated after this method returns.
+                // Post a message to the message queue for checking if there are any more
+                // animations running.
+                Handler(Looper.getMainLooper()).post(waitForAnimationsToFinishRunnable)
+            }
 
     private fun hideUnnecessaryElementsFromTotalAmount() {
         totalAmountView.apply {
             datePeriodCard.visibility = GONE
-            divide_line.visibility = GONE
             nameCard.visibility = GONE
         }
     }
 
     private fun hideViewWhileScroll() {
         val animListener = object :
-            Animator.AnimatorListener {
+                Animator.AnimatorListener {
             override fun onAnimationRepeat(p0: Animator?) {
             }
 
@@ -379,8 +361,8 @@ open class CardActivity : BasicCardActivity() {
                     return
                 }
                 viewModel?.cellClicked(
-                    rowPosition,
-                    cellPosition
+                        rowPosition,
+                        cellPosition
                 ) { isDoubleTap ->
                     if (isDoubleTap) {
                         editCell()
@@ -391,7 +373,7 @@ open class CardActivity : BasicCardActivity() {
     }
 
     private fun editCell() {
-        viewModel?.editCell()
+        viewModel?.editCell(this)
     }
 
     override fun onResume() {
@@ -419,28 +401,5 @@ open class CardActivity : BasicCardActivity() {
     private fun scrollToPosition(position: Int) {
         recycler.scrollToPosition(position) //  у нас на одну больше из за отступа для плейт
         appBar.setExpanded(false, true)
-    }
-
-    private fun CardViewModel.editCell() {
-        val column = card.columns[cellSelectPosition]
-        val selectCell = sortList()[rowSelectPosition].cellList[cellSelectPosition]
-
-        EditCellControl(
-            this@CardActivity,
-            column,
-            selectCell.sourceValue
-        ) { newValue ->
-
-            selectCell.sourceValue = newValue
-            updateEditCellRow()
-            updateTypeControlColumn(cellSelectPosition)
-            if (column is NumberColumn) {
-                card.columns.filterIsInstance<NumberColumn>().forEach {
-                    updateTypeControlColumn(it)
-                }
-            }
-            adapter.notifyItemChanged(rowSelectPosition)
-
-        }.editCell()
     }
 }

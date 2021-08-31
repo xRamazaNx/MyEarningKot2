@@ -1,5 +1,6 @@
 package ru.developer.press.myearningkot.dialogs
 
+import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
 import android.app.AlertDialog
 import android.app.Dialog
@@ -14,7 +15,6 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.FragmentActivity
 import com.bumptech.glide.Glide
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
@@ -24,26 +24,73 @@ import org.jetbrains.anko.dip
 import org.jetbrains.anko.support.v4.toast
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.adapters.AdapterViewPagerToImageCell
-import ru.developer.press.myearningkot.helpers.filesFolder
-import ru.developer.press.myearningkot.helpers.io
-import ru.developer.press.myearningkot.helpers.runOnMaim
-import ru.developer.press.myearningkot.helpers.setAlertButtonColors
+import ru.developer.press.myearningkot.helpers.*
 import ru.developer.press.myearningkot.model.Column
 import ru.developer.press.myearningkot.model.ImageTypeValue
 import java.io.File
 
 
 class DialogEditImageCell(
-    private val column: Column,
-    value: String,
-    private val changed: (sourceValue: String) -> Unit
+        private val column: Column,
+        value: String,
+        private val changed: (sourceValue: String) -> Unit
 ) : DialogFragment() {
     private val imageFolder = "${filesFolder}images/".also { File(it).mkdirs() }
     private val imageValue: ImageTypeValue = Gson().fromJson(value, ImageTypeValue::class.java)
+    private val choiceImageLauncher = ActivityResultHelper(this) { result ->
+        val imageUriList = mutableListOf<Uri>()
+        try {
+            val data = result.data
+            if (result.resultCode == RESULT_OK && null != data) {
+                if (data.data != null) {
+                    val mImageUri = data.data
+                    mImageUri?.let { imageUriList.add(it) }
+                } else {
+                    if (data.clipData != null) {
+                        val mClipData: ClipData = data.clipData!!
+                        for (i in 0 until mClipData.itemCount) {
+                            val item: ClipData.Item = mClipData.getItemAt(i)
+                            val uri: Uri = item.uri
+                            imageUriList.add(uri)
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            toast("Ошибка при добавлении фото.")
+        }
+
+        runMainOnLifeCycle {
+            io {
+                imageUriList.forEach {
+                    val openInputStream = requireContext().contentResolver.openInputStream(it)
+                    val nameFile = it.path?.substringAfterLast('/')
+                    val file =
+                            File(imageFolder + nameFile)
+
+                    if (!file.exists())
+                        openInputStream?.use { input ->
+                            file.outputStream().use { output ->
+                                input.copyTo(output)
+                            }
+                        }
+                    imageValue.imagePathList.add(0, file.path)
+                }
+            }
+            dialog?.let {
+                imageValue.changeImage = 0
+                val layout = it.findViewById<LinearLayout>(R.id.imageViewerContainer)
+                initImageViewer(layout)
+            }
+        }
+
+//        1 не копировать файл если такой есть +++
+//        2 после удаления или перемещения выбрать ближайщую картинку с права, если с право нет то последнюю
+//        3 добавить кнопки перемещения
+    }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return getImageDialog()
-
     }
 
     private fun getImageDialog(): AlertDialog {
@@ -64,40 +111,40 @@ class DialogEditImageCell(
 
         val activity = requireActivity()
         val adapter = AdapterViewPagerToImageCell(
-            fragmentManager = activity.supportFragmentManager,
-            lifecycle = lifecycle,
-            imageUriList = imageValue.imagePathList
+                fragmentManager = activity.supportFragmentManager,
+                lifecycle = lifecycle,
+                imageUriList = imageValue.imagePathList
         )
         viewPager.adapter = adapter
         val dpsToPixels = activity.dip(48)
         TabLayoutMediator(tabs, viewPager) { tab, position ->
             val image = ImageView(activity).apply {
                 layoutParams = TableLayout.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
                 ).apply {
                     weight = 0f
                 }
             }
             tab.customView = image
             Glide
-                .with(this)
-                .load(imageValue.imagePathList[position])
-                .error(R.drawable.ic_image_error)
-                .fitCenter()
-                .into(image)
+                    .with(this)
+                    .load(imageValue.imagePathList[position])
+                    .error(R.drawable.ic_image_error)
+                    .fitCenter()
+                    .into(image)
             tab.view.layoutParams =
-                LinearLayout.LayoutParams(
-                    dpsToPixels,
-                    dpsToPixels
-                ).apply {
-                    weight = 0f
-                }
+                    LinearLayout.LayoutParams(
+                            dpsToPixels,
+                            dpsToPixels
+                    ).apply {
+                        weight = 0f
+                    }
         }.attach()
         viewPager.post {
             if (imageValue.imagePathList.isNotEmpty()
-                && changeImage > -1
-                && changeImage < imageValue.imagePathList.size
+                    && changeImage > -1
+                    && changeImage < imageValue.imagePathList.size
             ) {
                 tabs.getTabAt(changeImage)?.select()
             }
@@ -124,7 +171,8 @@ class DialogEditImageCell(
         }
     }
 
-    private fun FragmentActivity.getImageViewer(): View? {
+    @SuppressLint("InflateParams")
+    private fun getImageViewer(): View? {
         val imageViewer = layoutInflater.inflate(R.layout.edit_cell_image, null)
         imageViewer.title.text = column.name
 
@@ -136,10 +184,8 @@ class DialogEditImageCell(
             intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
             intent.type = "image/*"
             intent.action = Intent.ACTION_GET_CONTENT
-            this.startActivityForResult(
-                Intent.createChooser(intent, "Select Picture"),
-                PICK_IMAGE_MULTIPLE
-            )
+
+            choiceImageLauncher.launch(intent)
         }
         return imageViewer
     }
@@ -155,81 +201,18 @@ class DialogEditImageCell(
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        val imageUriList = mutableListOf<Uri>()
-        try {
-            if (requestCode == PICK_IMAGE_MULTIPLE && resultCode == RESULT_OK && null != data
-            ) {
-                if (data.data != null) {
-                    val mImageUri = data.data
-                    mImageUri?.let { imageUriList.add(it) }
-                } else {
-                    if (data.clipData != null) {
-                        val mClipData: ClipData = data.clipData!!
-                        for (i in 0 until mClipData.itemCount) {
-                            val item: ClipData.Item = mClipData.getItemAt(i)
-                            val uri: Uri = item.uri
-                            imageUriList.add(uri)
-
-
-                        }
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            toast("Ошибка при добавлении фото.")
-        }
-
-        runOnMaim {
-            io {
-                imageUriList.forEach {
-                    val openInputStream = requireContext().contentResolver.openInputStream(it)
-                    val nameFile = it.path?.substringAfterLast('/')
-                    val file =
-                        File(imageFolder + nameFile)
-
-                    if (!file.exists())
-                        openInputStream?.use { input ->
-                            file.outputStream().use { output ->
-                                input.copyTo(output)
-                            }
-                        }
-                    imageValue.imagePathList.add(0, file.path)
-                }
-            }
-            dialog?.let {
-                imageValue.changeImage = 0
-                val layout = it.findViewById<LinearLayout>(R.id.imageViewerContainer)
-                initImageViewer(layout)
-            }
-        }
-
-//        1 не копировать файл если такой есть +++
-//        2 после удаления или перемещения выбрать ближайщую картинку с права, если с право нет то последнюю
-//        3 добавить кнопки перемещения
-    }
-
-    private fun File.copyTo(file: File) {
-        inputStream().use { input ->
-            file.outputStream().use { output ->
-                input.copyTo(output)
-            }
-        }
-    }
-
     override fun onResume() {
         super.onResume()
 
         this.dialog?.apply {
             context.let {
                 window?.setBackgroundDrawable(
-                    ColorDrawable(
-                        ContextCompat.getColor(
-                            it,
-                            R.color.colorDialogBackground
+                        ColorDrawable(
+                                ContextCompat.getColor(
+                                        it,
+                                        R.color.colorDialogBackground
+                                )
                         )
-                    )
                 )
             }
         }
