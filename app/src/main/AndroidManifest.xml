@@ -31,8 +31,10 @@
         <activity android:name=".activity.PrefCardActivity" />
         <activity
             android:name=".activity.CardActivity"
-            android:windowSoftInputMode="adjustNothing"></activity>
-        <activity android:name=".activity.MainActivity">
+            android:windowSoftInputMode="adjustNothing">
+        </activity>
+        <activity android:name=".activity.MainActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

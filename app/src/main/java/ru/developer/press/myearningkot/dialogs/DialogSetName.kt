@@ -38,7 +38,7 @@ class DialogSetName : DialogFragment() {
         val dialog: AlertDialog.Builder = AlertDialog.Builder(requireContext()).apply {
             val view = context.layoutInflater.inflate(R.layout.set_name_layout, null)
 
-            view.title.setText(title)
+            view.title.text = title
             editTextCardName = view.editTextSetName
             editTextCardName.setText(name)
             editTextCardName.showKeyboard()

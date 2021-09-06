@@ -200,17 +200,13 @@ class DialogEditCell(
 }
 
 fun EditText.showKeyboard() {
-
-    post {
+    postDelayed({
         requestFocus()
         val imm =
             context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
-        imm?.toggleSoftInput(
-            InputMethodManager.SHOW_IMPLICIT,
-            InputMethodManager.HIDE_IMPLICIT_ONLY
-        )
+        imm?.showSoftInput(this, InputMethodManager.SHOW_IMPLICIT)
         setSelection(text.length)
-    }
+    }, 250)
 }
 
 fun View.hideKeyboard() {
