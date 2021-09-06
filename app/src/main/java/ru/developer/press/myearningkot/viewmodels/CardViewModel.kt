@@ -94,9 +94,8 @@ open class CardViewModel : ViewModel(),
         return null
     }
 
-    suspend fun updateCardFromDao(cardId: String = card.refId) {
-        if (cardId != card.refId)
-            card = dao.getCard(cardId)
+    suspend fun updateCardFromDao(cardId: String? = null) {
+        cardId?.let { card = dao.getCard(it) }
         sortList()
         updateCardLD()
     }
