@@ -14,7 +14,7 @@ class DiffRows(
 
     init {
         old.forEach {
-            oldList.add(it.copy())
+            oldList.add(it.copy(true))
         }
     }
 
@@ -23,11 +23,15 @@ class DiffRows(
     override fun getNewListSize(): Int = newList.size
 
     override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-        return oldList[oldItemPosition].refId == newList[newItemPosition].refId
+        val old = oldList[oldItemPosition]
+        val new = newList[newItemPosition]
+        return old.refId == new.refId
     }
 
     override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-        return oldList[oldItemPosition] == newList[newItemPosition]
+        val old = oldList[oldItemPosition]
+        val new = newList[newItemPosition]
+        return old == new
     }
 
     suspend fun checkDiffAndUpdate(newList: MutableList<Row>) {
@@ -41,7 +45,7 @@ class DiffRows(
 
         oldList.clear()
         newList.forEach {
-            oldList.add(it.copy())
+            oldList.add(it.copy(true))
         }
     }
 }
