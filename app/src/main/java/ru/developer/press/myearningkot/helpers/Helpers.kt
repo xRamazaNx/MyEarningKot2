@@ -68,6 +68,10 @@ fun <T> liveData(t: T? = null): MyLiveData<T> {
     return object : MyLiveData<T>(t) {}
 }
 
+suspend fun <T> liveDataFromMain(t: T? = null): MyLiveData<T> {
+    return main { object : MyLiveData<T>(t) {} }
+}
+
 fun <T> observer(changed: (T) -> Unit): Observer<T> {
     return object : Observer<T> {
         override fun onChanged(t: T?) {
@@ -180,13 +184,13 @@ fun bindTitleOfColumn(column: Column, title: TextView) {
     val width = column.width
 
     title.layoutParams =
-            LinearLayout.LayoutParams(
-                    width,
-                    title.dip(35)
-            ).apply {
-                gravity = Gravity.CENTER
-                weight = w
-            }
+        LinearLayout.LayoutParams(
+            width,
+            title.dip(35)
+        ).apply {
+            gravity = Gravity.CENTER
+            weight = w
+        }
 
     title.text = column.name
     column.titlePref.customize(title)
@@ -194,16 +198,16 @@ fun bindTitleOfColumn(column: Column, title: TextView) {
 
 @SuppressLint("InflateParams")
 fun Context.showItemChangeDialog(
-        title: String,
-        list: MutableList<String>,
-        _selectItem: Int,
-        firstElementText: String?,
-        itemClickEvent: (Int) -> Unit
+    title: String,
+    list: MutableList<String>,
+    _selectItem: Int,
+    firstElementText: String?,
+    itemClickEvent: (Int) -> Unit
 ) {
     val builder = AlertDialog.Builder(this).create()
     builder.apply {
         val linear: LinearLayout =
-                layoutInflater.inflate(R.layout.list_item_change_layout, null) as LinearLayout
+            layoutInflater.inflate(R.layout.list_item_change_layout, null) as LinearLayout
         linear.titleList.text = title
         val addItemInListButton = linear.addItemInListButton
         if (firstElementText == null) {
@@ -231,8 +235,8 @@ fun Context.showItemChangeDialog(
         list.forEachIndexed { index, name ->
             val itemTextView = TextView(context).apply {
                 layoutParams = LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
                 ).apply {
                     marginStart = dip(8)
                     marginEnd = dip(8)
@@ -280,12 +284,12 @@ inline fun <reified T> Any.equalByGson(equalObject: T): Boolean {
 
 fun getPathForResource(resourceId: Int): String {
     return Uri.parse("android.resource://" + R::class.java.getPackage()!!.name + "/" + resourceId)
-            .toString()
+        .toString()
 }
 
 fun getDecimalFormatNumber(
-        value: Double,
-        numberTypePref: NumberTypePref = NumberTypePref()
+    value: Double,
+    numberTypePref: NumberTypePref = NumberTypePref()
 ): String {
     val count = numberTypePref.digitsCount
     val groupNumber = numberTypePref.isGrouping
@@ -298,8 +302,8 @@ fun getDecimalFormatNumber(
         format.append('#')
     }
     val decimalFormat = DecimalFormat(
-            format.toString(),
-            DecimalFormatSymbols.getInstance(Locale.getDefault())
+        format.toString(),
+        DecimalFormatSymbols.getInstance(Locale.getDefault())
     ).apply {
         maximumFractionDigits = count
         roundingMode = RoundingMode.HALF_EVEN
@@ -317,10 +321,10 @@ fun View.addRipple() = with(TypedValue()) {
 }
 
 fun View.animateColor(
-        colorFrom: Int,
-        colorTo: Int,
-        duration: Long = 325,
-        endAnimate: () -> Unit = {}
+    colorFrom: Int,
+    colorTo: Int,
+    duration: Long = 325,
+    endAnimate: () -> Unit = {}
 ) {
 //    val drawable = background
     val valueAnimator: ValueAnimator = ValueAnimator.ofFloat(0.0f, 1.0f)
@@ -387,13 +391,13 @@ fun File.copyTo(file: File) {
 }
 
 class ActivityResultHelper(
-        caller: ActivityResultCaller,
-        callback: (ActivityResult) -> Unit
+    caller: ActivityResultCaller,
+    callback: (ActivityResult) -> Unit
 ) {
     private val result: ActivityResultLauncher<Intent> =
-            caller.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                callback.invoke(it)
-            }
+        caller.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            callback.invoke(it)
+        }
 
     fun launch(intent: Intent) {
         result.launch(intent)

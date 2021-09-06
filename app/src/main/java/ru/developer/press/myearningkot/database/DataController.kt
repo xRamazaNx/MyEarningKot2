@@ -7,16 +7,11 @@ import com.google.gson.Gson
 import ru.developer.press.myearningkot.App
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.database.FireStore.RefType.PAGE
-import ru.developer.press.myearningkot.helpers.io
-import ru.developer.press.myearningkot.helpers.liveData
-import ru.developer.press.myearningkot.helpers.main
-import ru.developer.press.myearningkot.helpers.runOnDefault
+import ru.developer.press.myearningkot.helpers.*
 import ru.developer.press.myearningkot.helpers.scoups.calcTotals
 import ru.developer.press.myearningkot.helpers.scoups.updateTypeControl
-import ru.developer.press.myearningkot.model.ListType
-import ru.developer.press.myearningkot.model.Row
-import ru.developer.press.myearningkot.model.Status
-import ru.developer.press.myearningkot.model.Total
+import ru.developer.press.myearningkot.model.*
+import ru.developer.press.myearningkot.sortToPosition
 
 val gson = Gson()
 
@@ -33,20 +28,20 @@ class DataController(context: Context) {
 
     private val fireStore = FireStore()
 
-    var refUpdatedNotify: ((FireStore.RefType, FireStore.ChangedRef) -> Unit)? = null
+//    var refUpdatedNotify: ((FireStore.RefType, FireStore.ChangedRef) -> Unit)? = null
 
     private fun inflateCard(card: Card): Card {
         // add columns
-        val columnsRef: List<JsonValue> = columnDao.getAllOf(card.refId)
+        val columnsRef = columnDao.getAllOf(card.refId)
         val columns = convertRefToColumn(columnsRef)
-        card.columns.addAll(columns)
+        card.columns.addAll(columns.sortToPosition())
         // add rows
-        val rowRefs: List<JsonValue> = rowDao.getAllOf(card.refId)
+        val rowRefs = rowDao.getAllOf(card.refId)
         val rows = rowRefs.fold(mutableListOf<Row>()) { list, rowRef ->
             list.add(gson.fromJson(rowRef.json, Row::class.java).apply { status = Status.NONE })
             list
         }
-        card.rows.addAll(rows)
+        card.rows.addAll(rows.sortToPosition())
         // add totals
         val totalRefs = totalDao.getAllOf(card.refId)
         val totals = totalRefs.fold(mutableListOf<Total>()) { list, totalRef ->
@@ -54,7 +49,7 @@ class DataController(context: Context) {
             list.add(total)
             list
         }
-        card.totals.addAll(totals)
+        card.totals.addAll(totals.sortToPosition())
         card.calcTotals()
 
         return card
@@ -380,7 +375,7 @@ class DataController(context: Context) {
         val cards = cardDao.getAllOf(page.refId)
         cards.forEach { card ->
             inflateCard(card)
-            page.cards.add(main { liveData(card) })
+            page.cards.add(liveDataFromMain(card))
         }
     }
 
@@ -465,19 +460,25 @@ class DataController(context: Context) {
         val columnsFromDB = columnDao.getAllOf(card.refId)
         columnsFromDB.forEach {
             columnDao.delete(it)
-            fireStore.deleteJsonValue(it, COLUMN_PATH)
+            runOnIO {
+                fireStore.deleteJsonValue(it, COLUMN_PATH)
+            }
         }
         // удалить все имеющиеся строки этой карточки
         val rowsFromDB = rowDao.getAllOf(card.refId)
         rowsFromDB.forEach {
             rowDao.delete(it)
-            fireStore.deleteJsonValue(it, ROW_PATH)
+            runOnIO {
+                fireStore.deleteJsonValue(it, ROW_PATH)
+            }
         }
         // удалить все имеющиеся total этой карточки
         val totalsFromDB = totalDao.getAllOf(card.refId)
         totalsFromDB.forEach {
             totalDao.delete(it)
-            fireStore.deleteJsonValue(it, TOTAL_PATH)
+            runOnIO {
+                fireStore.deleteJsonValue(it, TOTAL_PATH)
+            }
         }
 //////////////////////////////////////////////
         // добавляем все колоны
@@ -496,7 +497,9 @@ class DataController(context: Context) {
             totalDao.insert(totalRef)
         }
 
-        fireStore.addCard(card)
+        runOnIO {
+            fireStore.addCard(card)
+        }
     }
 
     suspend fun deleteRows(rows: List<Row>) = io {

@@ -12,10 +12,14 @@ import java.math.BigDecimal
 import java.util.*
 import kotlin.random.Random
 
-abstract class Column(var name: String, pageId: String, cardId: String) : BelongIds(pageId, cardId),
-    FormulaId {
+abstract class Column(
+    var name: String,
+    pageId: String,
+    cardId: String
+) : BelongIds(pageId, cardId), FormulaId, ElementPosition {
     @SerializedName("itf")
     override var idToFormula: Long = Random.nextLong()
+    override var position: Int = -1
 
     companion object {
         @SerializedName("tc")

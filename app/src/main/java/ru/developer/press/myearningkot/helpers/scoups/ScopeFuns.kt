@@ -83,7 +83,9 @@ fun Card.inflatePlate(plateView: View) {
         totalItem.titlePref.customize(title)
 
         totalItem.totalPref.prefForTextView.customize(value)
-        valueLayout.totalValue.text = totalItem.value
+        totalItem.calcFormula(this)
+        value.text = totalItem.value
+
         totalTitleLayout.addView(title)
         totalValueLayout.addView(valueLayout)
 
@@ -100,6 +102,7 @@ fun Card.updateTotalAmount(plateView: View) {
         // лайот где валуе и линия
         val valueLayout = totalValueLayout.getChildAt(index)
         val value = valueLayout.totalValue
+        totalItem.calcFormula(this)
         value.text = totalItem.value
     }
 }

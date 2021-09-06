@@ -2,46 +2,42 @@
 
 package ru.developer.press.myearningkot.viewmodels
 
-import android.content.Context
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import kotlinx.coroutines.delay
 import ru.developer.press.myearningkot.App.Companion.dao
 import ru.developer.press.myearningkot.ProvideDataRows
+import ru.developer.press.myearningkot.activity.UIControl
+import ru.developer.press.myearningkot.activity.CardInfo
 import ru.developer.press.myearningkot.adapters.AdapterRow.Companion.animatedDuration
 import ru.developer.press.myearningkot.adapters.DiffRows
 import ru.developer.press.myearningkot.database.Card
-import ru.developer.press.myearningkot.database.Page
 import ru.developer.press.myearningkot.helpers.*
 import ru.developer.press.myearningkot.helpers.scoups.*
 import ru.developer.press.myearningkot.model.*
 
-open class CardViewModel(var card: Card) : ViewModel(),
-        ProvideDataRows {
+open class CardViewModel : ViewModel(),
+    ProvideDataRows {
 
+    private lateinit var cardInfo: CardInfo
+    lateinit var card: Card
     lateinit var diffRowsUpdater: DiffRows
 
     // статус занесения изменений карточки в базу данных
-    val updatedCardStatus: MyLiveData<Boolean> = liveData(false)
-    var cellSelectPosition: Int = -1
-    var rowSelectPosition: Int = -1
-    var selectMode = liveData(SelectMode.NONE)
-    val titleLiveData = liveData(card.name)
+    private var cellSelectPosition: Int = -1
+    private var rowSelectPosition: Int = -1
+
     val displayParam = DisplayParam()
-    val cardLiveData = liveData(card)
-    val totalLiveData = liveData(card)
+    val updatedCardStatus = liveData(false)
+    var selectMode = liveData(SelectMode.NONE)
+    val titleLiveData: MyLiveData<String> = liveData()
+    val cardLiveData: MyLiveData<Card> = liveData()
+    val totalLiveData: MyLiveData<Card> = liveData()
 
     var columnLDList = mutableListOf<MyLiveData<Column>>()
 
     override val sortedRows: MutableList<Row> = mutableListOf()
-
-    init {
-        sortList()
-        updateColumnDL()
-        updateCardLD()
-    }
 
     override fun getColumns(): MutableList<Column> = card.columns
     override fun getWidth(): Int {
@@ -56,10 +52,11 @@ open class CardViewModel(var card: Card) : ViewModel(),
         titleLiveData.postValue(card.name)
 
         columnLDList.clear()
-        card.apply {
-            columns.forEach {
-                columnLDList.add(liveData(it))
-            }
+
+        card.columns.forEach {
+            columnLDList.add(liveData<Column>().apply {
+                postValue(it)
+            })
         }
     }
 
@@ -97,19 +94,25 @@ open class CardViewModel(var card: Card) : ViewModel(),
         return null
     }
 
-    fun updateCard(card: Card = this.card) {
-        this.card = card
+    suspend fun updateCardFromDao(cardId: String = card.refId) {
+        if (cardId != card.refId)
+            card = dao.getCard(cardId)
         sortList()
         updateCardLD()
     }
 
-    fun addColumn(columnType: ColumnType, name: String) {
-        card.addColumn(columnType, name)
-        updateCardLD()
+    suspend fun updateCardInDao() {
+        if (cardInfo.cardCategory == CardInfo.CardCategory.CARD) {
+            dao.updateCard(card)
+        } else
+            dao.updateSample(card)
     }
 
-    fun addColumnSample(columnType: ColumnType, name: String) {
-        card.addColumnSample(columnType, name)
+    fun addColumn(columnType: ColumnType, name: String) {
+        if (cardInfo.cardCategory == CardInfo.CardCategory.CARD)
+            card.addColumn(columnType, name)
+        else
+            card.addColumnSample(columnType, name)
         updateCardLD()
     }
 
@@ -308,7 +311,7 @@ open class CardViewModel(var card: Card) : ViewModel(),
         }
     }
 
-    fun sortList(): MutableList<Row> {
+    private fun sortList(): MutableList<Row> {
         //#postedit
         sortedRows.clear()
         sortedRows.addAll(card.rows)
@@ -317,9 +320,9 @@ open class CardViewModel(var card: Card) : ViewModel(),
     }
 
     fun cellClicked(
-            rowPosition: Int,
-            cellPosition: Int,
-            function: (Boolean) -> Unit
+        rowPosition: Int,
+        cellPosition: Int,
+        function: (Boolean) -> Unit
     ) {
 
         this.rowSelectPosition = rowPosition
@@ -336,7 +339,7 @@ open class CardViewModel(var card: Card) : ViewModel(),
             }
         }
         selectMode.value =
-                SelectMode.CELL
+            SelectMode.CELL
         function(isDoubleTap)
     }
 
@@ -355,10 +358,10 @@ open class CardViewModel(var card: Card) : ViewModel(),
             }
             if (card.getSelectedRows().isEmpty())
                 selectMode.value =
-                        SelectMode.NONE
+                    SelectMode.NONE
             else
                 selectMode.value =
-                        SelectMode.ROW
+                    SelectMode.ROW
         }
         function(rowPosition)
     }
@@ -367,10 +370,10 @@ open class CardViewModel(var card: Card) : ViewModel(),
         card.unSelectCell()
         card.unSelectRows()
         selectMode.value =
-                SelectMode.NONE
+            SelectMode.NONE
     }
 
-    fun updateTypeControlColumn(columnPosition: Int) {
+    private fun updateTypeControlColumn(columnPosition: Int) {
         updateTypeControlColumn(card.columns[columnPosition])
     }
 
@@ -443,7 +446,7 @@ open class CardViewModel(var card: Card) : ViewModel(),
                 it.status = Status.DELETED
                 main {
                     updateView(
-                            sortedRows.indexOf(it)
+                        sortedRows.indexOf(it)
                     )
                 }
             }
@@ -482,7 +485,6 @@ open class CardViewModel(var card: Card) : ViewModel(),
                     updateTypeControl()
                     sortList()
                     updateTotals()
-
                 }
 
             }
@@ -534,9 +536,9 @@ open class CardViewModel(var card: Card) : ViewModel(),
         val selectCell = sortList()[rowSelectPosition].cellList[cellSelectPosition]
 
         EditCellControl(
-                activity,
-                column,
-                selectCell.sourceValue
+            activity,
+            column,
+            selectCell.sourceValue
         ) { newValue ->
             runOnViewModel {
                 selectCell.sourceValue = newValue
@@ -558,28 +560,55 @@ open class CardViewModel(var card: Card) : ViewModel(),
         }.editCell()
     }
 
+    // внутри обновление в main
     private suspend fun updateAdapter() {
         diffRowsUpdater.checkDiffAndUpdate(sortedRows)
+    }
+
+    lateinit var uiControl: UIControl
+
+    fun initialization(cardInfo: CardInfo) {
+        this.cardInfo = cardInfo
+        runOnViewModel {
+            card = if (cardInfo.cardCategory == CardInfo.CardCategory.CARD) {
+                dao.getCard(cardInfo.idCard)
+            } else {
+                dao.getSampleCard(cardInfo.idCard)
+            }
+
+            sortList()
+            main {
+
+                titleLiveData.value = card.name
+                totalLiveData.value = card
+                cardLiveData.value = card
+
+                updateColumnDL()
+                updateCardLD()
+
+                uiControl.updateActivity()
+            }
+        }
     }
 
     enum class SelectMode {
         CELL, ROW, NONE
     }
 }
+//
+//class ViewModelMainFactory(private val pageList: MutableList<Page>) :
+//    ViewModelProvider.NewInstanceFactory() {
+//    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+//        return MainViewModel(pageList) as T
+//    }
+//}
 
-class ViewModelMainFactory(private val pageList: MutableList<Page>) :
-        ViewModelProvider.NewInstanceFactory() {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return MainViewModel(pageList) as T
-    }
-}
-
-class ViewModelCardFactory(private val context: Context, private val card: Card) :
-        ViewModelProvider.NewInstanceFactory() {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return CardViewModel(card) as T
-    }
-}
+//class ViewModelCardFactory(private val context: Context, private val card: Card) :
+//    ViewModelProvider.NewInstanceFactory() {
+//    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+//        return CardViewModel(card) as T
+//    }
+//}
 //
 //
 //

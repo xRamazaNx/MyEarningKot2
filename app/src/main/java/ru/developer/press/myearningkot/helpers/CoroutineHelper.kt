@@ -13,12 +13,15 @@ fun runOnDefault(run: suspend () -> Unit) = coroutine(Dispatchers.Default) { run
 
 fun runOnIO(run: suspend () -> Unit) = coroutine(Dispatchers.IO) { run.invoke() }
 
-fun runOnMain(run: suspend () -> Unit) = coroutine(Dispatchers.Main) { run.invoke() }
+fun ViewModel.runOnViewModel(
+    run: suspend () -> Unit
+) = viewModelScope.launch(Dispatchers.IO) { run.invoke() }
 
-fun ViewModel.runOnViewModel(run: suspend () -> Unit) = viewModelScope.launch { run.invoke() }
+fun LifecycleOwner.runOnLifeCycle(run: suspend () -> Unit) =
+    lifecycleScope.launch(Dispatchers.IO) { run.invoke() }
 
-fun LifecycleOwner.runOnLifeCycle(run: suspend () -> Unit) = lifecycleScope.launch { run.invoke() }
-fun LifecycleOwner.runMainOnLifeCycle(run: suspend () -> Unit) = lifecycleScope.launch(Dispatchers.Main) { run.invoke() }
+fun LifecycleOwner.runMainOnLifeCycle(run: suspend () -> Unit) =
+    lifecycleScope.launch(Dispatchers.Main) { run.invoke() }
 
 suspend fun <T> main(block: suspend CoroutineScope.() -> T): T =
     withContext(Dispatchers.Main, block)

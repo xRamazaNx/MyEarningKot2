@@ -18,6 +18,7 @@ import ru.developer.press.myearningkot.App.Companion.dao
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.helpers.getColorFromRes
 import ru.developer.press.myearningkot.helpers.main
+import ru.developer.press.myearningkot.helpers.runMainOnLifeCycle
 import ru.developer.press.myearningkot.helpers.runOnLifeCycle
 import ru.developer.press.myearningkot.viewmodels.CreateCardViewModel
 
@@ -38,7 +39,9 @@ class CreateCardActivity : AppCompatActivity() {
                 if (id.isNotEmpty()) {
                     runOnLifeCycle {
                         viewModel.updateSamples {
-                            adapter.updateItem(id)
+                            runMainOnLifeCycle {
+                                adapter.updateItem(id)
+                            }
                         }
                     }
                 }

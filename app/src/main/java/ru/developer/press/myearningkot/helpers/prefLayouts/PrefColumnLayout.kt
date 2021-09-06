@@ -38,45 +38,45 @@ fun Context.getPrefColumnLayout(
 
     val columnLayout: PrefColumnLayout = when (columnType) {
         ColumnType.NUMERATION -> PrefNumerationColumnLayout(
-                columns,
-                prefColumnChangedCallback
+            columns,
+            prefColumnChangedCallback
         )
         ColumnType.TEXT -> PrefTextColumnLayout(
-                columns,
-                prefColumnChangedCallback
+            columns,
+            prefColumnChangedCallback
         )
         ColumnType.NUMBER -> PrefNumberColumnLayout(
-                columns,
-                prefColumnChangedCallback
+            columns,
+            prefColumnChangedCallback
         )
 
         ColumnType.PHONE -> PrefPhoneColumnLayout(
-                columns,
-                prefColumnChangedCallback
+            columns,
+            prefColumnChangedCallback
         )
         ColumnType.DATE -> PrefDateColumnLayout(
-                columns,
-                prefColumnChangedCallback
+            columns,
+            prefColumnChangedCallback
         )
         ColumnType.COLOR -> PrefColorColumnLayout(
-                columns,
-                prefColumnChangedCallback
+            columns,
+            prefColumnChangedCallback
         )
         ColumnType.SWITCH -> PrefSwitchColumnLayout(
-                columns,
-                prefColumnChangedCallback
+            columns,
+            prefColumnChangedCallback
         )
         ColumnType.IMAGE -> PrefImageColumnLayout(
-                columns,
-                prefColumnChangedCallback
+            columns,
+            prefColumnChangedCallback
         )
         ColumnType.LIST -> PrefListColumnLayout(
-                columns,
-                prefColumnChangedCallback
+            columns,
+            prefColumnChangedCallback
         )
         ColumnType.NONE -> PrefNoneColumnLayout(
-                columns,
-                prefColumnChangedCallback
+            columns,
+            prefColumnChangedCallback
         )
     }
     return columnLayout?.getPrefColumnView(this) ?: View(this)
@@ -102,7 +102,7 @@ abstract class PrefColumnLayout(
         val column = columnList[0]
         widthColumnSeekBar.progress = column.width
         widthColumnSeekBar.setOnSeekBarChangeListener(object :
-                                                              SeekBar.OnSeekBarChangeListener {
+            SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
                 val progress = p0!!.progress
                 if (progress > 30) {
@@ -149,22 +149,22 @@ open class PrefTextColumnLayout(
     }
 
     protected fun getPrefForTextViewList(): MutableList<PrefForTextView> =
-            mutableListOf<PrefForTextView>().apply {
-                columnList.forEach {
-                    val prefForTextView = when (it) {
-                        is NumerationColumn -> it.typePref.prefForTextView
-                        is NumberColumn -> it.typePref.prefForTextView
-                        is TextColumn -> it.typePref.prefForTextView
-                        is PhoneColumn -> it.typePref.prefForTextView
-                        is DateColumn -> it.typePref.prefForTextView
-                        is ListColumn -> it.typePref.prefForTextView
-                        else -> null
-                    }
-                    if (prefForTextView != null) {
-                        add(prefForTextView)
-                    }
+        mutableListOf<PrefForTextView>().apply {
+            columnList.forEach {
+                val prefForTextView = when (it) {
+                    is NumerationColumn -> it.typePref.prefForTextView
+                    is NumberColumn -> it.typePref.prefForTextView
+                    is TextColumn -> it.typePref.prefForTextView
+                    is PhoneColumn -> it.typePref.prefForTextView
+                    is DateColumn -> it.typePref.prefForTextView
+                    is ListColumn -> it.typePref.prefForTextView
+                    else -> null
+                }
+                if (prefForTextView != null) {
+                    add(prefForTextView)
                 }
             }
+        }
 
 
     override fun getPrefColumnView(context: Context): View {
@@ -285,12 +285,12 @@ class PrefNumberColumnLayout(
 
             }
             formulaDialogShow(
-                    numberColumn.formula,
-                    context,
-                    filterColumns,
-                    allColumns,
-                    null,
-                    null
+                numberColumn.formula,
+                context,
+                filterColumns,
+                allColumns,
+                null,
+                null
             ) { formula ->
                 select(formulaInput)
                 unSelect(manualInput)
@@ -329,16 +329,16 @@ class PrefPhoneColumnLayout(
         val recycler = view.phoneParamRecycler
         recycler.layoutManager = LinearLayoutManager(view.context)
         val adapterRecyclerPhoneParams =
-                AdapterRecyclerPhoneParams(column.getPhoneParamList()) { phoneParamModel ->
+            AdapterRecyclerPhoneParams(column.getPhoneParamList()) { phoneParamModel ->
 
-                    columnList.filterIsInstance(PhoneColumn::class.java).forEach { column ->
+                columnList.filterIsInstance(PhoneColumn::class.java).forEach { column ->
 
-                        column.editPhoneParam(phoneParamModel)
-                    }
-                    prefColumnChangedCallback.prefChanged()
+                    column.editPhoneParam(phoneParamModel)
                 }
+                prefColumnChangedCallback.prefChanged()
+            }
         recycler.adapter =
-                adapterRecyclerPhoneParams
+            adapterRecyclerPhoneParams
         recycler.dragListener = object : OnItemDragListener<ParamModel> {
             override fun onItemDragged(
                 previousPosition: Int,
@@ -397,10 +397,10 @@ class PrefDateColumnLayout(
         dateTypeTextView.setOnClickListener { view1 ->
             val context = view1.context
             context.showItemChangeDialog(
-                    context.getString(R.string.date_type),
-                    getDateTypeList(),
-                    typePref.type,
-                    null
+                context.getString(R.string.date_type),
+                getDateTypeList(),
+                typePref.type,
+                null
             ) { type ->
                 columnList.filterIsInstance(DateColumn::class.java).forEach {
                     it.typePref.type = type
@@ -475,7 +475,7 @@ class PrefSwitchColumnLayout(
                 container.foreground = ColorDrawable(Color.TRANSPARENT)
             } else {
                 container.foreground =
-                        ColorDrawable(context.getColorFromRes(R.color.colorBackground_transparent))
+                    ColorDrawable(context.getColorFromRes(R.color.colorBackground_transparent))
             }
 
             enableTextSwitch.isChecked = switchMode
@@ -533,19 +533,19 @@ class PrefSwitchColumnLayout(
                         prefForTextView.add(it.typePref.disablePref)
                 }
                 setView(
-                        context.getPrefTextLayout(
-                                prefForTextView,
-                                true,
-                                object : PrefTextChangedCallback {
-                                    override fun nameEdit(text: String) {
+                    context.getPrefTextLayout(
+                        prefForTextView,
+                        true,
+                        object : PrefTextChangedCallback {
+                            override fun nameEdit(text: String) {
 
-                                    }
+                            }
 
-                                    override fun prefChanged() {
-                                        prefColumnChangedCallback.recreateView()
+                            override fun prefChanged() {
+                                prefColumnChangedCallback.recreateView()
 //                                prefColumnChangedCallback.prefChanged()
-                                    }
-                                })
+                            }
+                        })
                 )
             }.show()
         }
@@ -635,7 +635,9 @@ class PrefListColumnLayout(
                 val listText = "$listString ($listName)"
                 listTextView.text = listText
             }
-            updateListTextView()
+            main {
+                updateListTextView()
+            }
 
 
             listTextView.setOnClickListener {
@@ -651,10 +653,10 @@ class PrefListColumnLayout(
                 }
 
                 context.showItemChangeDialog(
-                        context.getString(R.string.change_list),
-                        mutableList,
-                        typeIndex,
-                        createListText
+                    context.getString(R.string.change_list),
+                    mutableList,
+                    typeIndex,
+                    createListText
                 ) { index ->
                     prefCardActivity.runMainOnLifeCycle {
                         if (index == -1) {

@@ -11,24 +11,6 @@ import ru.developer.press.myearningkot.model.Prefs
 import ru.developer.press.myearningkot.model.Row
 import ru.developer.press.myearningkot.model.Status
 
-// для viewPage обратная связь реализатор PageViewModel
-interface AdapterPageInterface {
-    fun getPageCount(): Int
-    fun getPages(): MutableList<MyLiveData<Page>>
-}
-
-interface ProvideData {
-    fun getSize(): Int
-}
-
-// с помошью него всегда можно получить данные для списка карточек реализатор PageViewModel
-interface ProvideDataCards : ProvideData {
-    //  дать инфу о карточке в текущей странице
-    fun getCard(position: Int): Card
-    // колличество карточек в текущей странице
-
-}
-
 // для получения данных списка записей реализатор CardViewModel
 interface ProvideDataRows {
     val sortedRows: MutableList<Row>
@@ -82,4 +64,13 @@ interface ProvideCardPropertyForCell {
 
 interface FormulaId {
     var idToFormula: Long
+}
+
+interface ElementPosition {
+    var position: Int
+}
+
+fun <T : ElementPosition> List<T>.sortToPosition(): List<T> {
+    sortedBy { it.position }
+    return this
 }

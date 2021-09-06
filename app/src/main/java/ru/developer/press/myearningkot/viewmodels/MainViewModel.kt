@@ -1,7 +1,6 @@
 package ru.developer.press.myearningkot.viewmodels
 
 import androidx.lifecycle.ViewModel
-import ru.developer.press.myearningkot.AdapterPageInterface
 import ru.developer.press.myearningkot.App.Companion.dao
 import ru.developer.press.myearningkot.database.Card
 import ru.developer.press.myearningkot.database.Page
@@ -12,8 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 // этот класс создается (ViewModelProviders.of(this).get(Class::class.java))
 // и существует пока существует активити до уничтожения он только обновляет данные представления
-class MainViewModel(list: MutableList<Page>) : ViewModel(),
-    AdapterPageInterface {
+class MainViewModel : ViewModel() {
 
     companion object {
         var cardClick: (cardId: String) -> Unit = {}
@@ -27,12 +25,17 @@ class MainViewModel(list: MutableList<Page>) : ViewModel(),
     private val pageList: MutableList<MyLiveData<Page>> = mutableListOf()
     var currentPagePosition = 0 // TODO: 21.08.2021  назначать при переключении
 
+    val initializeLD = SingleLiveEvent<Boolean>()
+    suspend fun initialization() {
+        dao.getPageList().forEach { page ->
+            page.cards.forEach { it.value!!.isUpdating = false }
+            pageList.add(liveDataFromMain(page))
+        }
+        initializeLD.postValue(true)
+    }
+
     init {
         isSelectMode.set(false)
-
-        list.forEach {
-            pageList.add(liveData(it))
-        }
         // нажали на карточку
         cardClick = { idCard ->
             if (isSelectMode.get()) {
@@ -54,14 +57,8 @@ class MainViewModel(list: MutableList<Page>) : ViewModel(),
     }
 
     val openCardEvent = SingleLiveEvent<String>()
-    //
 
-    // реализация для адаптера чтоб брал количество страниц
-    override fun getPageCount(): Int {
-        return pageList.size
-    }
-
-    override fun getPages(): MutableList<MyLiveData<Page>> {
+    fun getPages(): MutableList<MyLiveData<Page>> {
         return pageList
     }
 
@@ -104,24 +101,21 @@ class MainViewModel(list: MutableList<Page>) : ViewModel(),
             // узнать позицию для добавления во вкладку и для ее обновления во вью... а ее надо узнавать смотря какая сортировка
             val position = getPositionCardInPage(indexPage, card)
             // добавляем во вкладку
-            page.cards.add(position, main { liveData(card) })
-            main {
+            page.cards.add(position, liveDataFromMain(card))
 //                pageLiveData.value = page
-                updateView(position)
-            }
+            updateView(position)
         }
     }
 
-    fun addPage(pageName: String, mainBlock: (Page?) -> Unit): Boolean {
-        val find: MyLiveData<Page>? = pageList.find { it.value!!.name == pageName }
+    fun addPage(pageName: String, callback: (Page?) -> Unit): Boolean {
+        val find: MyLiveData<Page>? = pageList.find { it.value?.name == pageName }
         runOnViewModel {
-            find?.let {
-                mainBlock.invoke(null)
-                false
-            } ?: kotlin.run {
+            if (find == null) {
                 val page: Page = dao.addPage(pageName, pageList.size)
-                pageList.add(main { liveData(page) })
-                mainBlock.invoke(page)
+                pageList.add(liveDataFromMain(page))
+                callback.invoke(page)
+            } else {
+                callback.invoke(null)
             }
         }
         // если нулл значит такой вкладки нет и можно добавить
@@ -213,11 +207,9 @@ class MainViewModel(list: MutableList<Page>) : ViewModel(),
                 val pageDB = dao.getPage(id)
                 val find = pageList.find { it.value!!.name == pageDB!!.name }
                 if (find == null) {
-                    pageList.add(liveData(pageDB))
+                    pageList.add(liveDataFromMain(pageDB))
                     pageList.sortBy { it.value?.position }
-                    main {
-                        updateViewPager.invoke()
-                    }
+                    updateViewPager.invoke()
                 } else {
                     // на всякий пожарный
                     find.value!!.refId = pageDB!!.refId
@@ -237,6 +229,11 @@ class MainViewModel(list: MutableList<Page>) : ViewModel(),
             }
         }
     }
+
+    fun getPage(refId: String): Page? = pageList.find { it.value?.refId == refId }?.value
+
+    fun getPage(position: Int): Page? = pageList[position].value
+
 
 //    fun deletePage(position: Int, deleteEvent: (Boolean) -> Unit) {
 //        val isEmpty = dataController.pageCount == 0

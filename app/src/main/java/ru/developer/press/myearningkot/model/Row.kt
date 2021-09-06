@@ -6,10 +6,14 @@ import android.view.View
 import android.widget.FrameLayout
 import androidx.core.content.ContextCompat
 import org.jetbrains.anko.backgroundColorResource
+import ru.developer.press.myearningkot.ElementPosition
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.database.BelongIds
 
-class Row(pageId: String, cardId: String) : BelongIds(pageId, cardId), Backgrounder {
+class Row(
+    pageId: String,
+    cardId: String
+) : BelongIds(pageId, cardId), Backgrounder, ElementPosition {
 
     @Transient
     var status = Status.NONE
@@ -49,6 +53,8 @@ class Row(pageId: String, cardId: String) : BelongIds(pageId, cardId), Backgroun
             }
         }
     }
+
+    override var position: Int = -1
 
     override fun equals(other: Any?): Boolean {
         if (other !is Row)

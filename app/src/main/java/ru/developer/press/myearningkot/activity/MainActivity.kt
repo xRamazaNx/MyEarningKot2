@@ -11,9 +11,10 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.LinearLayout
 import android.widget.TableLayout
 import android.widget.TextView
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.MarginPageTransformer
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.tabs.TabLayout
@@ -25,9 +26,7 @@ import org.jetbrains.anko.dip
 import org.jetbrains.anko.textColorResource
 import org.jetbrains.anko.toast
 import ru.developer.press.myearningkot.*
-import ru.developer.press.myearningkot.App.Companion.dao
 import ru.developer.press.myearningkot.adapters.AdapterViewPagerToMain
-import ru.developer.press.myearningkot.database.Card
 import ru.developer.press.myearningkot.database.FireStore
 import ru.developer.press.myearningkot.database.Page
 import ru.developer.press.myearningkot.databinding.ActivityMainBinding
@@ -35,11 +34,10 @@ import ru.developer.press.myearningkot.dialogs.DialogSetName
 import ru.developer.press.myearningkot.dialogs.choiceDialog
 import ru.developer.press.myearningkot.helpers.*
 import ru.developer.press.myearningkot.viewmodels.MainViewModel
-import ru.developer.press.myearningkot.viewmodels.ViewModelMainFactory
 import splitties.alertdialog.appcompat.negativeButton
 import splitties.alertdialog.appcompat.positiveButton
 
-class MainActivity : AppCompatActivity(), ProvideDataCards {
+class MainActivity : AppCompatActivity() {
     //    private lateinit var drawer: Drawer
     private lateinit var adapterViewPagerToMain: AdapterViewPagerToMain
 
@@ -50,37 +48,41 @@ class MainActivity : AppCompatActivity(), ProvideDataCards {
             if (id.isNotEmpty()) {
                 val indexPage = tabs.selectedTabPosition
                 viewModel.createCard(indexPage, id, name ?: "") { positionCard ->
-                    adapterViewPagerToMain.insertCardToPosition(
+                    runMainOnLifeCycle {
+                        adapterViewPagerToMain.insertCardToPosition(
                             indexPage,
                             positionCard
-                    )
-                    root.appBar.setExpanded(false, true)
+                        )
+                        root.appBar.setExpanded(false, true)
+                    }
                 }
             }
         }
     }
-    private var initializerViewModel: Job = runOnLifeCycle {
-        val pageList = io { dao.getPageList() }
-        viewModel = ViewModelProvider(
-                this@MainActivity,
-                ViewModelMainFactory(pageList)
-        ).get(
-                MainViewModel::class.java
-        )
+    private var viewModelInitializer: Job = lifecycleScope.launchWhenCreated {
+
+        io {
+            viewModel = viewModels<MainViewModel>().value
+            viewModel.initialization()
+
+            viewModel.calcAllCards()
+
+        }
+        viewInit()
         root.progressBar.visibility = GONE
 
-        viewModel.calcAllCards()
-        viewInit()
-        App.fireStoreChanged.observe(this, singleObserver { refData ->
+        App.fireStoreChanged.observe(this@MainActivity, singleObserver { refData ->
             if (refData.refType == FireStore.RefType.PAGE) {
                 when (refData.updatedType) {
                     ADDED -> {
                     }
                     MODIFIED -> {
                         viewModel.changedPage(refData.refIds.refId) {
-                            val position = tabs.selectedTabPosition
-                            initTabAndViewPager()
-                            selectTab(position)
+                            runMainOnLifeCycle {
+                                val position = tabs.selectedTabPosition
+                                initTabAndViewPager()
+                                selectTab(position)
+                            }
                         }
                     }
                     REMOVED -> {
@@ -103,7 +105,7 @@ class MainActivity : AppCompatActivity(), ProvideDataCards {
 //        initDrawer()
         root.toolbar.setTitleTextColor(getColorFromRes(R.color.colorOnPrimary))
 
-        initializerViewModel.start()
+        viewModelInitializer.start()
     }
 
     private fun viewInit() {
@@ -111,9 +113,10 @@ class MainActivity : AppCompatActivity(), ProvideDataCards {
         viewModel.openCardEvent.observe(this, { id ->
             // для дальнейшего обновления когда опять выйду в маин
             val intent =
-                    Intent(this@MainActivity, CardActivity::class.java).apply {
-                        putExtra(CARD_ID, id)
-                    }
+                Intent(this@MainActivity, CardActivity::class.java).apply {
+                    putExtra(CARD_ID, id)
+                    putExtra(CARD_CATEGORY, CardInfo.CardCategory.CARD.name)
+                }
             startActivity(intent)
         })
 
@@ -129,15 +132,15 @@ class MainActivity : AppCompatActivity(), ProvideDataCards {
                 val animator = animate().setDuration(400)
                 if (isShow) {
                     animator
-                            .translationX(0f)
-                            .alpha(1f)
-                            .start()
+                        .translationX(0f)
+                        .alpha(1f)
+                        .start()
                 } else if (isHide) {
 
                     animator
-                            .translationX((resources.displayMetrics.widthPixels / 2).toFloat())
-                            .alpha(0f)
-                            .start()
+                        .translationX((resources.displayMetrics.widthPixels / 2).toFloat())
+                        .alpha(0f)
+                        .start()
                 }
             }
         })
@@ -148,8 +151,9 @@ class MainActivity : AppCompatActivity(), ProvideDataCards {
 
         root.addPageButton.setOnClickListener {
             DialogSetName().setTitle(getString(R.string.create_page))
-                    .setPositiveListener { pageName ->
-                        viewModel.addPage(pageName) { page: Page? ->
+                .setPositiveListener { pageName ->
+                    viewModel.addPage(pageName) { page: Page? ->
+                        runMainOnLifeCycle {
                             if (page == null) {
                                 toast("Вкладка с таким именем существует!")
                             } else {
@@ -158,8 +162,8 @@ class MainActivity : AppCompatActivity(), ProvideDataCards {
                                 selectTab(root.tabs.tabCount - 1)
                             }
                         }
-
-                    }.show(supportFragmentManager, "setName")
+                    }
+                }.show(supportFragmentManager, "setName")
         }
     }
 
@@ -171,9 +175,9 @@ class MainActivity : AppCompatActivity(), ProvideDataCards {
 
     private fun initTabAndViewPager() {
         this.adapterViewPagerToMain = AdapterViewPagerToMain(
-                supportFragmentManager,
-                lifecycle,
-                viewModel
+            supportFragmentManager,
+            lifecycle,
+            viewModel.getPages()
         )
         val viewPager = root.viewPager
         viewPager.offscreenPageLimit = 5
@@ -368,19 +372,11 @@ class MainActivity : AppCompatActivity(), ProvideDataCards {
 //            }
 //    }
 
-    override fun getCard(position: Int): Card {
-        return viewModel.getCardInPage(root.tabs.selectedTabPosition, position)
-    }
-
     override fun onResume() {
         super.onResume()
-        initializerViewModel.invokeOnCompletion {
+        viewModelInitializer.invokeOnCompletion {
             viewModel.checkUpdatedCard(tabs.selectedTabPosition)
         }
-    }
-
-    override fun getSize(): Int {
-        return viewModel.getPages()[root.tabs.selectedTabPosition].value!!.cards.size
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -447,9 +443,9 @@ class MainActivity : AppCompatActivity(), ProvideDataCards {
             tab.customView = tabTextView
             tab.view.apply {
                 layoutParams =
-                        LinearLayout.LayoutParams(WRAP_CONTENT, MATCH_PARENT).apply {
-                            weight = 0f
-                        }
+                    LinearLayout.LayoutParams(WRAP_CONTENT, MATCH_PARENT).apply {
+                        weight = 0f
+                    }
             }
             if (position == 0) {
                 tab.view.post {
@@ -483,8 +479,8 @@ class MainActivity : AppCompatActivity(), ProvideDataCards {
         })
         toolbar.post {
             val colorRes =
-                    if (tabs.tabCount > 1) R.color.colorIconItemMenu
-                    else R.color.colorControlNormal
+                if (tabs.tabCount > 1) R.color.colorIconItemMenu
+                else R.color.colorControlNormal
             toolbar.menu.findItem(R.id.deletePage)?.icon?.setTint(getColorFromRes(colorRes))
         }
     }

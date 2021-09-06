@@ -18,7 +18,7 @@ import org.jetbrains.anko.wrapContent
 import ru.developer.press.myearningkot.App.Companion.dao
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.activity.CreateCardActivity
-import ru.developer.press.myearningkot.activity.PrefCardInfo
+import ru.developer.press.myearningkot.activity.CardInfo
 import ru.developer.press.myearningkot.activity.startPrefActivity
 import ru.developer.press.myearningkot.database.Card
 import ru.developer.press.myearningkot.dialogs.ChoiceDialog
@@ -144,7 +144,7 @@ class CreateCardViewModel : ViewModel() {
                         val activity = context as CreateCardActivity
                         when (it.itemId) {
                             R.id.edit_sample -> {
-                                activity.editSampleRegister.startPrefActivity(PrefCardInfo.CardCategory.SAMPLE,
+                                activity.editSampleRegister.startPrefActivity(CardInfo.CardCategory.SAMPLE,
                                                                               activity,
                                                                               sampleItem.card.refId,
                                                                               view.context.getString(

@@ -108,7 +108,7 @@ class Page(
                 onDelete = ForeignKey.CASCADE
         )]
 )
-open class Card(var pageId: String, var name: String = "") : Ref(), ProvideCardPropertyForCell {
+class Card(var pageId: String, var name: String = "") : Ref(), ProvideCardPropertyForCell {
     constructor() : this("")
 
     @Embedded(prefix = "card_pref")

@@ -26,11 +26,10 @@ import ru.developer.press.myearningkot.model.ImageTypePref
 import ru.developer.press.myearningkot.model.SwitchTypePref
 import ru.developer.press.myearningkot.model.TextTypePref
 
-
 // общий класс для реализации cellType
-open class TypeControlImpl(
+abstract class TypeControlImpl(
     var provideValueProperty: ProvideValueProperty
-) {
+) : ColumnTypeControl {
     var weight = 1f
     protected fun View.getLayoutParamOfCell(): ViewGroup.LayoutParams {
         backgroundResource = R.drawable.cell_default_background
@@ -44,7 +43,7 @@ open class TypeControlImpl(
         }
     }
 
-    protected fun TextView.settingTextView() {
+    protected fun TextView.configureTextView() {
         gravity = CENTER
         if (provideValueProperty.provideCardPropertyForCell.isSingleLine()) {
             isSingleLine = true
@@ -61,7 +60,7 @@ open class TypeControlImpl(
 // реализация для тех у кого textview
 open class TextTypeControl(
     provideValueProperty: ProvideValueProperty
-) : TypeControlImpl(provideValueProperty), ColumnTypeControl {
+) : TypeControlImpl(provideValueProperty) {
 
     override fun display(view: View, value: String) {
         val textView = view as TextView
@@ -72,10 +71,9 @@ open class TextTypeControl(
 
     override fun createCellView(context: Context): View {
         return TextView(context).apply {
-            settingTextView()
+            configureTextView()
         }
     }
-
 }
 
 
@@ -88,7 +86,6 @@ class NumerationTypeControl(
     }
 
     override fun display(view: View, value: String) {
-
         val textView = view as TextView
         val typePref = provideValueProperty.typePref as TextTypePref
         typePref.prefForTextView.customize(textView, R.font.roboto_light)
@@ -99,12 +96,7 @@ class NumerationTypeControl(
 
 class NumberTypeControl(
     provideValueProperty: ProvideValueProperty
-
-) : TextTypeControl(provideValueProperty) {
-    override fun display(view: View, value: String) {
-        super.display(view, value)
-    }
-}
+) : TextTypeControl(provideValueProperty)
 
 class DateTypeControl(
     provideValueProperty: ProvideValueProperty
@@ -141,7 +133,7 @@ class SwitchTypeControl(
         val typePref = provideValueProperty.typePref as SwitchTypePref
         return if (typePref.isTextSwitchMode)
             TextView(context).apply {
-                settingTextView()
+                configureTextView()
             }
         else
             FrameLayout(context).apply {
@@ -211,7 +203,7 @@ class SwitchTypeControl(
 
 class ImageTypeControl(
     provideValueProperty: ProvideValueProperty
-) : TypeControlImpl(provideValueProperty), ColumnTypeControl {
+) : TypeControlImpl(provideValueProperty) {
     override fun createCellView(context: Context): View {
         // используем контейнер для фото что бы не было проблем с краями
         return FrameLayout(context).apply {
@@ -220,16 +212,14 @@ class ImageTypeControl(
                 layoutParams = FrameLayout.LayoutParams(matchParent, matchParent)
             }
             addView(imageView)
-
         }
     }
 
     @SuppressLint("CheckResult")
     override fun display(view: View, value: String) {
-        // потом поработать над тем что бы получать изображение и показать это если файл не найден
+        //todo потом поработать над тем что бы получать изображение и показать это если файл не найден
         val imageTypePref = provideValueProperty.typePref as ImageTypePref
-
-
+        
         val imageView = (view as FrameLayout).getChildAt(0) as ImageView
         Glide
             .with(view)
@@ -272,7 +262,7 @@ class ImageTypeControl(
 
 class ColorTypeControl(
     provideValueProperty: ProvideValueProperty
-) : TypeControlImpl(provideValueProperty), ColumnTypeControl {
+) : TypeControlImpl(provideValueProperty) {
     override fun createCellView(context: Context): View {
         return FrameLayout(context).apply {
             layoutParams = getLayoutParamOfCell()

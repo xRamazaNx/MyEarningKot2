@@ -2,6 +2,7 @@ package ru.developer.press.myearningkot.model
 
 import android.graphics.Color
 import com.google.gson.annotations.SerializedName
+import ru.developer.press.myearningkot.ElementPosition
 import ru.developer.press.myearningkot.FormulaId
 import ru.developer.press.myearningkot.database.BelongIds
 import ru.developer.press.myearningkot.database.Card
@@ -11,8 +12,12 @@ import java.math.BigDecimal
 import java.util.*
 import kotlin.random.Random
 
-class Total(pageId: String, cardId: String) : BelongIds(pageId, cardId), FormulaId {
+class Total(
+    pageId: String,
+    cardId: String
+) : BelongIds(pageId, cardId), FormulaId, ElementPosition {
     override var idToFormula: Long = Random.nextLong()
+    override var position: Int = -1
 
     @SerializedName("w")
     var width = 250

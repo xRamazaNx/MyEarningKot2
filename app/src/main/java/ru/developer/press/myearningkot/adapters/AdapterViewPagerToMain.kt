@@ -4,20 +4,18 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import ru.developer.press.myearningkot.AdapterPageInterface
 import ru.developer.press.myearningkot.PageFragment
+import ru.developer.press.myearningkot.database.Page
+import ru.developer.press.myearningkot.helpers.MyLiveData
 
 class AdapterViewPagerToMain(
     fragmentManager: FragmentManager,
     lifecycle: Lifecycle,
-    private val pageInterface: AdapterPageInterface
+    pages: MutableList<MyLiveData<Page>>
 ) : FragmentStateAdapter(fragmentManager, lifecycle) {
     private val fragments = mutableListOf<PageFragment>()
 
-    //
     init {
-        fragments.clear()
-        val pages = pageInterface.getPages()
         pages.forEach {
             addPage(it.value!!.refId)
         }
@@ -28,7 +26,7 @@ class AdapterViewPagerToMain(
     }
 
     override fun createFragment(pagePosition: Int): Fragment {
-        return fragments[pagePosition].apply { page = pageInterface.getPages()[pagePosition].value }
+        return fragments[pagePosition]
     }
 
     fun insertCardToPosition(positionPage: Int, positionCard: Int) {

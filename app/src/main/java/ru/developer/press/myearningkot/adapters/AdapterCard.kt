@@ -4,18 +4,16 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.activity_card.view.*
 import kotlinx.android.synthetic.main.card.view.*
-import org.jetbrains.anko.backgroundResource
 import org.jetbrains.anko.dip
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.activity.setShowTotalInfo
 import ru.developer.press.myearningkot.database.Card
-import ru.developer.press.myearningkot.helpers.*
+import ru.developer.press.myearningkot.helpers.MyLiveData
+import ru.developer.press.myearningkot.helpers.observer
 import ru.developer.press.myearningkot.helpers.scoups.inflatePlate
 import ru.developer.press.myearningkot.viewmodels.MainViewModel
 
@@ -24,7 +22,6 @@ class AdapterCard(
     private val cards: MutableList<MyLiveData<Card>>
 ) :
     RecyclerView.Adapter<AdapterCard.CardHolder>() {
-    private val selectedColor = context.getColorFromRes(R.color.colorSelectCard)
     private val selectCardDistance = context.dip(-42).toFloat()
     private lateinit var inflater: LayoutInflater
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CardHolder {

@@ -10,6 +10,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.contains
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.Recycler
@@ -21,6 +22,8 @@ import org.jetbrains.anko.backgroundColorResource
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.adapters.AdapterRow
 import ru.developer.press.myearningkot.adapters.DiffRows
+import ru.developer.press.myearningkot.dagger.CardViewModelModule
+import ru.developer.press.myearningkot.dagger.DaggerCardComponent
 import ru.developer.press.myearningkot.helpers.*
 import ru.developer.press.myearningkot.helpers.scoups.inflatePlate
 import ru.developer.press.myearningkot.helpers.scoups.updateTotalAmount
@@ -28,12 +31,33 @@ import ru.developer.press.myearningkot.logD
 import ru.developer.press.myearningkot.viewmodels.CardViewModel
 
 
+interface UIControl {
+    // для первичного и единстенного вызова
+    // обновляет активити после инициализации viewModel и т.д.
+    fun updateActivity()
+}
+
+// чтобы узнать мы открыли в настройках карточку или шаблон
+class CardInfo(var idCard: String, var cardCategory: CardCategory) {
+
+    enum class CardCategory {
+        CARD, SAMPLE
+    }
+}
+
 @SuppressLint("Registered")
-abstract class BasicCardActivity : AppCompatActivity() {
+abstract class BasicCardActivity : AppCompatActivity(), UIControl {
     protected lateinit var adapter: AdapterRow
     lateinit var columnContainer: LinearLayout
-    abstract var viewModel: CardViewModel?
+    lateinit var viewModel: CardViewModel
 
+    protected val viewModelInitializer: Job = lifecycleScope.launchWhenCreated {
+        viewModel =
+            DaggerCardComponent
+                .builder()
+                .cardViewModelModule(CardViewModelModule(this@BasicCardActivity)).build()
+                .createCardViewModel()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,8 +66,10 @@ abstract class BasicCardActivity : AppCompatActivity() {
         _all.backgroundColorResource = R.color.colorPrimary
         columnContainer = LinearLayout(this).also {
             it.layoutParams =
-                    LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                            LinearLayout.LayoutParams.MATCH_PARENT)
+                LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT
+                )
         }
 
         setSupportActionBar(toolbar)
@@ -52,13 +78,12 @@ abstract class BasicCardActivity : AppCompatActivity() {
         toolbar.setTitleTextColor(getColorFromRes(R.color.colorOnPrimary))
 
         // для того что бы тоталвью не пропускал сквозь себя клики на ресайклер с записями
-        totalAmountView.callOnClick()
+//        totalAmountView.callOnClick()
 
     }
 
-
     fun doStart() {
-        viewModel?.apply {
+        viewModel.apply {
             val diametric = resources.displayMetrics
             displayParam.width = diametric.widthPixels
             displayParam.height = diametric.heightPixels
@@ -74,44 +99,42 @@ abstract class BasicCardActivity : AppCompatActivity() {
     }
 
     private fun observePlate() {
-        viewModel?.cardLiveData?.observe(this, {
+        viewModel.cardLiveData.observe(this, {
             it.inflatePlate(totalAmountView)
         })
     }
 
     private fun observeTotals() {
-        viewModel?.totalLiveData?.observe(this, {
+        viewModel.totalLiveData.observe(this, {
             it.updateTotalAmount(totalAmountView)
         })
     }
 
 
     fun updateHorizontalScrollSwitched() {
-        viewModel?.let {
 
-            val currentLayout: View?
-            if (it.isEnableHorizontalScroll()) {
-                if (columnDisableScrollContainer.contains(columnContainer)) {
-                    columnDisableScrollContainer.removeView(columnContainer)
-                }
-                columnDisableScrollContainer.visibility = GONE
-                columnScrollContainer.visibility = VISIBLE
-                if (!columnScrollContainer.contains(columnContainer))
-                    columnScrollContainer.addView(columnContainer)
-                currentLayout = columnScrollContainer
-            } else {
-                if (columnScrollContainer.contains(columnContainer)) {
-                    columnScrollContainer.removeView(columnContainer)
-                }
-                columnScrollContainer.visibility = GONE
-                columnDisableScrollContainer.visibility = VISIBLE
-
-                if (!columnDisableScrollContainer.contains(columnContainer))
-                    columnDisableScrollContainer.addView(columnContainer)
-                currentLayout = columnDisableScrollContainer
+        val currentLayout: View?
+        if (viewModel.isEnableHorizontalScroll()) {
+            if (columnDisableScrollContainer.contains(columnContainer)) {
+                columnDisableScrollContainer.removeView(columnContainer)
             }
-            currentLayout?.backgroundColorResource = R.color.colorPrimary
+            columnDisableScrollContainer.visibility = GONE
+            columnScrollContainer.visibility = VISIBLE
+            if (!columnScrollContainer.contains(columnContainer))
+                columnScrollContainer.addView(columnContainer)
+            currentLayout = columnScrollContainer
+        } else {
+            if (columnScrollContainer.contains(columnContainer)) {
+                columnScrollContainer.removeView(columnContainer)
+            }
+            columnScrollContainer.visibility = GONE
+            columnDisableScrollContainer.visibility = VISIBLE
+
+            if (!columnDisableScrollContainer.contains(columnContainer))
+                columnDisableScrollContainer.addView(columnContainer)
+            currentLayout = columnDisableScrollContainer
         }
+        currentLayout?.backgroundColorResource = R.color.colorPrimary
     }
 
     protected open fun initRecyclerView() {
@@ -131,16 +154,16 @@ abstract class BasicCardActivity : AppCompatActivity() {
     }
 
     protected fun getAdapterForRecycler(): AdapterRow {
-        return AdapterRow(null, viewModel!!, totalAmountView).also {
+        return AdapterRow(null, viewModel, totalAmountView).also {
             it.setHasStableIds(true)
-            viewModel!!.diffRowsUpdater = DiffRows(viewModel!!.sortedRows, it)
+            viewModel.diffRowsUpdater = DiffRows(viewModel.sortedRows, it)
         }
     }
 
     @SuppressLint("InflateParams")
     fun createTitles() {
         columnContainer.removeAllViews()
-        viewModel?.columnLDList?.forEach { column ->
+        viewModel.columnLDList.forEach { column ->
             val title: TextView = layoutInflater.inflate(R.layout.title_column, null) as TextView
             column.observe(this@BasicCardActivity, {
                 bindTitleOfColumn(it, title)
@@ -151,16 +174,10 @@ abstract class BasicCardActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        runMainOnLifeCycle {
-            io {
-                while (true) {
-                    if (viewModel != null) {
-                        break
-                    }
-                    delay(50)
-                }
+        viewModelInitializer.invokeOnCompletion {
+            viewModel.cardLiveData.observe(this) {
+                setShowTotalInfo(it.isShowTotalInfo)
             }
-            setShowTotalInfo(viewModel!!.card.isShowTotalInfo)
         }
     }
 
