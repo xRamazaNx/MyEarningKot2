@@ -20,7 +20,7 @@ import kotlinx.coroutines.*
 import ru.developer.press.myearningkot.*
 import ru.developer.press.myearningkot.helpers.*
 import ru.developer.press.myearningkot.helpers.prefLayouts.InputLayout
-import ru.developer.press.myearningkot.helpers.scoups.updateTypeControlCell
+import ru.developer.press.myearningkot.helpers.scoups.updateTypeControlRow
 import ru.developer.press.myearningkot.model.*
 import ru.developer.press.myearningkot.viewmodels.CardViewModel.SelectMode
 import java.lang.Runnable
@@ -201,12 +201,12 @@ open class CardActivity : CommonCardActivity() {
 
     private fun copySelectedCell(isCut: Boolean) {
         viewModel.apply {
-            app().copyCell = getCopySelectedCell(isCut)
-            // заного назначаю чтоб меню создалось заного и иконка вставки если надо станет серой или белой
-            selectMode.value = SelectMode.CELL
+            runOnViewModel {
+                app().copyCell = getCopySelectedCell(isCut)
+                // заного назначаю чтоб меню создалось заного и иконка вставки если надо станет серой или белой
+                selectMode.postValue(SelectMode.CELL)
+            }
         }
-        if (isCut)
-            notifyAdapter()
     }
 
     private fun pasteCell() {
@@ -239,7 +239,9 @@ open class CardActivity : CommonCardActivity() {
             return
         }
         // The recycler view have animated all it's views
-        notifyAdapter()
+        runOnLifeCycle {
+            viewModel.updateAdapter()
+        }
     }
 
     // Listener that is called whenever the recycler view have finished animating one view.
@@ -332,10 +334,7 @@ open class CardActivity : CommonCardActivity() {
         override var isOpenEditDialog: Boolean = false
         override fun cellClick(rowPosition: Int, cellPosition: Int) {
             if (isLongClick) {
-                viewModel.rowClicked(rowPosition) {
-                    notifyAdapter()
-                    adapter.notifyItemChanged(rowPosition)
-                }
+                viewModel.rowClicked(rowPosition)
             } else {
                 if (viewModel.selectMode.value == SelectMode.ROW) {
                     isLongClick = true
@@ -391,16 +390,7 @@ open class CardActivity : CommonCardActivity() {
                     runOnViewModel {
                         selectCell.sourceValue = newValue
 
-                        card.updateTypeControlCell(row, columnPosition)
-                        if (column is NumberColumn) {
-                            card.columns.forEachIndexed { numberColumnPosition, column ->
-                                if (column is NumberColumn && numberColumnPosition != columnPosition)
-                                    card.updateTypeControlCell(
-                                        row,
-                                        numberColumnPosition
-                                    )
-                            }
-                        }
+                        card.updateTypeControlRow(row)
 
                         updateRowToDB(row)
                         updateTotals()
@@ -457,7 +447,7 @@ open class CardActivity : CommonCardActivity() {
 
                         override fun notifyCellChanged() {
                             runOnLifeCycle {
-                                card.updateTypeControlCell(sortedRows[rowPosition], columnPosition)
+                                card.updateTypeControlRow(sortedRows[rowPosition])
                                 updateAdapter()
                             }
                         }

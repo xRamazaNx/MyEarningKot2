@@ -261,7 +261,7 @@ fun Card.updateTypeControlRow(row: Row) {
     }
 }
 
-fun Card.updateTypeControlCell(row: Row, columnPosition: Int) {
+private fun Card.updateTypeControlCell(row: Row, columnPosition: Int) {
     val cell = row.cellList[columnPosition]
     val column = columns[columnPosition]
     cell.cellTypeControl = column.columnTypeControl

@@ -47,6 +47,7 @@ class Row(
                 copyRow.dateChange = dateChange
                 copyRow.isSaveOnFire = isSaveOnFire
                 copyRow.isDelete = isDelete
+                copyRow.status = status
             }
             cellList.forEach { cell ->
                 copyRow.cellList.add(cell.copy())
@@ -61,6 +62,7 @@ class Row(
             return false
 
         return cellList == other.cellList
+                && status == other.status
                 && super.equals(other as BelongIds)
     }
 

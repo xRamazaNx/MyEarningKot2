@@ -341,27 +341,31 @@ class CardViewModel : ViewModel(),
         function(isDoubleTap)
     }
 
-    fun rowClicked(rowPosition: Int = card.rows.size - 1, function: (Int) -> Unit) {
-        rowSelectPosition = rowPosition
-        val row = this.sortedRows[rowPosition]
-        val oldStatus = row.status
-        row.status = if (oldStatus == Status.SELECT) Status.NONE else Status.SELECT
+    fun rowClicked(rowPosition: Int = card.rows.size - 1) {
+        runOnViewModel {
+            rowSelectPosition = rowPosition
 
-        // присваиваем cell только если не было выделено
-        selectMode.value?.let {
-            if (it != SelectMode.ROW) {
-                if (it == SelectMode.CELL) {
-                    card.unSelectCell()
+            val row = this.sortedRows[rowPosition]
+            val oldStatus = row.status
+            row.status = if (oldStatus == Status.SELECT) Status.NONE else Status.SELECT
+
+            // присваиваем cell только если не было выделено
+            selectMode.value?.let {
+                if (it != SelectMode.ROW) {
+                    if (it == SelectMode.CELL) {
+                        card.unSelectCell()
+                    }
+                }
+                main {
+                    selectMode.value =
+                        if (card.getSelectedRows().isEmpty())
+                            SelectMode.NONE
+                        else
+                            SelectMode.ROW
                 }
             }
-            if (card.getSelectedRows().isEmpty())
-                selectMode.value =
-                    SelectMode.NONE
-            else
-                selectMode.value =
-                    SelectMode.ROW
+            updateAdapter()
         }
-        function(rowPosition)
     }
 
     fun unSelect() {
@@ -375,15 +379,16 @@ class CardViewModel : ViewModel(),
         updateTypeControlColumn(card.columns[columnPosition])
     }
 
-    fun getCopySelectedCell(isCut: Boolean): Cell? {
-        card.rows.forEach {
-            it.cellList.forEachIndexed { index, cell ->
+    suspend fun getCopySelectedCell(isCut: Boolean): Cell? {
+        card.rows.forEach { row ->
+            row.cellList.forEachIndexed { columnIndex, cell ->
                 if (cell.isSelect) {
                     val copy = cell.copy()
                     if (isCut) {
                         cell.clear()
-                        updateTypeControlColumn(index)
+                        card.updateTypeControlRow(row)
                         updateTotals()
+                        updateAdapter()
                     }
                     return copy
                 }
@@ -410,7 +415,7 @@ class CardViewModel : ViewModel(),
                             copyCell?.let {
                                 cell.sourceValue = it.sourceValue
                                 updateRowToDB(row)
-                                card.updateTypeControlCell(row, columnPosition)
+                                card.updateTypeControlRow(row)
                                 updateTotals()
                             }
                             updateAdapter()

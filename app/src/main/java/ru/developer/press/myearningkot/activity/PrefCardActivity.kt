@@ -1,5 +1,6 @@
 package ru.developer.press.myearningkot.activity
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -821,6 +822,11 @@ class PrefCardActivity : CommonCardActivity() {
             toolbar.menu.findItem(R.id.elementSetting).isVisible = isVisible
             visibleButton(selectedControl.selectPrefType, selectedControl.isRenameMode)
         }
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    private fun notifyAdapter() {
+        adapter.notifyDataSetChanged()
     }
 
     private fun visibleButton(prefType: ElementPrefType, isRenameMode: Boolean) {

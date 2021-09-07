@@ -185,11 +185,6 @@ abstract class CommonCardActivity : AppCompatActivity(), UIControl {
 //    protected fun setShowTotalInfo(showTotalInfo: Boolean) {
 //        totalAmountView.setShowTotalInfo(showTotalInfo)
 //    }
-
-    @SuppressLint("NotifyDataSetChanged")
-    protected fun notifyAdapter() {
-        adapter.notifyDataSetChanged()
-    }
 }
 
 //fun View.setShowTotalInfo(showTotalInfo: Boolean) {
@@ -202,6 +197,7 @@ abstract class CommonCardActivity : AppCompatActivity(), UIControl {
 //    }
 //}
 
+// что бы recycler не выебывался когда удаляю айтемы.
 private class CustomLinearLayoutManager(context: Context) : LinearLayoutManager(context) {
     override fun onLayoutChildren(recycler: Recycler, state: RecyclerView.State) {
         try {
