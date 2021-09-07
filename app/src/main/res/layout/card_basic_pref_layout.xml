@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@color/colorDialogBackground"
+    android:paddingBottom="8dp"
     android:orientation="vertical">
 
     <TextView
@@ -240,34 +241,34 @@
         android:textSize="16sp" />
 
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="1px"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:background="@color/colorDivider"
-        android:visibility="visible">
+<!--    <FrameLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="1px"-->
+<!--        android:layout_marginStart="16dp"-->
+<!--        android:layout_marginEnd="16dp"-->
+<!--        android:background="@color/colorDivider"-->
+<!--        android:visibility="visible">-->
 
-    </FrameLayout>
+<!--    </FrameLayout>-->
 
 
-    <ru.developer.press.myearningkot.helpers.prefLayouts.MySwitch
-        android:fontFamily="@font/roboto"
-        android:id="@+id/switchShowTotalInfo"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?android:attr/selectableItemBackground"
-        android:checked="true"
-        android:clickable="true"
-        android:drawableStart="@drawable/ic_show_total_info"
-        android:drawablePadding="16dp"
-        android:focusable="true"
-        android:gravity="center_vertical"
-        android:padding="16dp"
-        android:text="@string/show_total_info"
-        android:textColor="@color/textColorPrimary"
-        android:textIsSelectable="false"
-        android:textSize="16sp" />
+<!--    <ru.developer.press.myearningkot.helpers.prefLayouts.MySwitch-->
+<!--        android:fontFamily="@font/roboto"-->
+<!--        android:id="@+id/switchShowTotalInfo"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:background="?android:attr/selectableItemBackground"-->
+<!--        android:checked="true"-->
+<!--        android:clickable="true"-->
+<!--        android:drawableStart="@drawable/ic_show_total_info"-->
+<!--        android:drawablePadding="16dp"-->
+<!--        android:focusable="true"-->
+<!--        android:gravity="center_vertical"-->
+<!--        android:padding="16dp"-->
+<!--        android:text="@string/show_total_info"-->
+<!--        android:textColor="@color/textColorPrimary"-->
+<!--        android:textIsSelectable="false"-->
+<!--        android:textSize="16sp" />-->
 
 
 </LinearLayout>

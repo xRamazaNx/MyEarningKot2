@@ -8,7 +8,7 @@ import ru.developer.press.myearningkot.activity.*
 import ru.developer.press.myearningkot.viewmodels.CardViewModel
 
 @Module
-class CardViewModelModule(private val activity: BasicCardActivity) {
+class CardViewModelModule(private val activity: CommonCardActivity) {
     @Provides
     fun cardViewModel(): CardViewModel {
         return activity.viewModels<CardViewModel>().value.apply {

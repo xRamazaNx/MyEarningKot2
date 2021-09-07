@@ -7,6 +7,8 @@ import android.os.Looper
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View.GONE
+import android.view.animation.AccelerateInterpolator
+import android.view.animation.DecelerateInterpolator
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.recyclerview.widget.RecyclerView.ItemAnimator.ItemAnimatorFinishedListener
 import com.google.android.material.appbar.AppBarLayout
@@ -17,11 +19,13 @@ import kotlinx.android.synthetic.main.card.view.*
 import kotlinx.coroutines.*
 import ru.developer.press.myearningkot.*
 import ru.developer.press.myearningkot.helpers.*
+import ru.developer.press.myearningkot.helpers.prefLayouts.InputLayout
+import ru.developer.press.myearningkot.helpers.scoups.updateTypeControlCell
 import ru.developer.press.myearningkot.model.*
 import ru.developer.press.myearningkot.viewmodels.CardViewModel.SelectMode
 import java.lang.Runnable
 
-open class CardActivity : BasicCardActivity() {
+open class CardActivity : CommonCardActivity() {
 
     private val editCardRegister =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -31,9 +35,7 @@ open class CardActivity : BasicCardActivity() {
                     viewModel.runOnViewModel {
                         viewModel.updateCardFromDao(id)
                         main {
-                            createTitles()
-                            updateHorizontalScrollSwitched()
-                            initRecyclerView()
+                            updateActivity()
                             viewModel.selectMode.value = SelectMode.NONE
                             onResume()
                         }
@@ -82,6 +84,8 @@ open class CardActivity : BasicCardActivity() {
             }
             if (selectMode != SelectMode.NONE)
                 fbAddRow.hide()
+            if (selectMode != SelectMode.CELL)
+                hideInputCell()
         })
 
     }
@@ -208,8 +212,7 @@ open class CardActivity : BasicCardActivity() {
     private fun pasteCell() {
         // на вход принимается функция которая должна обновить строку после вставки
         viewModel.pasteCell(app().copyCell) {
-            // обновление строки после вставки данных
-            adapter.notifyItemChanged(it)
+            updateInputLayout()
         }
     }
 
@@ -325,7 +328,8 @@ open class CardActivity : BasicCardActivity() {
             }
     }
 
-    private val rowClickListener = object : RowClickListener {
+    val rowClickListener = object : RowClickListener {
+        override var isOpenEditDialog: Boolean = false
         override fun cellClick(rowPosition: Int, cellPosition: Int) {
             if (isLongClick) {
                 viewModel.rowClicked(rowPosition) {
@@ -342,8 +346,11 @@ open class CardActivity : BasicCardActivity() {
                     rowPosition,
                     cellPosition
                 ) { isDoubleTap ->
-                    if (isDoubleTap) {
+                    if (isDoubleTap && !isOpenEditDialog) {
+                        isOpenEditDialog = true
                         editCell()
+                    } else {
+                        showInputCell()
                     }
                 }
             }
@@ -351,7 +358,61 @@ open class CardActivity : BasicCardActivity() {
     }
 
     private fun editCell() {
-        viewModel.editCell(this)
+        /**
+         * тип:
+         *      text:          просто показать там ткест в одну строку с прокруткой
+         *      цифры:         показать сурс то как мы ввели туда эти цифры уравненем или просто цифры со скролом
+         *          формула:   показать формулу (со скролом) и при нажатии предупреждение
+         *      контакт:       показать номер человека можно настроить на показ только имени а при наведении можно будет посмотреть номер
+         *      дата:          показать полную дату с временем в плоть до секунды и дня недели
+         *      цвет:          показать базовую палитру в ряд для выбора с скролом
+         *      переключатель: не нужно показывать
+         *      изображение:   показать в ряд изображения которые есть с прокрутой, при нажатии меняется ава ячейки
+         *      чат:           показать последнее сообщение
+         *
+         *      [кнопка показа полного экрана] [место для показа инпута] [кнопка ок(галочка)]
+         * */
+
+
+        viewModel.apply {
+            getSelectCellPairIndexes()?.let {
+                val columnPosition = it.second
+                val rowPosition = it.first
+
+                val row = sortedRows[rowPosition]
+                val column = card.columns[columnPosition]
+                val selectCell = sortedRows[rowPosition].cellList[columnPosition]
+
+                EditCellControl.showEditCellDialog(
+                    cardActivity = this@CardActivity,
+                    column = column,
+                    sourceValue = selectCell.sourceValue
+                ) { newValue ->
+                    runOnViewModel {
+                        selectCell.sourceValue = newValue
+
+                        card.updateTypeControlCell(row, columnPosition)
+                        if (column is NumberColumn) {
+                            card.columns.forEachIndexed { numberColumnPosition, column ->
+                                if (column is NumberColumn && numberColumnPosition != columnPosition)
+                                    card.updateTypeControlCell(
+                                        row,
+                                        numberColumnPosition
+                                    )
+                            }
+                        }
+
+                        updateRowToDB(row)
+                        updateTotals()
+
+                        updateAdapter()
+                        main {
+                            updateInputLayout()
+                        }
+                    }
+                }
+            }
+        }
     }
 
     override fun onResume() {
@@ -366,4 +427,70 @@ open class CardActivity : BasicCardActivity() {
         recycler.scrollToPosition(position) //  у нас на одну больше из за отступа для плейт
         appBar.setExpanded(false, true)
     }
+
+    private fun showInputCell() {
+        updateInputLayout()
+        inputCellLayout.post {
+            inputCellLayout
+                .animate()
+                .translationY(-inputCellLayout.height.toFloat())
+                .setDuration(250)
+                .setInterpolator(DecelerateInterpolator())
+                .start()
+        }
+    }
+
+    private fun updateInputLayout() {
+        viewModel.apply {
+            getSelectCellPairIndexes()?.let {
+                val rowPosition = it.first
+                val columnPosition = it.second
+
+                val cell = sortedRows[rowPosition].cellList[columnPosition]
+                val layout = InputLayout.inflateInputLayout(
+                    this@CardActivity,
+                    cell,
+                    object : InputLayout.InputCallBack {
+                        override fun openCellDialog() {
+                            editCell()
+                        }
+
+                        override fun notifyCellChanged() {
+                            runOnLifeCycle {
+                                card.updateTypeControlCell(sortedRows[rowPosition], columnPosition)
+                                updateAdapter()
+                            }
+                        }
+
+                        override fun close() {
+                            onBackPressed()
+                        }
+
+                    })
+                inputCellLayout.removeAllViews()
+                inputCellLayout.addView(layout)
+            }
+        }
+    }
+
+    private fun hideInputCell() {
+        inputCellLayout.post {
+            inputCellLayout
+                .animate()
+                .translationY(inputCellLayout.height.toFloat())
+                .setDuration(250)
+                .setInterpolator(AccelerateInterpolator())
+                .start()
+        }
+    }
 }
+
+/**
+ * - обновление активити
+ * - выделение ячейки
+ * - обновление ячейки (вырезать, вставить, изменить)
+ * - добавление строки (вставка)
+ * - удаление строк
+ * - вырезать строки
+ *
+ * */

@@ -3,13 +3,12 @@
 package ru.developer.press.myearningkot.viewmodels
 
 import android.widget.LinearLayout
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.delay
 import ru.developer.press.myearningkot.App.Companion.dao
 import ru.developer.press.myearningkot.ProvideDataRows
-import ru.developer.press.myearningkot.activity.UIControl
 import ru.developer.press.myearningkot.activity.CardInfo
+import ru.developer.press.myearningkot.activity.UIControl
 import ru.developer.press.myearningkot.adapters.AdapterRow.Companion.animatedDuration
 import ru.developer.press.myearningkot.adapters.DiffRows
 import ru.developer.press.myearningkot.database.Card
@@ -17,18 +16,18 @@ import ru.developer.press.myearningkot.helpers.*
 import ru.developer.press.myearningkot.helpers.scoups.*
 import ru.developer.press.myearningkot.model.*
 
-open class CardViewModel : ViewModel(),
+class CardViewModel : ViewModel(),
     ProvideDataRows {
 
     private lateinit var cardInfo: CardInfo
     lateinit var card: Card
     lateinit var diffRowsUpdater: DiffRows
 
-    // статус занесения изменений карточки в базу данных
     private var cellSelectPosition: Int = -1
     private var rowSelectPosition: Int = -1
 
     val displayParam = DisplayParam()
+
     val updatedCardStatus = liveData(false)
     var selectMode = liveData(SelectMode.NONE)
     val titleLiveData: MyLiveData<String> = liveData()
@@ -64,7 +63,7 @@ open class CardViewModel : ViewModel(),
         cardLiveData.postValue(card)
     }
 
-    private fun updateTotals() {
+    fun updateTotals() {
         totalLiveData.postValue(card)
     }
 
@@ -402,21 +401,21 @@ open class CardViewModel : ViewModel(),
         return eq
     }
 
-    fun pasteCell(copyCell: Cell?, updateRow: (Int) -> Unit) {
+    fun pasteCell(copyCell: Cell?, update: () -> Unit) {
         runOnViewModel {
             if (isEqualTypeCellAndCopyCell(copyCell))
-                card.rows.forEachIndexed { indexRow, row ->
-                    row.cellList.forEachIndexed { indexCell, cell ->
+                card.rows.forEach { row ->
+                    row.cellList.forEachIndexed { columnPosition, cell ->
                         if (cell.isSelect) {
                             copyCell?.let {
                                 cell.sourceValue = it.sourceValue
                                 updateRowToDB(row)
-                                updateTypeControlColumn(indexCell)//
+                                card.updateTypeControlCell(row, columnPosition)
                                 updateTotals()
                             }
-
+                            updateAdapter()
                             main {
-                                updateRow(indexRow)
+                                update()
                             }
                             return@runOnViewModel
                         }
@@ -425,10 +424,9 @@ open class CardViewModel : ViewModel(),
         }
     }
 
-    private suspend fun updateRowToDB(row: Row) {
+    suspend fun updateRowToDB(row: Row) {
         io {
             updatedCardStatus.postValue(true)
-            card.calcTotals()
             dao.updateRow(row)
             updatedCardStatus.postValue(false)
         }
@@ -473,16 +471,21 @@ open class CardViewModel : ViewModel(),
                     // отдельный лист чтоб копировать элементы а не ссылки на них потому что в копилист бывают ссылки
                     val list = copyList.fold(mutableListOf<Row>()) { mutableList, row ->
                         mutableList.apply {
-                            add(row.copy().also { it.status = Status.ADDED })
+                            add(row.copy().also {
+                                it.status = Status.ADDED
+                            })
                         }
                     }
                     card.rows.addAll(indexLastRow + 1, list)
-                    card.calcTotals()
                     list.forEach {
                         dao.addRow(it)
                     }
-                    updateTypeControl()
                     sortList()
+
+                    list.forEach { row ->
+                        card.updateTypeControlRow(row)
+                    }
+
                     updateTotals()
                 }
 
@@ -530,37 +533,8 @@ open class CardViewModel : ViewModel(),
         pasteRows(selectedRows)
     }
 
-    fun editCell(activity: AppCompatActivity) {
-        val column = card.columns[cellSelectPosition]
-        val selectCell = sortList()[rowSelectPosition].cellList[cellSelectPosition]
-
-        EditCellControl(
-            activity,
-            column,
-            selectCell.sourceValue
-        ) { newValue ->
-            runOnViewModel {
-                selectCell.sourceValue = newValue
-
-                val row = sortedRows[rowSelectPosition]
-                updateRowToDB(row)
-                updateTotals()
-
-                updateTypeControlColumn(cellSelectPosition)
-
-                if (column is NumberColumn) {
-                    card.columns.filterIsInstance<NumberColumn>().forEach {
-                        updateTypeControlColumn(it)
-                    }
-                }
-                updateAdapter()
-            }
-
-        }.editCell()
-    }
-
     // внутри обновление в main
-    private suspend fun updateAdapter() {
+    suspend fun updateAdapter() {
         diffRowsUpdater.checkDiffAndUpdate(sortedRows)
     }
 

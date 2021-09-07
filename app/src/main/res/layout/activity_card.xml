@@ -110,14 +110,32 @@
     <!--        app:layout_anchor="@id/totalAmountView"-->
     <!--        android:layout_width="match_parent"-->
     <!--        android:layout_height="wrap_content"/>-->
-    <include
-        android:id="@+id/totalAmountView"
-        layout="@layout/card"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:baselineAligned="false"
-        app:elevation="2dp"
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
         app:layout_anchor="@id/tableView"
-        app:layout_anchorGravity="bottom" />
+        app:layout_anchorGravity="bottom">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/inputCellLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@id/totalAmountView"
+            android:elevation="0dp"
+            android:background="@color/colorInputLayoutBackground"
+            android:orientation="horizontal">
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <include
+            android:id="@+id/totalAmountView"
+            layout="@layout/card"
+            android:layout_alignParentBottom="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:baselineAligned="false"
+            app:elevation="2dp" />
+    </RelativeLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

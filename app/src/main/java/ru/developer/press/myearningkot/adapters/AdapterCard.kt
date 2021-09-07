@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.card.view.*
 import org.jetbrains.anko.dip
 import ru.developer.press.myearningkot.R
-import ru.developer.press.myearningkot.activity.setShowTotalInfo
 import ru.developer.press.myearningkot.database.Card
 import ru.developer.press.myearningkot.helpers.MyLiveData
 import ru.developer.press.myearningkot.helpers.observer
@@ -50,7 +49,7 @@ class AdapterCard(
                 setLongClick(card)
 
                 card.inflatePlate(itemView)
-                itemView.setShowTotalInfo(card.isShowTotalInfo)
+//                itemView.setShowTotalInfo(card.isShowTotalInfo)
 
                 if (card.isUpdating) {
                     itemView.animate().alpha(0f).withEndAction {

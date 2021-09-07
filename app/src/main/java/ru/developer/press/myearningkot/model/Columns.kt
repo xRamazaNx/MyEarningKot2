@@ -147,7 +147,7 @@ class NumberColumn(name: String, pageId: String, cardId: String) : Column(name, 
 
     }
 
-    fun calcFormula(rowIndex: Int, card: Card): String {
+    fun calcFormula(row: Row, card: Card): String {
         val string = StringBuilder()
         return try {
             formula.formulaElements.forEach {
@@ -161,16 +161,16 @@ class NumberColumn(name: String, pageId: String, cardId: String) : Column(name, 
                     }
                     if (index == -1) {
                         formula.formulaElements.remove(it)
-                        calcFormula(rowIndex, card)
+                        calcFormula(row, card)
                     } else {
 
                         val numberColumn = card.columns[index] as NumberColumn
                         val value: String =
                             // проверяем колона работает по формуле или ручной ввод
                             if (numberColumn.inputType == InputTypeNumberColumn.FORMULA) {
-                                numberColumn.calcFormula(rowIndex, card)
+                                numberColumn.calcFormula(row, card)
                             } else {
-                                val cell = card.rows[rowIndex].cellList[index]
+                                val cell = row.cellList[index]
                                 cell.updateTypeValue(numberColumn.typePref)
                                 cell.displayValue
                             }

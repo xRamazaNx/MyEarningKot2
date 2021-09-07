@@ -28,7 +28,6 @@ import ru.developer.press.myearningkot.model.ColumnType
 import ru.developer.press.myearningkot.model.PhoneTypeValue
 import java.util.*
 
-
 const val PICK_IMAGE_MULTIPLE = 1
 const val editCellTag = "dialogEditCell"
 
@@ -39,7 +38,6 @@ class DialogEditCell(
 ) : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-
         val alertDialog: AlertDialog = when (column.getType()) {
             ColumnType.TEXT -> getTextDialog()
             ColumnType.NUMBER -> getNumberDialog()
@@ -73,7 +71,6 @@ class DialogEditCell(
         ).apply {
             //            datePicker.backgroundColor = Color.WHITE
             datePicker.post {
-
                 window?.setBackgroundDrawable(ColorDrawable(context.getColorFromRes(R.color.colorDialogBackground)))
             }
         }

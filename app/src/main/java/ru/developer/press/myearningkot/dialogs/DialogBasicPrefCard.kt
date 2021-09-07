@@ -7,7 +7,6 @@ import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.findViewTreeLifecycleOwner
 import kotlinx.android.synthetic.main.card_basic_pref_layout.view.*
 import kotlinx.coroutines.delay
 import org.jetbrains.anko.layoutInflater
@@ -30,10 +29,10 @@ class DialogBasicPrefCard(
 //                setPadding(dp24, dp24, dp24, dp8)
 //                textSize = 20f
 //            })
-            val view = context.layoutInflater.inflate(R.layout.card_basic_pref_layout, null)
+            val layout = context.layoutInflater.inflate(R.layout.card_basic_pref_layout, null)
 
             // выбор валюты
-            val textViewValutaType = view.textViewValutaType
+            val textViewValutaType = layout.textViewValutaType
             val listValutaType = getValutaTypeList(context)
             textViewValutaType.text =
                 "${getString(R.string.valuta)} (${listValutaType[card.valuta]})"
@@ -52,8 +51,8 @@ class DialogBasicPrefCard(
             }
 
 
-            val switchEnableHorizontalScroll = view.switchEnableHorizontalScrollItems
-            val switchEnableSomeStroke = view.switchEnableSomeStroke
+            val switchEnableHorizontalScroll = layout.switchEnableHorizontalScrollItems
+            val switchEnableSomeStroke = layout.switchEnableSomeStroke
 
             switchEnableHorizontalScroll.isChecked = card.enableHorizontalScroll
             switchEnableSomeStroke.isChecked = card.enableSomeStroke
@@ -66,14 +65,15 @@ class DialogBasicPrefCard(
                 card.enableSomeStroke = b
                 updateCard()
             }
-            val heightUp = view.heightSizeUp
-            val heightDown = view.heightSizeDown
-            val heightSize = view.heightSize
+            val heightUp = layout.heightSizeUp
+            val heightDown = layout.heightSizeDown
+            val heightSize = layout.heightSize
 
             fun updateHeightInfo() {
                 heightSize.text = card.heightCells.toString()
             }
             updateHeightInfo()
+
             heightUp.setOnClickListener {
                 card.heightCells += 1
                 updateHeightInfo()
@@ -85,20 +85,13 @@ class DialogBasicPrefCard(
                 updateCard()
             }
 
-            setView(view)
-            setPositiveButton(" ") { dialogInterface: DialogInterface, _: Int ->
-                dialogInterface.dismiss()
-
-            }
-
-
-            val switchEnableShowDatePeriod = view.switchEnableDatePeriod
-            val switchEnableHorizontalScrollTotals = view.switchEnableHorizontalScrollTotals
-            val switchShowTotalInfo = view.switchShowTotalInfo
+            val switchEnableShowDatePeriod = layout.switchEnableDatePeriod
+            val switchEnableHorizontalScrollTotals = layout.switchEnableHorizontalScrollTotals
+//            val switchShowTotalInfo = view.switchShowTotalInfo
 
             switchEnableShowDatePeriod.isChecked = card.isShowDatePeriod
             switchEnableHorizontalScrollTotals.isChecked = card.enableHorizontalScrollTotal
-            switchShowTotalInfo.isChecked = card.isShowTotalInfo
+//            switchShowTotalInfo.isChecked = card.isShowTotalInfo
 
             switchEnableShowDatePeriod.setOnCheckedChangeListener { _, isChecked ->
                 card.isShowDatePeriod = isChecked
@@ -108,19 +101,19 @@ class DialogBasicPrefCard(
                 card.enableHorizontalScrollTotal = b
                 updateCard()
             }
-            switchShowTotalInfo.setOnCheckedChangeListener { _, isChecked ->
-                card.isShowTotalInfo = isChecked
-                updateCard()
-            }
-            setView(view)
-            setPositiveButton(" ") { dialogInterface: DialogInterface, _: Int ->
-                dialogInterface.dismiss()
-
-            }
+//            switchShowTotalInfo.setOnCheckedChangeListener { _, isChecked ->
+//                card.isShowTotalInfo = isChecked
+//                updateCard()
+//            }
+            setView(layout)
+//            setPositiveButton(" ") { dialogInterface: DialogInterface, _: Int ->
+//                dialogInterface.dismiss()
+//
+//            }
         }
 
         val alertDialog = dialog.create()
-        alertDialog.setAlertButtonColors(R.color.colorAccent, R.color.colorAccent)
+//        alertDialog.setAlertButtonColors(R.color.colorAccent, R.color.colorAccent)
         return alertDialog
     }
 

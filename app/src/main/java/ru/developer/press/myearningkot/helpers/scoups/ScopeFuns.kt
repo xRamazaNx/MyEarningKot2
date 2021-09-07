@@ -8,6 +8,10 @@ import android.view.View
 import android.view.View.GONE
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.OnLifecycleEvent
 import kotlinx.android.synthetic.main.card.view.*
 import kotlinx.android.synthetic.main.total_item_layout.view.*
 import kotlinx.android.synthetic.main.total_item_value.view.*
@@ -105,4 +109,13 @@ fun Card.updateTotalAmount(plateView: View) {
         totalItem.calcFormula(this)
         value.text = totalItem.value
     }
+}
+
+fun <T : DialogFragment> T.addDismissListener(dismiss: (T) -> Unit) {
+    lifecycle.addObserver(object : LifecycleObserver {
+        @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+        fun destroy() {
+            dismiss.invoke(this@addDismissListener)
+        }
+    })
 }

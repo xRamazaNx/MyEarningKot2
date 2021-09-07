@@ -15,7 +15,7 @@ import kotlinx.android.synthetic.main.toolbar_pref.view.*
 import kotlinx.android.synthetic.main.width_seek_bar_layout.view.*
 import org.jetbrains.anko.*
 import ru.developer.press.myearningkot.R
-import ru.developer.press.myearningkot.activity.BasicCardActivity
+import ru.developer.press.myearningkot.activity.CommonCardActivity
 import ru.developer.press.myearningkot.helpers.getColorFromRes
 import ru.developer.press.myearningkot.helpers.getDate
 import ru.developer.press.myearningkot.helpers.getDateTypeList
@@ -392,7 +392,7 @@ fun textPrefButtonsInit(
     }
 
     textColor.setOnClickListener {
-        val activity = view.context as BasicCardActivity
+        val activity = view.context as CommonCardActivity
         ColorPickerDialog
                 .newBuilder()
                 .setColor(firstPrefForTextView.color)

@@ -128,7 +128,6 @@ class SwitchTypeControl(
     provideValueProperty: ProvideValueProperty
 ) : TextTypeControl(provideValueProperty) {
 
-
     override fun createCellView(context: Context): View {
         val typePref = provideValueProperty.typePref as SwitchTypePref
         return if (typePref.isTextSwitchMode)

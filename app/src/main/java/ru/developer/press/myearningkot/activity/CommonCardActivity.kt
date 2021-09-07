@@ -35,6 +35,7 @@ interface UIControl {
     // для первичного и единстенного вызова
     // обновляет активити после инициализации viewModel и т.д.
     fun updateActivity()
+
 }
 
 // чтобы узнать мы открыли в настройках карточку или шаблон
@@ -46,7 +47,7 @@ class CardInfo(var idCard: String, var cardCategory: CardCategory) {
 }
 
 @SuppressLint("Registered")
-abstract class BasicCardActivity : AppCompatActivity(), UIControl {
+abstract class CommonCardActivity : AppCompatActivity(), UIControl {
     protected lateinit var adapter: AdapterRow
     lateinit var columnContainer: LinearLayout
     lateinit var viewModel: CardViewModel
@@ -55,7 +56,7 @@ abstract class BasicCardActivity : AppCompatActivity(), UIControl {
         viewModel =
             DaggerCardComponent
                 .builder()
-                .cardViewModelModule(CardViewModelModule(this@BasicCardActivity)).build()
+                .cardViewModelModule(CardViewModelModule(this@CommonCardActivity)).build()
                 .createCardViewModel()
     }
 
@@ -140,11 +141,11 @@ abstract class BasicCardActivity : AppCompatActivity(), UIControl {
     protected open fun initRecyclerView() {
         recycler.apply {
 
-            layoutManager = CustomLinearLayoutManager(this@BasicCardActivity)
+            layoutManager = CustomLinearLayoutManager(this@CommonCardActivity)
 
-            this@BasicCardActivity.adapter = getAdapterForRecycler()
+            this@CommonCardActivity.adapter = getAdapterForRecycler()
 
-            adapter = this@BasicCardActivity.adapter
+            adapter = this@CommonCardActivity.adapter
 
 //            itemAnimator = ItemAnimator()
 
@@ -165,25 +166,25 @@ abstract class BasicCardActivity : AppCompatActivity(), UIControl {
         columnContainer.removeAllViews()
         viewModel.columnLDList.forEach { column ->
             val title: TextView = layoutInflater.inflate(R.layout.title_column, null) as TextView
-            column.observe(this@BasicCardActivity, {
+            column.observe(this@CommonCardActivity, {
                 bindTitleOfColumn(it, title)
             })
             columnContainer.addView(title)
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        viewModelInitializer.invokeOnCompletion {
-            viewModel.cardLiveData.observe(this) {
-                setShowTotalInfo(it.isShowTotalInfo)
-            }
-        }
-    }
+//    override fun onResume() {
+//        super.onResume()
+//        viewModelInitializer.invokeOnCompletion {
+//            viewModel.cardLiveData.observe(this) {
+//                setShowTotalInfo(it.isShowTotalInfo)
+//            }
+//        }
+//    }
 
-    protected fun setShowTotalInfo(showTotalInfo: Boolean) {
-        totalAmountView.setShowTotalInfo(showTotalInfo)
-    }
+//    protected fun setShowTotalInfo(showTotalInfo: Boolean) {
+//        totalAmountView.setShowTotalInfo(showTotalInfo)
+//    }
 
     @SuppressLint("NotifyDataSetChanged")
     protected fun notifyAdapter() {
@@ -191,15 +192,15 @@ abstract class BasicCardActivity : AppCompatActivity(), UIControl {
     }
 }
 
-fun View.setShowTotalInfo(showTotalInfo: Boolean) {
-    if (showTotalInfo) {
-        totalContainerDisableScroll.visibility = VISIBLE
-        totalContainerScroll.visibility = VISIBLE
-    } else {
-        totalContainerDisableScroll.visibility = GONE
-        totalContainerScroll.visibility = GONE
-    }
-}
+//fun View.setShowTotalInfo(showTotalInfo: Boolean) {
+//    if (showTotalInfo) {
+//        totalContainerDisableScroll.visibility = VISIBLE
+//        totalContainerScroll.visibility = VISIBLE
+//    } else {
+//        totalContainerDisableScroll.visibility = GONE
+//        totalContainerScroll.visibility = GONE
+//    }
+//}
 
 private class CustomLinearLayoutManager(context: Context) : LinearLayoutManager(context) {
     override fun onLayoutChildren(recycler: Recycler, state: RecyclerView.State) {

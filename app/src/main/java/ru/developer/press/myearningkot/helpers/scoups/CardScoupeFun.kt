@@ -69,7 +69,7 @@ fun Card.addRow(
 ): Row {
     row.status = Status.ADDED
     rows.add(row)
-    updateTypeControlRow(rows.size - 1)
+    updateTypeControlRow(row)
     calcTotals()
     return row
 }
@@ -249,71 +249,46 @@ fun Card.deleteRows(removedList: List<Row>) {
 
 fun Card.updateTypeControlColumn(column: Column) {
     column.updateTypeControl(this)
-    val indexOf = columns.indexOf(column)
-    rows.forEachIndexed { rowIndex, row ->
-        row.cellList[indexOf].also { cell ->
-            cell.cellTypeControl = column.columnTypeControl
-            cell.type = column.getType()
-            when (column) {
-                is NumerationColumn ->
-                    cell.updateTypeValue(column.typePref)
-                is TextColumn ->
-                    cell.updateTypeValue(column.typePref)
-                is NumberColumn -> {
-                    if (column.inputType == InputTypeNumberColumn.FORMULA) {
-                        cell.sourceValue = column.calcFormula(rowIndex, this)
-                    }
-                    cell.updateTypeValue(column.typePref)
-                }
-                is PhoneColumn ->
-                    cell.updateTypeValue(column.typePref)
-                is DateColumn ->
-                    cell.updateTypeValue(column.typePref)
-                is ColorColumn ->
-                    cell.updateTypeValue(column.typePref)
-                is SwitchColumn ->
-                    cell.updateTypeValue(column.typePref)
-                is ImageColumn ->
-                    cell.updateTypeValue(column.typePref)
-                is ListColumn ->
-                    cell.updateTypeValue(column.typePref)
-            }
-
-        }
+    val columnPosition = columns.indexOf(column)
+    rows.forEach { row ->
+        updateTypeControlCell(row, columnPosition)
     }
 }
 
-fun Card.updateTypeControlRow(indexRow: Int) {
-    columns.forEachIndexed { index, column ->
-        rows[indexRow].cellList[index].also { cell ->
-            cell.cellTypeControl = column.columnTypeControl
-            cell.type = column.getType()
-            when (column) {
-                is NumerationColumn ->
-                    cell.updateTypeValue(column.typePref)
-                is TextColumn ->
-                    cell.updateTypeValue(column.typePref)
-                is NumberColumn -> {
-                    if (column.inputType == InputTypeNumberColumn.FORMULA) {
-                        cell.sourceValue = column.calcFormula(indexRow, this)
-                    }
-                    cell.updateTypeValue(column.typePref)
-                }
-                is PhoneColumn ->
-                    cell.updateTypeValue(column.typePref)
-                is DateColumn ->
-                    cell.updateTypeValue(column.typePref)
-                is ColorColumn ->
-                    cell.updateTypeValue(column.typePref)
-                is SwitchColumn ->
-                    cell.updateTypeValue(column.typePref)
-                is ImageColumn ->
-                    cell.updateTypeValue(column.typePref)
-                is ListColumn ->
-                    cell.updateTypeValue(column.typePref)
-            }
+fun Card.updateTypeControlRow(row: Row) {
+    repeat(columns.size) { columnPosition ->
+        updateTypeControlCell(row, columnPosition)
+    }
+}
 
+fun Card.updateTypeControlCell(row: Row, columnPosition: Int) {
+    val cell = row.cellList[columnPosition]
+    val column = columns[columnPosition]
+    cell.cellTypeControl = column.columnTypeControl
+    cell.type = column.getType()
+    when (column) {
+        is NumerationColumn ->
+            cell.updateTypeValue(column.typePref)
+        is TextColumn ->
+            cell.updateTypeValue(column.typePref)
+        is NumberColumn -> {
+            if (column.inputType == InputTypeNumberColumn.FORMULA) {
+                cell.sourceValue = column.calcFormula(row, this)
+            }
+            cell.updateTypeValue(column.typePref)
         }
+        is PhoneColumn ->
+            cell.updateTypeValue(column.typePref)
+        is DateColumn ->
+            cell.updateTypeValue(column.typePref)
+        is ColorColumn ->
+            cell.updateTypeValue(column.typePref)
+        is SwitchColumn ->
+            cell.updateTypeValue(column.typePref)
+        is ImageColumn ->
+            cell.updateTypeValue(column.typePref)
+        is ListColumn ->
+            cell.updateTypeValue(column.typePref)
     }
 }
 

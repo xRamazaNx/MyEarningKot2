@@ -403,4 +403,5 @@
     <string name="delete_page">Удалить вкладку</string>
     <string name="warning_about_deleting_single_page">Стоп! Невозможно удалить единственную вкладку.</string>
     <string name="warning_about_delete_page">Вы действительно хотите удалить вкладку? все карточки в этой вкладке будут удалены!</string>
+    <string name="notData">Нет данных...</string>
 </resources>

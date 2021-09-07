@@ -63,7 +63,7 @@ fun ActivityResultLauncher<Intent>.startPrefActivity(
     launch(intent)
 }
 
-class PrefCardActivity : BasicCardActivity() {
+class PrefCardActivity : CommonCardActivity() {
 
     private val totalContainer: LinearLayout
         get() {
@@ -221,11 +221,12 @@ class PrefCardActivity : BasicCardActivity() {
                             main {
                                 updateHorizontalScrollSwitched()
                                 recycler.adapter = adapter
-                                setShowTotalInfo(card.isShowTotalInfo)//
+//                                setShowTotalInfo(card.isShowTotalInfo)//
                                 viewModel.updatePlateChanged()
                                 initClicksOfElements()
-                                if (card.isShowTotalInfo) selectedControl.updateSelected()
-                                else selectedControl.unSelectAll()
+//                                if (card.isShowTotalInfo)
+                                selectedControl.updateSelected()
+//                                else selectedControl.unSelectAll()
                             }
                         }
                     }
