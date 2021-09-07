@@ -26,6 +26,7 @@ import ru.developer.press.myearningkot.dagger.CardViewModelModule
 import ru.developer.press.myearningkot.dagger.DaggerCardComponent
 import ru.developer.press.myearningkot.helpers.*
 import ru.developer.press.myearningkot.helpers.scoups.inflatePlate
+import ru.developer.press.myearningkot.helpers.scoups.inflateView
 import ru.developer.press.myearningkot.helpers.scoups.updateTotalAmount
 import ru.developer.press.myearningkot.logD
 import ru.developer.press.myearningkot.viewmodels.CardViewModel
@@ -36,11 +37,14 @@ interface UIControl {
     // обновляет активити после инициализации viewModel и т.д.
     fun updateActivity()
 
+    // 3 метода для адаптера
+    fun notifyItem(position: Int)
+    fun notifyItemRange(start: Int, count: Int)
+    fun notifyItems()
 }
 
 // чтобы узнать мы открыли в настройках карточку или шаблон
 class CardInfo(var idCard: String, var cardCategory: CardCategory) {
-
     enum class CardCategory {
         CARD, SAMPLE
     }
@@ -83,36 +87,44 @@ abstract class CommonCardActivity : AppCompatActivity(), UIControl {
 
     }
 
+    @SuppressLint("InflateParams")
     fun doStart() {
         viewModel.apply {
             val diametric = resources.displayMetrics
             displayParam.width = diametric.widthPixels
             displayParam.height = diametric.heightPixels
 
-            // создаем заголовки колон и подписываемся
             createTitles()
             // подписываем
-            observePlate()
-            observeTotals()
+            cardLiveData.observe(this@CommonCardActivity, {
+                it.inflatePlate(totalAmountView)
+            })
+            totalLiveData.observe(this@CommonCardActivity, {
+                it.updateTotalAmount(totalAmountView)
+            })
         }
-        updateHorizontalScrollSwitched()
+        horizontalScrollSwitch()
         initRecyclerView()
     }
 
-    private fun observePlate() {
-        viewModel.cardLiveData.observe(this, {
-            it.inflatePlate(totalAmountView)
-        })
+    @SuppressLint("InflateParams")
+    fun createTitles() {
+        // создаем заголовки колон и подписываемся
+        columnContainer.removeAllViews()
+        repeat(viewModel.card.columns.size) {
+            val title: TextView = layoutInflater.inflate(R.layout.title_column, null) as TextView
+            columnContainer.addView(title)
+        }
+
+        viewModel.columnsLiveData.observe(this@CommonCardActivity) { columns ->
+            columns.forEachIndexed { index, column ->
+                val title = columnContainer.getChildAt(index)
+                column.inflateView(title as TextView)
+            }
+        }
     }
 
-    private fun observeTotals() {
-        viewModel.totalLiveData.observe(this, {
-            it.updateTotalAmount(totalAmountView)
-        })
-    }
-
-
-    fun updateHorizontalScrollSwitched() {
+    fun horizontalScrollSwitch() {
 
         val currentLayout: View?
         if (viewModel.isEnableHorizontalScroll()) {
@@ -146,12 +158,8 @@ abstract class CommonCardActivity : AppCompatActivity(), UIControl {
             this@CommonCardActivity.adapter = getAdapterForRecycler()
 
             adapter = this@CommonCardActivity.adapter
-
-//            itemAnimator = ItemAnimator()
-
         }
-//        tableView.horizontalScrollView.moveRowNumber =
-//            (recycler.adapter as AdapterRecyclerInCard).moveRowNumber
+
     }
 
     protected fun getAdapterForRecycler(): AdapterRow {
@@ -161,49 +169,27 @@ abstract class CommonCardActivity : AppCompatActivity(), UIControl {
         }
     }
 
-    @SuppressLint("InflateParams")
-    fun createTitles() {
-        columnContainer.removeAllViews()
-        viewModel.columnLDList.forEach { column ->
-            val title: TextView = layoutInflater.inflate(R.layout.title_column, null) as TextView
-            column.observe(this@CommonCardActivity, {
-                bindTitleOfColumn(it, title)
-            })
-            columnContainer.addView(title)
+    // что бы recycler не выебывался когда удаляю айтемы.
+    private class CustomLinearLayoutManager(context: Context) : LinearLayoutManager(context) {
+        override fun onLayoutChildren(recycler: Recycler, state: RecyclerView.State) {
+            try {
+                super.onLayoutChildren(recycler, state)
+            } catch (e: IndexOutOfBoundsException) {
+                logD("Inconsistency detected")
+            }
         }
     }
 
-//    override fun onResume() {
-//        super.onResume()
-//        viewModelInitializer.invokeOnCompletion {
-//            viewModel.cardLiveData.observe(this) {
-//                setShowTotalInfo(it.isShowTotalInfo)
-//            }
-//        }
-//    }
+    override fun notifyItem(position: Int) {
+        adapter.notifyItemChanged(position)
+    }
 
-//    protected fun setShowTotalInfo(showTotalInfo: Boolean) {
-//        totalAmountView.setShowTotalInfo(showTotalInfo)
-//    }
-}
+    override fun notifyItemRange(start: Int, count: Int) {
+        adapter.notifyItemRangeChanged(start, count)
+    }
 
-//fun View.setShowTotalInfo(showTotalInfo: Boolean) {
-//    if (showTotalInfo) {
-//        totalContainerDisableScroll.visibility = VISIBLE
-//        totalContainerScroll.visibility = VISIBLE
-//    } else {
-//        totalContainerDisableScroll.visibility = GONE
-//        totalContainerScroll.visibility = GONE
-//    }
-//}
-
-// что бы recycler не выебывался когда удаляю айтемы.
-private class CustomLinearLayoutManager(context: Context) : LinearLayoutManager(context) {
-    override fun onLayoutChildren(recycler: Recycler, state: RecyclerView.State) {
-        try {
-            super.onLayoutChildren(recycler, state)
-        } catch (e: IndexOutOfBoundsException) {
-            logD("Inconsistency detected")
-        }
+    @SuppressLint("NotifyDataSetChanged")
+    override fun notifyItems() {
+        adapter.notifyDataSetChanged()
     }
 }

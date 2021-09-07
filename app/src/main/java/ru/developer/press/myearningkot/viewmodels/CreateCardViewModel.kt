@@ -17,13 +17,14 @@ import org.jetbrains.anko.matchParent
 import org.jetbrains.anko.wrapContent
 import ru.developer.press.myearningkot.App.Companion.dao
 import ru.developer.press.myearningkot.R
-import ru.developer.press.myearningkot.activity.CreateCardActivity
 import ru.developer.press.myearningkot.activity.CardInfo
+import ru.developer.press.myearningkot.activity.CreateCardActivity
 import ru.developer.press.myearningkot.activity.startPrefActivity
 import ru.developer.press.myearningkot.database.Card
 import ru.developer.press.myearningkot.dialogs.ChoiceDialog
 import ru.developer.press.myearningkot.dialogs.choiceDialog
 import ru.developer.press.myearningkot.helpers.*
+import ru.developer.press.myearningkot.helpers.scoups.inflateView
 import ru.developer.press.myearningkot.model.NumerationColumn
 import splitties.alertdialog.appcompat.negativeButton
 import splitties.alertdialog.appcompat.positiveButton
@@ -121,11 +122,11 @@ class CreateCardViewModel : ViewModel() {
 
                 val columnContainer = itemView.sampleColumnContainer
                 columnContainer.removeAllViews()
-                sampleItem.card.columns.forEach {
-                    if (it is NumerationColumn) return@forEach
+                sampleItem.card.columns.forEach { column ->
+                    if (column is NumerationColumn) return@forEach
                     val title: TextView = LayoutInflater.from(context)
                             .inflate(R.layout.title_column, null) as TextView
-                    bindTitleOfColumn(it, title)
+                    column.inflateView(title)
                     val layoutParams = title.layoutParams
                     layoutParams.width = wrapContent
                     title.layoutParams = layoutParams

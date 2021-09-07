@@ -34,7 +34,7 @@ class CardViewModel : ViewModel(),
     val cardLiveData: MyLiveData<Card> = liveData()
     val totalLiveData: MyLiveData<Card> = liveData()
 
-    var columnLDList = mutableListOf<MyLiveData<Column>>()
+    var columnsLiveData: MyLiveData<List<Column>> = liveData()
 
     override val sortedRows: MutableList<Row> = mutableListOf()
 
@@ -49,14 +49,7 @@ class CardViewModel : ViewModel(),
     private fun updateCardLD() {
         cardLiveData.postValue(card)
         titleLiveData.postValue(card.name)
-
-        columnLDList.clear()
-
-        card.columns.forEach {
-            columnLDList.add(liveData<Column>().apply {
-                postValue(it)
-            })
-        }
+        columnsLiveData.postValue(card.columns)
     }
 
     fun updatePlateChanged() {
@@ -281,9 +274,7 @@ class CardViewModel : ViewModel(),
 
     // тут не создается а обновляется
     fun updateColumnDL() {
-        columnLDList.forEachIndexed { index, mutableLiveData ->
-            mutableLiveData.value = card.columns[index]
-        }
+        columnsLiveData.postValue(card.columns)
     }
 
     fun addTotal() {
@@ -341,11 +332,11 @@ class CardViewModel : ViewModel(),
         function(isDoubleTap)
     }
 
-    fun rowClicked(rowPosition: Int = card.rows.size - 1) {
+    fun rowClicked(position: Int = card.rows.size - 1) {
         runOnViewModel {
-            rowSelectPosition = rowPosition
+            rowSelectPosition = position
 
-            val row = this.sortedRows[rowPosition]
+            val row = this.sortedRows[position]
             val oldStatus = row.status
             row.status = if (oldStatus == Status.SELECT) Status.NONE else Status.SELECT
 
@@ -364,7 +355,11 @@ class CardViewModel : ViewModel(),
                             SelectMode.ROW
                 }
             }
-            updateAdapter()
+
+            main {
+                uiControl.notifyItems()
+                uiControl.notifyItem(position)
+            }
         }
     }
 
@@ -375,13 +370,9 @@ class CardViewModel : ViewModel(),
             SelectMode.NONE
     }
 
-    private fun updateTypeControlColumn(columnPosition: Int) {
-        updateTypeControlColumn(card.columns[columnPosition])
-    }
-
     suspend fun getCopySelectedCell(isCut: Boolean): Cell? {
         card.rows.forEach { row ->
-            row.cellList.forEachIndexed { columnIndex, cell ->
+            row.cellList.forEach { cell ->
                 if (cell.isSelect) {
                     val copy = cell.copy()
                     if (isCut) {

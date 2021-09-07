@@ -131,7 +131,7 @@ class AdapterRow(
                 }
             } else {
                 if (columnIndex > 0) {
-                    rowClickListener?.let {
+                    rowClickListener?.let { listener ->
                         view.setOnClickListener { _ ->
                             if (view.context !is CreateCardActivity) {
                                 // индексы (ряд и колона) предыдущего выделеного элемента (ячейки)
@@ -148,7 +148,7 @@ class AdapterRow(
                                 }
                                 cell.setBackground(R.drawable.cell_selected_background)
                             }
-                            it.cellClick(position, columnIndex)
+                            listener.cellClick(position, columnIndex)
                         }
                     }
                 }

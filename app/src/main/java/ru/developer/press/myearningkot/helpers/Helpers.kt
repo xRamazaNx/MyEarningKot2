@@ -130,7 +130,7 @@ class SingleLiveEvent<T> : MutableLiveData<T>() {
      */
     @MainThread
     fun call(id: T) {
-        setValue(id)
+        value = id
     }
 
     fun call() {
@@ -173,27 +173,6 @@ fun getDate(variantDate: Int, time: Long = Date().time, enableTime: Boolean): St
     if (enableTime)
         timeFormat += " hh:mm"
     return DateFormat.format(timeFormat, calendar.time).toString()
-}
-
-
-fun bindTitleOfColumn(column: Column, title: TextView) {
-    var w = 1f
-    if (column is NumerationColumn) {
-        w = 0f
-    }
-    val width = column.width
-
-    title.layoutParams =
-        LinearLayout.LayoutParams(
-            width,
-            title.dip(35)
-        ).apply {
-            gravity = Gravity.CENTER
-            weight = w
-        }
-
-    title.text = column.name
-    column.titlePref.customize(title)
 }
 
 @SuppressLint("InflateParams")

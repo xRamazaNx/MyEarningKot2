@@ -239,9 +239,7 @@ open class CardActivity : CommonCardActivity() {
             return
         }
         // The recycler view have animated all it's views
-        runOnLifeCycle {
-            viewModel.updateAdapter()
-        }
+        notifyItems()
     }
 
     // Listener that is called whenever the recycler view have finished animating one view.

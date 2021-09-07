@@ -1,6 +1,5 @@
 package ru.developer.press.myearningkot.activity
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -76,13 +75,6 @@ class PrefCardActivity : CommonCardActivity() {
         }
     private val selectedControl = PrefSelectedControl()
     private lateinit var prefWindow: PopupWindow
-//    private val addTotalImageButton: ImageView
-//        get() {
-//            return if (totalContainerDisableScroll.childCount > 0)
-//                totalContainerDisableScroll.getChildAt(1) as ImageView
-//            else
-//                totalContainerScroll.getChildAt(1) as ImageView
-//        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -148,32 +140,44 @@ class PrefCardActivity : CommonCardActivity() {
     }
 
     private fun initClicksOfElements() {
-        clickPrefToAdapter()
+        viewModelInitializer.invokeOnCompletion {
 
-        val card = viewModel.card
-        card.columns.forEachIndexed { index, _ ->
-            columnContainer.getChildAt(index).setOnClickListener {
+            clickPrefToAdapter()
+
+            val card = viewModel.card
+            card.columns.forEachIndexed { index, _ ->
+                columnContainer.getChildAt(index).setOnClickListener {
+                    selectedControl.select(
+                        SelectedElement.ElementColumnTitle(
+                            index,
+                            ElementType.COLUMN_TITLE,
+                            it.background
+                        )
+                    )
+                }
+            }
+
+            nameCard.setOnClickListener {
                 selectedControl.select(
-                    SelectedElement.ElementColumnTitle(
-                        index,
-                        ElementType.COLUMN_TITLE,
-                        it.background
+                    SelectedElement.ElementTextView(
+                        it.background,
+                        ElementType.NAME
+                    )
+                )
+
+            }
+
+            datePeriodCard.setOnClickListener {
+                selectedControl.select(
+                    SelectedElement.ElementTextView(
+                        it.background,
+                        ElementType.DATE
                     )
                 )
             }
+
+            initClickTotals(card)
         }
-
-        nameCard.setOnClickListener {
-            selectedControl.select(SelectedElement.ElementTextView(it.background, ElementType.NAME))
-
-        }
-
-        datePeriodCard.setOnClickListener {
-            selectedControl.select(SelectedElement.ElementTextView(it.background, ElementType.DATE))
-        }
-
-        initClickTotals(card)
-
     }
 
     private fun initClickTotals(card: Card?) {
@@ -220,7 +224,7 @@ class PrefCardActivity : CommonCardActivity() {
                         runOnLifeCycle {
                             adapter = getAdapterForRecycler()
                             main {
-                                updateHorizontalScrollSwitched()
+                                horizontalScrollSwitch()
                                 recycler.adapter = adapter
 //                                setShowTotalInfo(card.isShowTotalInfo)//
                                 viewModel.updatePlateChanged()
@@ -242,7 +246,7 @@ class PrefCardActivity : CommonCardActivity() {
                     viewModel.addColumn(columnType, list[it])
 
                     createTitles()
-                    updateHorizontalScrollSwitched()
+                    horizontalScrollSwitch()
                     initRecyclerView()
                     // после создания адаптера надо зановго заложить умение выделяться
                     initClicksOfElements()
@@ -287,8 +291,8 @@ class PrefCardActivity : CommonCardActivity() {
     override fun updateActivity() {
         initSelectCallback()
         doStart()
-        totalAmountView.setOnClickListener(null)
         initClicksOfElements()
+        totalAmountView.setOnClickListener(null)
         progressBar.visibility = GONE
     }
 
@@ -351,7 +355,7 @@ class PrefCardActivity : CommonCardActivity() {
                             // для обновления ширины задать а потом убрать
 //                            adapter.updateWidthIndex = columnIndex
 //                            adapter.widthSelected = column.width
-                            notifyAdapter()
+                            notifyItems()
                         }
                         ElementType.COLUMN_TITLE -> {
                             val selectedColumnTitle =
@@ -397,7 +401,7 @@ class PrefCardActivity : CommonCardActivity() {
                             val elementColumn = selectedElement as SelectedElement.ElementColumn
                             viewModel.selectionColumn(elementColumn.columnIndex, false)
                             // обновление
-                            notifyAdapter()
+                            notifyItems()
                             // удаление вью для настройки
                         }
                         ElementType.COLUMN_TITLE -> {
@@ -589,7 +593,7 @@ class PrefCardActivity : CommonCardActivity() {
                                                     )
                                                 }
                                             }
-                                            notifyAdapter()
+                                            notifyItems()
                                             updatePlate()
                                         }
                                     }
@@ -621,7 +625,7 @@ class PrefCardActivity : CommonCardActivity() {
                                             io {
                                                 adapter = getAdapterForRecycler()
                                             }
-                                            updateHorizontalScrollSwitched()
+                                            horizontalScrollSwitch()
                                             recycler.adapter = adapter
                                             clickPrefToAdapter()
                                         }
@@ -822,11 +826,6 @@ class PrefCardActivity : CommonCardActivity() {
             toolbar.menu.findItem(R.id.elementSetting).isVisible = isVisible
             visibleButton(selectedControl.selectPrefType, selectedControl.isRenameMode)
         }
-    }
-
-    @SuppressLint("NotifyDataSetChanged")
-    private fun notifyAdapter() {
-        adapter.notifyDataSetChanged()
     }
 
     private fun visibleButton(prefType: ElementPrefType, isRenameMode: Boolean) {
