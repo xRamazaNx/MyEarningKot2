@@ -119,3 +119,12 @@ fun <T : DialogFragment> T.addDismissListener(dismiss: (T) -> Unit) {
         }
     })
 }
+
+fun <T : DialogFragment> T.addShownListener(shown: (T) -> Unit) {
+    lifecycle.addObserver(object : LifecycleObserver {
+        @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+        fun resume() {
+            shown.invoke(this@addShownListener)
+        }
+    })
+}

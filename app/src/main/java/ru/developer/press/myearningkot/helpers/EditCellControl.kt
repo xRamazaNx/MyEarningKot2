@@ -10,6 +10,7 @@ import ru.developer.press.myearningkot.dialogs.DialogEditCell
 import ru.developer.press.myearningkot.dialogs.DialogEditImageCell
 import ru.developer.press.myearningkot.dialogs.editCellTag
 import ru.developer.press.myearningkot.helpers.scoups.addDismissListener
+import ru.developer.press.myearningkot.helpers.scoups.addShownListener
 import ru.developer.press.myearningkot.model.Column
 import ru.developer.press.myearningkot.model.ColumnType
 import ru.developer.press.myearningkot.model.InputTypeNumberColumn
@@ -30,9 +31,6 @@ class EditCellControl private constructor(
         ): EditCellControl {
             return EditCellControl(cardActivity, column, sourceValue, changed)
                 .editCell()
-                .dismissListener {
-                    cardActivity.rowClickListener.isOpenEditDialog = false
-                }
         }
     }
 
@@ -105,6 +103,13 @@ class EditCellControl private constructor(
     private fun dismissListener(dismiss: () -> Unit): EditCellControl {
         dialog?.addDismissListener {
             dismiss.invoke()
+        }
+        return this
+    }
+
+    private fun showListener(shown: () -> Unit): EditCellControl {
+        dialog?.addShownListener {
+            shown.invoke()
         }
         return this
     }

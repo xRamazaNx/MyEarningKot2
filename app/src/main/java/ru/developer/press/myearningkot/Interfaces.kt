@@ -34,7 +34,7 @@ interface ProvideValueProperty {
 }
 
 interface RowClickListener {
-    var isOpenEditDialog: Boolean
+    var isOpenEditDialogProcess: Boolean
     fun cellClick(rowPosition: Int, cellPosition: Int)
 }
 

@@ -45,6 +45,38 @@ open class CardActivity : CommonCardActivity() {
         }
     private var isLongClick = false
 
+    private val rowClickListener = object : RowClickListener {
+        override var isOpenEditDialogProcess: Boolean = false
+        override fun cellClick(rowPosition: Int, cellPosition: Int) {
+            if (isLongClick) {
+                viewModel.rowClicked(rowPosition)
+            } else {
+                if (viewModel.selectMode.value == SelectMode.ROW) {
+                    isLongClick = true
+                    cellClick(rowPosition, cellPosition)
+                    return
+                }
+                viewModel.cellClicked(
+                    rowPosition,
+                    cellPosition
+                ) { isDoubleTap ->
+                    if (isDoubleTap) {
+                        if (!isOpenEditDialogProcess) {
+                            isOpenEditDialogProcess = true
+                            postDelay(500) {
+                                delay(500)
+                                isOpenEditDialogProcess = false
+                            }
+                            editCell()
+                        }
+                    } else {
+                        showInputCell()
+                    }
+                }
+            }
+        }
+    }
+
     private fun selectedModeObserve() {
         val menu = toolbar.menu
         viewModel.selectMode.observe(this, { selectMode ->
@@ -226,32 +258,6 @@ open class CardActivity : CommonCardActivity() {
         }
     }
 
-    private val waitForAnimationsToFinishRunnable =
-        Runnable { waitForAnimationsToFinish() }
-
-    // When the data in the recycler view is changed all views are animated. If the
-// recycler view is animating, this method sets up a listener that is called when the
-// current animation finishes. The listener will call this method again once the
-// animation is done.
-    private fun waitForAnimationsToFinish() {
-        if (recycler.isAnimating) { // The recycler view is still animating, try again when the animation has finished.
-            recycler.itemAnimator?.isRunning(animationFinishedListener)
-            return
-        }
-        // The recycler view have animated all it's views
-        notifyItems()
-    }
-
-    // Listener that is called whenever the recycler view have finished animating one view.
-    private val animationFinishedListener =
-        ItemAnimatorFinishedListener {
-            // The current animation have finished and there is currently no animation running,
-            // but there might still be more items that will be animated after this method returns.
-            // Post a message to the message queue for checking if there are any more
-            // animations running.
-            Handler(Looper.getMainLooper()).post(waitForAnimationsToFinishRunnable)
-        }
-
     private fun hideUnnecessaryElementsFromTotalAmount() {
         totalAmountView.apply {
             datePeriodCard.visibility = GONE
@@ -328,32 +334,6 @@ open class CardActivity : CommonCardActivity() {
             }
     }
 
-    val rowClickListener = object : RowClickListener {
-        override var isOpenEditDialog: Boolean = false
-        override fun cellClick(rowPosition: Int, cellPosition: Int) {
-            if (isLongClick) {
-                viewModel.rowClicked(rowPosition)
-            } else {
-                if (viewModel.selectMode.value == SelectMode.ROW) {
-                    isLongClick = true
-                    cellClick(rowPosition, cellPosition)
-                    return
-                }
-                viewModel.cellClicked(
-                    rowPosition,
-                    cellPosition
-                ) { isDoubleTap ->
-                    if (isDoubleTap && !isOpenEditDialog) {
-                        isOpenEditDialog = true
-                        editCell()
-                    } else {
-                        showInputCell()
-                    }
-                }
-            }
-        }
-    }
-
     private fun editCell() {
         /**
          * тип:
@@ -400,14 +380,6 @@ open class CardActivity : CommonCardActivity() {
                     }
                 }
             }
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        viewModelInitializer.invokeOnCompletion {
-            viewModel.selectMode.updateValue()
-
         }
     }
 
@@ -471,6 +443,40 @@ open class CardActivity : CommonCardActivity() {
                 .start()
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+        viewModelInitializer.invokeOnCompletion {
+            viewModel.selectMode.updateValue()
+
+        }
+    }
+
+    private val waitForAnimationsToFinishRunnable =
+        Runnable { waitForAnimationsToFinish() }
+
+    // When the data in the recycler view is changed all views are animated. If the
+// recycler view is animating, this method sets up a listener that is called when the
+// current animation finishes. The listener will call this method again once the
+// animation is done.
+    private fun waitForAnimationsToFinish() {
+        if (recycler.isAnimating) { // The recycler view is still animating, try again when the animation has finished.
+            recycler.itemAnimator?.isRunning(animationFinishedListener)
+            return
+        }
+        // The recycler view have animated all it's views
+        notifyItems()
+    }
+
+    // Listener that is called whenever the recycler view have finished animating one view.
+    private val animationFinishedListener =
+        ItemAnimatorFinishedListener {
+            // The current animation have finished and there is currently no animation running,
+            // but there might still be more items that will be animated after this method returns.
+            // Post a message to the message queue for checking if there are any more
+            // animations running.
+            Handler(Looper.getMainLooper()).post(waitForAnimationsToFinishRunnable)
+        }
 }
 
 /**
