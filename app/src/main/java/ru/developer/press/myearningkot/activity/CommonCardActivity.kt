@@ -90,10 +90,6 @@ abstract class CommonCardActivity : AppCompatActivity(), UIControl {
     @SuppressLint("InflateParams")
     fun doStart() {
         viewModel.apply {
-            val diametric = resources.displayMetrics
-            displayParam.width = diametric.widthPixels
-            displayParam.height = diametric.heightPixels
-
             createTitles()
             // подписываем
             cardLiveData.observe(this@CommonCardActivity, {

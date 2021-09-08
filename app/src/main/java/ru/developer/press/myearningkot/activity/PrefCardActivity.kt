@@ -646,7 +646,7 @@ class PrefCardActivity : CommonCardActivity() {
                     }, yOff)
                 }
 
-                private fun reSelectAfterMove(list: List<Any>) {
+                fun reSelectAfterMove(list: List<Any>) {
                     val isColumn = selectedControl.selectPrefType == COLUMN
                     selectedControl.unSelectAll()
                     if (isColumn) list.filterIsInstance<Column>().forEach { column ->
@@ -692,7 +692,7 @@ class PrefCardActivity : CommonCardActivity() {
                     }
                 }
 
-                private fun getTotalsFromSelectedElements(selectedElementList: List<SelectedElement>): List<Total> {
+                fun getTotalsFromSelectedElements(selectedElementList: List<SelectedElement>): List<Total> {
                     return mutableListOf<Total>().apply {
                         selectedElementList.filterIsInstance(SelectedElement.ElementTotal::class.java)
                             .forEach {

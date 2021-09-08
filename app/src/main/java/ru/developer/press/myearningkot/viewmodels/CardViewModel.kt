@@ -16,8 +16,7 @@ import ru.developer.press.myearningkot.helpers.*
 import ru.developer.press.myearningkot.helpers.scoups.*
 import ru.developer.press.myearningkot.model.*
 
-class CardViewModel : ViewModel(),
-    ProvideDataRows {
+class CardViewModel : ViewModel(), ProvideDataRows {
 
     private lateinit var cardInfo: CardInfo
     lateinit var card: Card
@@ -154,7 +153,6 @@ class CardViewModel : ViewModel(),
 
         updatePlateChanged()
         result(true)
-
     }
 
     fun moveToRightColumn(selectedColumns: MutableList<Column>, result: (Boolean) -> Unit) {
@@ -225,7 +223,6 @@ class CardViewModel : ViewModel(),
 
         updatePlateChanged()
         result(true)
-
     }
 
     fun moveToLeftColumn(selectedColumns: MutableList<Column>, result: (Boolean) -> Unit) {
@@ -265,7 +262,6 @@ class CardViewModel : ViewModel(),
         updateTypeControl()
         updateCardLD()
         result(true)
-
     }
 
     fun updateTypeControlColumn(column: Column) {
@@ -301,7 +297,6 @@ class CardViewModel : ViewModel(),
     }
 
     private fun sortList(): MutableList<Row> {
-        //#postedit
         sortedRows.clear()
         sortedRows.addAll(card.rows)
 
@@ -401,7 +396,7 @@ class CardViewModel : ViewModel(),
         runOnViewModel {
             if (isEqualTypeCellAndCopyCell(copyCell))
                 card.rows.forEach { row ->
-                    row.cellList.forEachIndexed { columnPosition, cell ->
+                    row.cellList.forEach { cell ->
                         if (cell.isSelect) {
                             copyCell?.let {
                                 cell.sourceValue = it.sourceValue
@@ -564,21 +559,3 @@ class CardViewModel : ViewModel(),
         CELL, ROW, NONE
     }
 }
-//
-//class ViewModelMainFactory(private val pageList: MutableList<Page>) :
-//    ViewModelProvider.NewInstanceFactory() {
-//    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-//        return MainViewModel(pageList) as T
-//    }
-//}
-
-//class ViewModelCardFactory(private val context: Context, private val card: Card) :
-//    ViewModelProvider.NewInstanceFactory() {
-//    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-//        return CardViewModel(card) as T
-//    }
-//}
-//
-//
-//
-//

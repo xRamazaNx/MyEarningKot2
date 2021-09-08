@@ -12,6 +12,10 @@ class CardViewModelModule(private val activity: CommonCardActivity) {
     @Provides
     fun cardViewModel(): CardViewModel {
         return activity.viewModels<CardViewModel>().value.apply {
+            val diametric = activity.resources.displayMetrics
+            displayParam.width = diametric.widthPixels
+            displayParam.height = diametric.heightPixels
+
             uiControl = activity
             initialization(cardInfo())
         }
