@@ -8,17 +8,22 @@
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/drawable/ic_add_not_ring_white.xml" value="0.22135416666666666" />
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/drawable/ic_check.xml" value="0.3828125" />
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/drawable/ic_select_card.xml" value="0.3828125" />
+        <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/layout-v16/pref_column_date.xml" value="0.3066123188405797" />
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/layout/activity_card.xml" value="0.36666666666666664" />
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/layout/activity_main.xml" value="0.16927083333333334" />
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/layout/card.xml" value="0.36666666666666664" />
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/layout/card_basic_pref_layout.xml" value="0.5" />
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/layout/create_card_layout.xml" value="0.16927083333333334" />
-        <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/layout/formula_layout.xml" value="0.16927083333333334" />
+        <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/layout/edit_cell_number.xml" value="0.33" />
+        <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/layout/formula_layout.xml" value="0.5" />
+        <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/layout/formula_symbols.xml" value="0.20520833333333333" />
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/layout/list_item_change_layout.xml" value="0.16927083333333334" />
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/layout/pref_column_list.xml" value="0.16927083333333334" />
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/layout/pref_column_number.xml" value="0.1" />
+        <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/layout/pref_date_period.xml" value="0.3066123188405797" />
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/layout/pref_phone_type_param_item.xml" value="0.16927083333333334" />
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/layout/prefs_text_view.xml" value="0.16927083333333334" />
+        <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/layout/prefs_total.xml" value="0.3066123188405797" />
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/layout/toolbar_pref.xml" value="0.16927083333333334" />
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/layout/total_item_layout.xml" value="0.36666666666666664" />
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/layout/total_item_value.xml" value="0.20520833333333333" />

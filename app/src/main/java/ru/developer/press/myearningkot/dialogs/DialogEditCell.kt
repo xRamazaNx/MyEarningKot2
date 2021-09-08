@@ -14,14 +14,14 @@ import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.DialogFragment
 import com.google.gson.Gson
-import kotlinx.android.synthetic.main.edit_cell_number.view.*
 import kotlinx.android.synthetic.main.edit_cell_number.view.editCellText
 import kotlinx.android.synthetic.main.edit_cell_phone.view.*
 import kotlinx.android.synthetic.main.edit_cell_text.view.*
 import org.jetbrains.anko.layoutInflater
 import ru.developer.press.myearningkot.R
+import ru.developer.press.myearningkot.databinding.EditCellNumberBinding
 import ru.developer.press.myearningkot.helpers.getColorFromRes
-import ru.developer.press.myearningkot.helpers.prefLayouts.initClickOperation
+import ru.developer.press.myearningkot.helpers.prefLayouts.FormulaLayout
 import ru.developer.press.myearningkot.helpers.setAlertButtonColors
 import ru.developer.press.myearningkot.model.Column
 import ru.developer.press.myearningkot.model.ColumnType
@@ -85,7 +85,7 @@ class DialogEditCell(
 
     private fun getNumberDialog(): AlertDialog {
         return getAlertDialog().apply {
-            val view = context.layoutInflater.inflate(R.layout.edit_cell_number, null)
+            val view = EditCellNumberBinding.inflate(context.layoutInflater)
             view.titleNumberEdit.text = column.name
             val editCellText = view.editCellText
             val callBackOperatorClick: (String) -> Unit = {
@@ -96,16 +96,16 @@ class DialogEditCell(
                     stringBuilder.append(char)
                 }
                 value = stringBuilder.toString()
-                editCellText?.setText(value)
+                editCellText.setText(value)
                 editCellText.setSelection(value.length)
             }
-            initClickOperation(view, callBackOperatorClick)
+            FormulaLayout.initClickOperation(view.root, callBackOperatorClick)
             editCellText.setText(value)
             editCellText.addTextChangedListener {
                 value = it.toString()
             }
             editCellText.showKeyboard()
-            setView(view)
+            setView(view.root)
         }.create()
     }
 

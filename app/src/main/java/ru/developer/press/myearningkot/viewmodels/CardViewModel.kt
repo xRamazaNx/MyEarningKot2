@@ -1,5 +1,3 @@
-@file:Suppress("UNCHECKED_CAST")
-
 package ru.developer.press.myearningkot.viewmodels
 
 import android.widget.LinearLayout
@@ -22,8 +20,8 @@ class CardViewModel : ViewModel(), ProvideDataRows {
     lateinit var card: Card
     lateinit var diffRowsUpdater: DiffRows
 
-    private var cellSelectPosition: Int = -1
     private var rowSelectPosition: Int = -1
+    private var cellSelectPosition: Int = -1
 
     val displayParam = DisplayParam()
 

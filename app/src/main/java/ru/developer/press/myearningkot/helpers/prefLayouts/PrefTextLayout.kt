@@ -16,6 +16,7 @@ import kotlinx.android.synthetic.main.width_seek_bar_layout.view.*
 import org.jetbrains.anko.*
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.activity.CommonCardActivity
+import ru.developer.press.myearningkot.databinding.*
 import ru.developer.press.myearningkot.helpers.getColorFromRes
 import ru.developer.press.myearningkot.helpers.getDate
 import ru.developer.press.myearningkot.helpers.getDateTypeList
@@ -27,17 +28,16 @@ fun Context.getPrefTextLayout(
     isWorkAlignPanel: Boolean,
     callback: PrefTextChangedCallback?
 ): View {
-
-    val view =
-            layoutInflater.inflate(R.layout.prefs_no_name, null)
+    val noNameBinding = PrefsNoNameBinding.inflate(layoutInflater)
+    val toolbarPrefBinding = ToolbarPrefBinding.bind(noNameBinding.root)
 
     fun init() {
-        textPrefButtonsInit(view, prefForTextView, isWorkAlignPanel) {
+        textPrefButtonsInit(noNameBinding.root, prefForTextView, isWorkAlignPanel) {
             callback?.prefChanged()
         }
     }
     init()
-    view.defaultPref.setOnClickListener {
+    toolbarPrefBinding.defaultPref.setOnClickListener {
         prefForTextView.forEach {
             it.resetPref()
         }
@@ -46,7 +46,7 @@ fun Context.getPrefTextLayout(
     }
 
 
-    return view
+    return noNameBinding.root
 }
 
 fun Context.getPrefTotalLayout(
@@ -54,14 +54,16 @@ fun Context.getPrefTotalLayout(
     callback: PrefTotalChangedCallBack
 ): View {
 
-    val view = layoutInflater.inflate(R.layout.prefs_total, null)
+    val totalBinding = PrefsTotalBinding.inflate(layoutInflater)
+    val widthBinding = WidthSeekBarLayoutBinding.bind(totalBinding.root)
+    val toolBarBinding = ToolbarPrefBinding.bind(totalBinding.root)
     val firstTotal = totals[0]
 
-    val widthColumnSeekBar = view.widthColumnSeekBar
+    val widthColumnSeekBar = widthBinding.widthColumnSeekBar
 
     widthColumnSeekBar.progress = firstTotal.width
     widthColumnSeekBar.setOnSeekBarChangeListener(object :
-                                                          SeekBar.OnSeekBarChangeListener {
+        SeekBar.OnSeekBarChangeListener {
         override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
             val progress = p0!!.progress
             if (progress > 30) {
@@ -88,11 +90,11 @@ fun Context.getPrefTotalLayout(
     }
     val typePref = firstTotal.totalPref
 
-    val digitDown = view.digitsCountDown
-    val digitUp = view.digitsCountUp
-    val digitsSizeTextView = view.digitsSize
-    val grouping = view.groupNumberSwitch
-    val ignoreSwitchWork = view.ignoreSwitchColumnWorkSwitch
+    val digitDown = totalBinding.digitsCountDown
+    val digitUp = totalBinding.digitsCountUp
+    val digitsSizeTextView = totalBinding.digitsSize
+    val grouping = totalBinding.groupNumberSwitch
+    val ignoreSwitchWork = totalBinding.ignoreSwitchColumnWorkSwitch
 
     digitsSizeTextView.text = typePref.digitsCount.toString()
     grouping.isChecked = typePref.isGrouping
@@ -132,12 +134,12 @@ fun Context.getPrefTotalLayout(
         editDigit(1)
     }
     fun init() {
-        textPrefButtonsInit(view, prefList, false) {
+        textPrefButtonsInit(totalBinding.root, prefList, false) {
             callback.prefChanged()
         }
     }
     init()
-    view.defaultPref.setOnClickListener {
+    toolBarBinding.defaultPref.setOnClickListener {
         totals.forEach {
             it.totalPref.resetPref()
         }
@@ -145,7 +147,7 @@ fun Context.getPrefTotalLayout(
         init()
     }
 
-    view.formulaTotal.setOnClickListener {
+    totalBinding.formulaTotal.setOnClickListener {
         val allTotals: List<Total> = callback.getTotals()
         val filterTotalList = mutableListOf<Total>().apply {
             addAll(allTotals)
@@ -172,7 +174,7 @@ fun Context.getPrefTotalLayout(
 
             }
         }
-        formulaDialogShow(
+        FormulaLayout.formulaDialogShow(
             firstTotal.formula,
             this,
             callback.getNumberColumns(),
@@ -187,31 +189,32 @@ fun Context.getPrefTotalLayout(
     }
 
 
-    return view
+    return totalBinding.root
 }
 
 fun Context.getPrefDatePeriod(
     typePref: DateTypePref,
     prefChangedCallBack: PrefChangedCallBack
 ): View {
-    val view = layoutInflater.inflate(R.layout.pref_date_period, null)
+    val periodBinding = PrefDatePeriodBinding.inflate(layoutInflater)
     textPrefButtonsInit(
-        view,
+        periodBinding.root,
         mutableListOf<PrefForTextView>().apply { add(typePref.prefForTextView) },
         false
     ) {
         prefChangedCallBack.prefChanged()
     }
 
-    val dateTypeTextView = view.dateTypeTextView
+    val dateTypeTextView = periodBinding.dateTypeTextView
 
     val typeText = dateTypeTextView.text
     val updateDateType = {
         val date = getDate(typePref.type, enableTime = false)
-        dateTypeTextView.text = "$typeText ($date)"
+        val dateTypeString = "$typeText ($date)"
+        dateTypeTextView.text = dateTypeString
     }
     updateDateType()
-    val showTime = view.enableTime
+    val showTime = periodBinding.enableTime
     showTime.isChecked = typePref.enableTime
 
     dateTypeTextView.setOnClickListener { view1 ->
@@ -233,7 +236,7 @@ fun Context.getPrefDatePeriod(
         prefChangedCallBack.prefChanged()
     }
 
-    return view
+    return periodBinding.root
 
 }
 
@@ -243,8 +246,9 @@ fun textPrefButtonsInit(
     isWorkAlignPanel: Boolean = true,
     prefChanged: () -> Unit
 ) {
-    val boldButton = view.boldButton
-    val italicButton = view.italicButton
+    val textViewBinding = PrefsTextViewBinding.bind(view)
+    val boldButton = textViewBinding.boldButton
+    val italicButton = textViewBinding.italicButton
 
     val firstPrefForTextView = prefForTextViewList[0]
     val initBold = {
@@ -265,12 +269,13 @@ fun textPrefButtonsInit(
     }
     initItalic()
 
-    val alignLeft = view.alignLeftButton
-    val alignCenter = view.alignCenterButton
-    val alignRight = view.alignRightButton
+    val alignLeft = textViewBinding.alignLeftButton
+    val alignCenter = textViewBinding.alignCenterButton
+    val alignRight = textViewBinding.alignRightButton
 
+    val context = textViewBinding.root.context
     val initAlign = {
-        val colorFromRes = view.context.getColorFromRes(R.color.textColorPrimary)
+        val colorFromRes = context.getColorFromRes(R.color.textColorPrimary)
         alignLeft.image?.setTint(colorFromRes)
         alignCenter.image?.setTint(colorFromRes)
         alignRight.image?.setTint(colorFromRes)
@@ -296,7 +301,7 @@ fun textPrefButtonsInit(
     if (!isWorkAlignPanel) {
         fun disable(imageButton: ImageButton) {
             setDefaultBackground(imageButton)
-            val colorFromRes = view.context.getColorFromRes(R.color.textColorSecondary)
+            val colorFromRes = context.getColorFromRes(R.color.textColorSecondary)
             imageButton.setColorFilter(colorFromRes)
             imageButton.isClickable = false
 
@@ -333,13 +338,13 @@ fun textPrefButtonsInit(
         }
     }
 
-    val textSize = view.textSize
+    val textSize = textViewBinding.textSize
     textSize.text = firstPrefForTextView.textSize.toString()
 
-    val textSizeDown = view.textSizeDown
-    val textSizeUp = view.textSizeUp
+    val textSizeDown = textViewBinding.textSizeDown
+    val textSizeUp = textViewBinding.textSizeUp
 
-    val textColor = view.textColor
+    val textColor = textViewBinding.textColor
     val initColorTextView = {
         textColor.compoundDrawables.forEach {
             it?.setTint(firstPrefForTextView.color)
@@ -392,29 +397,29 @@ fun textPrefButtonsInit(
     }
 
     textColor.setOnClickListener {
-        val activity = view.context as CommonCardActivity
+        val activity = context as CommonCardActivity
         ColorPickerDialog
-                .newBuilder()
-                .setColor(firstPrefForTextView.color)
-                .setShowAlphaSlider(false)
-                .create().apply {
-                    setColorPickerDialogListener(
-                        object : ColorPickerDialogListener {
-                            override fun onDialogDismissed(dialogId: Int) {
+            .newBuilder()
+            .setColor(firstPrefForTextView.color)
+            .setShowAlphaSlider(false)
+            .create().apply {
+                setColorPickerDialogListener(
+                    object : ColorPickerDialogListener {
+                        override fun onDialogDismissed(dialogId: Int) {
 
+                        }
+
+                        override fun onColorSelected(dialogId: Int, color: Int) {
+                            prefForTextViewList.forEach {
+
+                                it.color = color
                             }
+                            initColorTextView()
+                            prefChanged()
+                        }
 
-                            override fun onColorSelected(dialogId: Int, color: Int) {
-                                prefForTextViewList.forEach {
-
-                                    it.color = color
-                                }
-                                initColorTextView()
-                                prefChanged()
-                            }
-
-                        })
-                }.show(activity.supportFragmentManager, "colorPicker")
+                    })
+            }.show(activity.supportFragmentManager, "colorPicker")
     }
 }
 

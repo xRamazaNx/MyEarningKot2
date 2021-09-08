@@ -284,7 +284,7 @@ class PrefNumberColumnLayout(
                 }
 
             }
-            formulaDialogShow(
+            FormulaLayout.formulaDialogShow(
                 numberColumn.formula,
                 context,
                 filterColumns,

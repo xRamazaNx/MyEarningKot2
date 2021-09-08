@@ -7,9 +7,10 @@ import android.view.View.GONE
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
-import kotlinx.android.synthetic.main.formula_layout.view.*
 import org.jetbrains.anko.*
 import ru.developer.press.myearningkot.R
+import ru.developer.press.myearningkot.databinding.FormulaLayoutBinding
+import ru.developer.press.myearningkot.databinding.FormulaSymbolsBinding
 import ru.developer.press.myearningkot.helpers.Calc
 import ru.developer.press.myearningkot.helpers.getColorFromRes
 import ru.developer.press.myearningkot.model.Formula
@@ -21,21 +22,22 @@ import ru.developer.press.myearningkot.model.Total
 import splitties.alertdialog.appcompat.alertDialog
 
 
-val subtractChar = " − "
-val multiplyChar = " × "
+const val subtractChar = " − "
+const val multiplyChar = " × "
 
 class FormulaLayout(
-    val view: View,
+    val formulaLayoutBinding: FormulaLayoutBinding,
     filterNColumns: List<NumberColumn>,
     private val allNColumns: List<NumberColumn> = filterNColumns,
     filterNTotals: List<Total>? = null,
     private val allNTotals: List<Total>? = filterNTotals,
     _formula: Formula
 ) {
-    private var formula = Formula()
+    private val context = formulaLayoutBinding.root.context
+    private val formula = Formula()
     private val columnList = mutableListOf<NumberColumn>()
     private val totalList = mutableListOf<Total>()
-    private val displayTextView: TextView = view.formulaTextView
+    private val displayTextView: TextView = formulaLayoutBinding.formulaTextView
 
     init {
 
@@ -46,7 +48,7 @@ class FormulaLayout(
         }
 
         initClickNumbers()
-        initClickOperation(view) {
+        initClickOperation(formulaLayoutBinding.root) {
             formula.formulaElements.add(Formula.FormulaElement().apply {
                 type = OTHER
                 value = " $it "
@@ -56,7 +58,7 @@ class FormulaLayout(
         initClickColumns()
         initClickTotals()
 
-        view.clearElementInFormula.setOnClickListener {
+        formulaLayoutBinding.clearElementInFormula.setOnClickListener {
             formula.formulaElements.apply {
                 if (isNotEmpty()) {
                     removeAt(size - 1)
@@ -69,18 +71,18 @@ class FormulaLayout(
     }
 
     private fun initClickTotals() {
-        val title = view.totalContainerTitle
-        val container = view.totalsContainerInFormula
+        val title = formulaLayoutBinding.totalContainerTitle
+        val container = formulaLayoutBinding.totalsContainerInFormula
 
         if (totalList.isEmpty()) {
             title.visibility = GONE
         }
         val elementList = formula.formulaElements
         totalList.forEach { total ->
-            val textView = TextView(view.context).apply {
+            val textView = TextView(context).apply {
                 initParamTextView()
                 text = total.title
-                textColor = view.context.getColorFromRes(R.color.md_blue_200)
+                textColor = context.getColorFromRes(R.color.md_blue_200)
                 setOnClickListener {
                     elementList.add(Formula.FormulaElement().apply {
                         type = TOTAL_ID
@@ -96,13 +98,13 @@ class FormulaLayout(
     }
 
     private fun initClickColumns() {
-        val container = view.columnContainerInFormula
+        val container = formulaLayoutBinding.columnContainerInFormula
         val elementList = formula.formulaElements
         columnList.forEach { column ->
-            val textView = TextView(view.context).apply {
+            val textView = TextView(context).apply {
                 initParamTextView()
                 text = column.name
-                textColor = view.context.getColorFromRes(R.color.md_green_300)
+                textColor = context.getColorFromRes(R.color.md_green_300)
                 setOnClickListener {
                     elementList.add(Formula.FormulaElement().apply {
                         type = COLUMN_ID
@@ -114,8 +116,6 @@ class FormulaLayout(
             }
             container.addView(textView)
         }
-
-
     }
 
     private fun TextView.initParamTextView() {
@@ -125,16 +125,16 @@ class FormulaLayout(
     }
 
     private fun initClickNumbers() {
-        val one = view.one
-        val two = view.two
-        val three = view.three
-        val four = view.four
-        val five = view.five
-        val six = view.six
-        val seven = view.seven
-        val eight = view.eight
-        val nine = view.nine
-        val zero = view.zero
+        val one = formulaLayoutBinding.one
+        val two = formulaLayoutBinding.two
+        val three = formulaLayoutBinding.three
+        val four = formulaLayoutBinding.four
+        val five = formulaLayoutBinding.five
+        val six = formulaLayoutBinding.six
+        val seven = formulaLayoutBinding.seven
+        val eight = formulaLayoutBinding.eight
+        val nine = formulaLayoutBinding.nine
+        val zero = formulaLayoutBinding.zero
 
         val click: (View) -> Unit = {
             val textView = it as TextView
@@ -159,7 +159,7 @@ class FormulaLayout(
     }
 
     private fun displayFormula() {
-        displayTextView.text = formula.getFormulaString(view.context, allNColumns, allNTotals)
+        displayTextView.text = formula.getFormulaString(context, allNColumns, allNTotals)
     }
 
 
@@ -192,85 +192,84 @@ class FormulaLayout(
     fun errorFormula() {
         displayTextView.textColor = displayTextView.context.getColorFromRes(R.color.colorRed)
     }
-}
 
+    companion object{
+        fun formulaDialogShow(
+            formula: Formula,
+            context: Context,
+            filterNColumns: List<NumberColumn>,
+            allNColumns: List<NumberColumn> = filterNColumns,
+            filterNTotals: List<Total>?,
+            allNTotals: List<Total>?,
+            positiveClick: (Formula) -> Unit
+        ) {
+            val formulaLayoutBinding = FormulaLayoutBinding.inflate(context.layoutInflater)
+            val formulaLayout = FormulaLayout(
+                formulaLayoutBinding = formulaLayoutBinding,
+                filterNColumns = filterNColumns,
+                allNColumns = allNColumns,
+                filterNTotals = filterNTotals,
+                allNTotals = allNTotals,
+                _formula = formula
+            )
 
-fun formulaDialogShow(
-    formula: Formula,
-    context: Context,
-    filterNColumns: List<NumberColumn>,
-    allNColumns: List<NumberColumn> = filterNColumns,
-    filterNTotals: List<Total>?,
-    allNTotals: List<Total>?,
-    positiveClick: (Formula) -> Unit
-) {
-    val inflate = View.inflate(context, R.layout.formula_layout, null)
-    val formulaLayout = FormulaLayout(
-        view = inflate,
-        filterNColumns = filterNColumns,
-        allNColumns = allNColumns,
-        filterNTotals = filterNTotals,
-        allNTotals = allNTotals,
-        _formula = formula
-    )
+            context.alertDialog {
+                setCustomTitle(TextView(context).apply {
+                    padding = context.dip(18)
+                    textSize = 18F
+                    text = "Введите формулу"
+                    textColor = context.getColorFromRes(R.color.textColorPrimary)
+                })
+                setView(formulaLayoutBinding.root)
+                setPositiveButton("OK") { dialog, _ ->
+                    formulaLayout.getFormula()?.let {
+                        positiveClick(it)
+                        dialog.dismiss()
+                    } ?: formulaLayout.errorFormula()
+                }
+                setNegativeButton(context.getString(R.string.cancel)) { dialog, _ ->
+                    dialog.dismiss()
+                }
+            }.apply {
+                show()
+                getButton(AlertDialog.BUTTON_POSITIVE).textColor =
+                    context.getColorFromRes(R.color.accent)
+                getButton(AlertDialog.BUTTON_NEGATIVE).textColor =
+                    context.getColorFromRes(R.color.accent)
+                window?.setBackgroundDrawable(ColorDrawable(context.getColorFromRes(R.color.colorPrimary)))
+            }
+        }
 
-    val dialog = context.alertDialog {
-        setCustomTitle(TextView(context).apply {
-            padding = context.dip(18)
-            textSize = 18F
-            text = "Введите формулу"
-            textColor = context.getColorFromRes(R.color.textColorPrimary)
-        })
-        setView(inflate)
-        setPositiveButton("OK", null)
-        setNegativeButton(context.getString(R.string.cancel)) { dialog, _ ->
-            dialog.dismiss()
+        fun initClickOperation(view: View, callBack: (String) -> Unit) {
+            val symbolsBinding = FormulaSymbolsBinding.bind(view)
+            val add = symbolsBinding.add
+            val sub = symbolsBinding.subtract
+            val mult = symbolsBinding.multiply
+            val div = symbolsBinding.divide
+            val percent = symbolsBinding.percent
+            val leftBracket = symbolsBinding.leftBracket
+            val rightBracket = symbolsBinding.rightBracket
+            val point = symbolsBinding.point
+
+            val click: (View) -> Unit = {
+                val textView = it as TextView
+                var op = textView.text.toString()
+                if (it == symbolsBinding.subtract)
+                    op = "-"
+                if (it == symbolsBinding.multiply)
+                    op = "*"
+
+                callBack(op)
+            }
+
+            add.setOnClickListener(click)
+            sub.setOnClickListener(click)
+            mult.setOnClickListener(click)
+            div.setOnClickListener(click)
+            percent.setOnClickListener(click)
+            leftBracket.setOnClickListener(click)
+            rightBracket.setOnClickListener(click)
+            point.setOnClickListener(click)
         }
     }
-    dialog.show()
-    dialog.getButton(AlertDialog.BUTTON_POSITIVE).apply {
-        textColor = context.getColorFromRes(R.color.accent)
-        setOnClickListener {
-            formulaLayout.getFormula()?.let {
-                positiveClick(it)
-                dialog.dismiss()
-            } ?: formulaLayout.errorFormula()
-        }
-
-    }
-    dialog.getButton(AlertDialog.BUTTON_NEGATIVE).apply {
-        textColor = context.getColorFromRes(R.color.accent)
-    }
-    dialog.window?.setBackgroundDrawable(ColorDrawable(context.getColorFromRes(R.color.colorPrimary)))
-}
-
-fun initClickOperation(view: View, callBack: (String) -> Unit) {
-    val add = view.add
-    val sub = view.subtract
-    val mult = view.multiply
-    val div = view.divide
-    val percent = view.percent
-    val leftBracket = view.leftBracket
-    val rightBracket = view.rightBracket
-    val point = view.point
-
-    val click: (View) -> Unit = {
-        val textView = it as TextView
-        var op = textView.text.toString()
-        if (it == view.subtract)
-            op = "-"
-        if (it == view.multiply)
-            op = "*"
-
-        callBack(op)
-    }
-
-    add.setOnClickListener(click)
-    sub.setOnClickListener(click)
-    mult.setOnClickListener(click)
-    div.setOnClickListener(click)
-    percent.setOnClickListener(click)
-    leftBracket.setOnClickListener(click)
-    rightBracket.setOnClickListener(click)
-    point.setOnClickListener(click)
 }
