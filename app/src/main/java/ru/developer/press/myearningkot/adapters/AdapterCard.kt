@@ -7,10 +7,10 @@ import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.card.view.*
 import org.jetbrains.anko.dip
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.database.Card
+import ru.developer.press.myearningkot.databinding.CardBinding
 import ru.developer.press.myearningkot.helpers.MyLiveData
 import ru.developer.press.myearningkot.helpers.observer
 import ru.developer.press.myearningkot.helpers.scoups.inflatePlate
@@ -40,28 +40,26 @@ class AdapterCard(
     }
 
     inner class CardHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val activity = itemView.context as AppCompatActivity
+        private val cardBinding = CardBinding.bind(view)
 
         fun bind(liveData: MyLiveData<Card>) {
-            liveData.observe(activity, observer { card ->
-
+            liveData.observe(cardBinding.root.context as AppCompatActivity, observer { card ->
                 setClick(card)
                 setLongClick(card)
 
-                card.inflatePlate(itemView)
-//                itemView.setShowTotalInfo(card.isShowTotalInfo)
+                card.inflatePlate(cardBinding)
 
                 if (card.isUpdating) {
-                    itemView.animate().alpha(0f).withEndAction {
-                        itemView.animate().alpha(1f)
-                        card.isUpdating = false
+                    card.isUpdating = false
+                    cardBinding.root.animate().alpha(0f).withEndAction {
+                        cardBinding.root.animate().alpha(1f)
                     }
                 }
 
                 if (card.isSelect) {
-                    itemView.translationX = selectCardDistance
+                    cardBinding.all.translationX = selectCardDistance
                 } else {
-                    itemView.translationX = 0f
+                    cardBinding.all.translationX = 0f
                 }
             })
         }
@@ -72,8 +70,8 @@ class AdapterCard(
                 MainViewModel.cardLongClick.invoke(card.refId)
                 true
             }
-            itemView.setOnLongClickListener(longClick)
-            itemView.totalContainerScroll.setOnLongClickListener(longClick)
+            cardBinding.root.setOnLongClickListener(longClick)
+            cardBinding.totalContainerScroll.setOnLongClickListener(longClick)
         }
 
         private fun setClick(card: Card) {
@@ -83,8 +81,8 @@ class AdapterCard(
                 }
                 MainViewModel.cardClick.invoke(card.refId)
             }
-            itemView.setOnClickListener(click)
-            itemView.totalContainerScroll.setOnClickListener(click)
+            cardBinding.root.setOnClickListener(click)
+            cardBinding.totalContainerScroll.setOnClickListener(click)
         }
 
         private fun switchSelection(card: Card) {
@@ -97,7 +95,7 @@ class AdapterCard(
         }
 
         private fun animTranslationX(x: Float, endBlock: () -> Unit = {}) {
-            itemView._all.animate()
+            cardBinding.all.animate()
                 .translationX(x)
                 .setDuration(250)
                 .setInterpolator(DecelerateInterpolator())

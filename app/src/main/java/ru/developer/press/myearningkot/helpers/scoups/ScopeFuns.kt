@@ -22,11 +22,12 @@ import org.jetbrains.anko.wrapContent
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.activity.CardActivity
 import ru.developer.press.myearningkot.database.Card
+import ru.developer.press.myearningkot.databinding.CardBinding
 import kotlinx.android.synthetic.main.total_item_layout.view.totalValueContainer as totalValueContainer1
 
 @SuppressLint("InflateParams")
-fun Card.inflatePlate(plateView: View) {
-    val context = plateView.context
+fun Card.inflatePlate(plateView: CardBinding) {
+    val context = plateView.root.context
     val nameCard = plateView.nameCard
     val datePeriodCard = plateView.datePeriodCard
     nameCard.text = name

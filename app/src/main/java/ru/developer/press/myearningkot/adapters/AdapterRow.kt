@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -25,9 +26,9 @@ import ru.developer.press.myearningkot.model.Status
 import ru.developer.press.myearningkot.model.SwitchColumn
 
 class AdapterRow(
-        private var rowClickListener: RowClickListener?,
-        private val provideDataRows: ProvideDataRows,
-        private val totalView: View?
+    private var rowClickListener: RowClickListener?,
+    private val provideDataRows: ProvideDataRows,
+    private val totalView: View?
 ) : RecyclerView.Adapter<RowHolder>() {
 
     companion object {
@@ -55,11 +56,11 @@ class AdapterRow(
         val rowHeight = context.dip(provideDataRows.getRowHeight())
         val rowView = LinearLayout(context).apply {
             layoutParams = LinearLayout.LayoutParams(
-                    width,
-                    if (provideDataRows.isEnableSomeStroke()) {
-                        minimumHeight = rowHeight
-                        wrapContent
-                    } else rowHeight
+                width,
+                if (provideDataRows.isEnableSomeStroke()) {
+                    minimumHeight = rowHeight
+                    wrapContent
+                } else rowHeight
             )
             orientation = LinearLayout.HORIZONTAL
         }
@@ -100,7 +101,7 @@ class AdapterRow(
     override fun onBindViewHolder(holder: RowHolder, position: Int) {
         if (holder.itemViewType == -1) {
             holder.itemView.layoutParams =
-                    FrameLayout.LayoutParams(matchParent, totalView?.height ?: 0)
+                FrameLayout.LayoutParams(matchParent, totalView?.height ?: 0)
             return
         }
 
@@ -136,7 +137,7 @@ class AdapterRow(
                             if (view.context !is CreateCardActivity) {
                                 // индексы (ряд и колона) предыдущего выделеного элемента (ячейки)
                                 val selectCellPairIndexes =
-                                        provideDataRows.getSelectCellPairIndexes()
+                                    provideDataRows.getSelectCellPairIndexes()
                                 selectCellPairIndexes?.let {
                                     val selectedCell = sortedRows[it.first].cellList[it.second]
                                     // если ячейка на которую кликнули не равна той что была кликнута
@@ -158,17 +159,14 @@ class AdapterRow(
         val previousRow = if (position > 0) sortedRows[position - 1] else null
         val secondRow = if (position < sortedRows.lastIndex) sortedRows[position + 1] else null
         holder.bind(
-                row,
-                provideDataRows.getColumns(),
-                previousRow,
-                secondRow
+            row,
+            provideDataRows.getColumns(),
+            previousRow,
+            secondRow
         )
     }
 
 }
-
-lateinit var animationDelete: Animation
-lateinit var animationAdd: Animation
 
 class RowHolder(view: View) : DragDropSwipeAdapter.ViewHolder(view), RowDataListener {
     var viewList = mutableListOf<View>()
@@ -176,10 +174,10 @@ class RowHolder(view: View) : DragDropSwipeAdapter.ViewHolder(view), RowDataList
     private var positionRow = 0
 
     fun bind(
-            row: Row,
-            columns: MutableList<Column>,
-            previousRow: Row?,
-            secondRow: Row?
+        row: Row,
+        columns: MutableList<Column>,
+        previousRow: Row?,
+        secondRow: Row?
     ) {
         if (itemViewType == -1) {
             return
@@ -195,10 +193,10 @@ class RowHolder(view: View) : DragDropSwipeAdapter.ViewHolder(view), RowDataList
             Status.SELECT -> {
 //                rowNumber?.text = "✔"
                 rowNumber?.setTextColor(
-                        ContextCompat.getColor(
-                                context,
-                                R.color.colorSecondary
-                        )
+                    ContextCompat.getColor(
+                        context,
+                        R.color.colorSecondary
+                    )
                 )
 
                 val isPrevSelect = previousRow?.status == Status.SELECT
@@ -214,21 +212,25 @@ class RowHolder(view: View) : DragDropSwipeAdapter.ViewHolder(view), RowDataList
                 }
             }
             Status.ADDED -> {
-                if (row.elementView.animation == null) {
-                    row.elementView.startAnimation(animationAdd)
-                    row.elementView.animateColor(
-                            context.getColorFromRes(R.color.colorSecondaryLight),
-                            Color.TRANSPARENT,
-                            AdapterRow.animatedDuration
+                row.status = Status.NONE
+                row.elementView.startAnimation(
+                    AnimationUtils.loadAnimation(
+                        context,
+                        R.anim.anim_left_to_right
                     )
-                }
+                )
+                row.elementView.animateColor(
+                    context.getColorFromRes(R.color.colorSecondaryLight),
+                    Color.TRANSPARENT,
+                    AdapterRow.animatedDuration
+                )
             }
             Status.DELETED -> {
                 if (row.elementView.animation == null) {
                     row.elementView.animateColor(
-                            colorFrom = Color.TRANSPARENT,
-                            colorTo = context.getColorFromRes(R.color.colorRemovedItem),
-                            duration = AdapterRow.animatedDuration
+                        colorFrom = Color.TRANSPARENT,
+                        colorTo = context.getColorFromRes(R.color.colorRemovedItem),
+                        duration = AdapterRow.animatedDuration
                     ) {
                         row.elementView.backgroundColor = Color.TRANSPARENT
                     }

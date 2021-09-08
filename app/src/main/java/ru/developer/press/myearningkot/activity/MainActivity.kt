@@ -48,13 +48,11 @@ class MainActivity : AppCompatActivity() {
             if (id.isNotEmpty()) {
                 val indexPage = tabs.selectedTabPosition
                 viewModel.createCard(indexPage, id, name ?: "") { positionCard ->
-                    runMainOnLifeCycle {
-                        adapterViewPagerToMain.insertCardToPosition(
-                            indexPage,
-                            positionCard
-                        )
-                        root.appBar.setExpanded(false, true)
-                    }
+                    adapterViewPagerToMain.insertCardToPosition(
+                        indexPage,
+                        positionCard
+                    )
+                    root.appBar.setExpanded(false, true)
                 }
             }
         }
@@ -479,9 +477,9 @@ class MainActivity : AppCompatActivity() {
         })
         toolbar.post {
             val colorRes =
-                if (tabs.tabCount > 1) R.color.colorIconItemMenu
-                else R.color.colorControlNormal
-            toolbar.menu.findItem(R.id.deletePage)?.icon?.setTint(getColorFromRes(colorRes))
+                if (tabs.tabCount > 1) R.drawable.ic_delete
+                else R.drawable.ic_delete_disabled
+            toolbar.menu.findItem(R.id.deletePage)?.setIcon(colorRes)
         }
     }
 }

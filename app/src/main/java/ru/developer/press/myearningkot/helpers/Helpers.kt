@@ -77,7 +77,6 @@ fun <T> observer(changed: (T) -> Unit): Observer<T> {
         override fun onChanged(t: T?) {
             t?.let { changed.invoke(it) }
         }
-
     }
 }
 

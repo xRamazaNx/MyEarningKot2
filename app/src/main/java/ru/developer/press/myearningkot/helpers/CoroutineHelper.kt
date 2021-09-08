@@ -1,5 +1,7 @@
 package ru.developer.press.myearningkot.helpers
 
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.DialogFragment
@@ -55,3 +57,10 @@ fun View.postDelay(delay: Long, delayBlock: suspend () -> Unit) {
         }
     }
 }
+
+fun postDelay(delay: Long, delayBlock: () -> Unit) {
+    Handler(Looper.getMainLooper()).postDelayed({
+        delayBlock.invoke()
+    }, delay)
+}
+

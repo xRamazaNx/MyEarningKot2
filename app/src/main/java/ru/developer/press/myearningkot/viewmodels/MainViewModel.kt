@@ -25,7 +25,7 @@ class MainViewModel : ViewModel() {
     private val pageList: MutableList<MyLiveData<Page>> = mutableListOf()
     var currentPagePosition = 0 // TODO: 21.08.2021  назначать при переключении
 
-    val initializeLD = SingleLiveEvent<Boolean>()
+    val initializeLD = liveData<Boolean>()
     suspend fun initialization() {
         dao.getPageList().forEach { page ->
             page.cards.forEach { it.value!!.isUpdating = false }
@@ -35,6 +35,7 @@ class MainViewModel : ViewModel() {
     }
 
     init {
+        initializeLD.postValue(false)
         isSelectMode.set(false)
         // нажали на карточку
         cardClick = { idCard ->
@@ -103,7 +104,9 @@ class MainViewModel : ViewModel() {
             // добавляем во вкладку
             page.cards.add(position, liveDataFromMain(card))
 //                pageLiveData.value = page
-            updateView(position)
+            main {
+                updateView(position)
+            }
         }
     }
 

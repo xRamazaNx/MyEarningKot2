@@ -43,7 +43,8 @@
 
     <color name="colorInputLayoutBackground">#FC2B2B2B</color>
 
-    <color name="colorIconItemMenu">#BDBDBD</color>
+    <color name="colorIconItemMenu">#C6C6C6</color>
+    <color name="colorIconItemMenuDisabled">#5A5A5A</color>
     <color name="colorIconItemView">#808080</color>
 
     <color name="colorTitle">#247b8c</color>

@@ -6,14 +6,11 @@ import android.app.Application.ActivityLifecycleCallbacks
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.view.animation.AnimationUtils
 import androidx.appcompat.app.AppCompatActivity
 import com.bugsnag.android.Bugsnag
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
-import ru.developer.press.myearningkot.adapters.animationAdd
-import ru.developer.press.myearningkot.adapters.animationDelete
 import ru.developer.press.myearningkot.database.DataController
 import ru.developer.press.myearningkot.database.UpdatedRefData
 import ru.developer.press.myearningkot.helpers.*
@@ -26,10 +23,20 @@ class App : Application(), ActivityLifecycleCallbacks {
         var fireStoreChanged = liveData<UpdatedRefData>()
     }
 
-    var currentActivity: AppCompatActivity? = null
+    // от сюда берется только его значение
     var copyCell: Cell? = null
-    var copyRowList: List<Row>? = null
 
+    var copyRowList: List<Row>? = null
+        get() {
+            return field?.fold(mutableListOf()) { list, row ->
+                list.add(row.copy().apply {
+                    status = Status.ADDED
+                })
+                list
+            }
+        }
+
+    private var currentActivity: AppCompatActivity? = null
     private val pref: SharedPreferences
         get() = getSharedPreferences("app.setting", Context.MODE_PRIVATE)
 
@@ -39,9 +46,6 @@ class App : Application(), ActivityLifecycleCallbacks {
 
         runOnIO {
             registerActivityLifecycleCallbacks(this@App)
-            animationDelete = AnimationUtils.loadAnimation(applicationContext, R.anim.anim_delete)
-            animationAdd =
-                AnimationUtils.loadAnimation(applicationContext, R.anim.anim_left_to_right)
             filesFolder = filesDir.path + "/"
             Column.titleColor = getColorFromRes(R.color.textColorTabsTitleNormal)
             NumerationColumn.color = getColorFromRes(R.color.textColorSecondary)
@@ -88,14 +92,12 @@ class App : Application(), ActivityLifecycleCallbacks {
         if (activity is AppCompatActivity)
             currentActivity = activity
     }
-
-
 }
 
 const val prefFirstKey = "isFirst"
-const val prefSampleLastChanged = "sampleLastChanged"
-const val prefEnableDate = "enableDate"
-const val prefSortSelected = "sortSelected"
-
-const val prefEnableSomeStrokeChanged = "enableSomeStrokeChanged"
-const val prefDateLastChanged = "dateLastChanged"
+//const val prefSampleLastChanged = "sampleLastChanged"
+//const val prefEnableDate = "enableDate"
+//const val prefSortSelected = "sortSelected"
+//
+//const val prefEnableSomeStrokeChanged = "enableSomeStrokeChanged"
+//const val prefDateLastChanged = "dateLastChanged"

@@ -74,6 +74,15 @@ fun Card.addRow(
     return row
 }
 
+fun Card.addRows(index: Int, rowLis: List<Row>) {
+    rowLis.forEach { row ->
+        row.status = Status.ADDED
+        updateTypeControlRow(row)
+    }
+    rows.addAll(index, rowLis)
+    calcTotals()
+}
+
 fun Card.addColumn(type: ColumnType, name: String, position: Int = columns.size): Column {
     val column = when (type) {
         ColumnType.NUMERATION -> NumerationColumn(name, pageId, refId)

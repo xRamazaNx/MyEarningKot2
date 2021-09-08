@@ -356,7 +356,7 @@ class DataController(context: Context) {
             val totalRef = total.totalJson()
             totalDao.insert(totalRef)
         }
-        fireStore.addCard(card)
+//        fireStore.addCard(card)
     }
 
     suspend fun getCard(refId: String): Card = io {
@@ -513,6 +513,12 @@ class DataController(context: Context) {
         val jsonValue = row.rowJson()
         rowDao.insert(jsonValue)
         fireStore.addJsonValue(jsonValue, ROW_PATH)
+    }
+
+    suspend fun addRows(rowLis: List<Row>) {
+        rowLis.forEach { row ->
+            addRow(row)
+        }
     }
 
     suspend fun updateRow(row: Row) = io {

@@ -1,7 +1,6 @@
 package ru.developer.press.myearningkot.activity
 
 import android.animation.Animator
-import android.graphics.Color
 import android.os.Handler
 import android.os.Looper
 import android.view.Menu
@@ -64,7 +63,6 @@ open class CardActivity : CommonCardActivity() {
                         if (!isOpenEditDialogProcess) {
                             isOpenEditDialogProcess = true
                             postDelay(500) {
-                                delay(500)
                                 isOpenEditDialogProcess = false
                             }
                             editCell()
@@ -77,47 +75,67 @@ open class CardActivity : CommonCardActivity() {
         }
     }
 
+    // должна только за меню отвечать
     private fun selectedModeObserve() {
+        var oldSelectMode: SelectMode? = null
+        var pasteIconFromCell: Int = -1
+        var pasteIconFromRow: Int = -1
         val menu = toolbar.menu
+
         viewModel.selectMode.observe(this, { selectMode ->
-            menu.clear()
+            if (oldSelectMode != selectMode)
+                menu.clear()
             when (selectMode) {
                 SelectMode.CELL -> {
-                    menuInflater.inflate(R.menu.cell_menu, menu)
+                    if (oldSelectMode != SelectMode.CELL) {
+                        menuInflater.inflate(R.menu.cell_menu, menu)
+                        supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_check)
+                    }
                     // ставим иконку вставить в зависимости доступности вставки
-                    if (viewModel.isEqualTypeCellAndCopyCell(app().copyCell)) {
-                        menu.findItem(R.id.pasteCell).setIcon(R.drawable.ic_paste)
+                    val icon = if (viewModel.isCapabilityPasteCell(app().copyCell)) {
+                        R.drawable.ic_paste
                     } else
-                        menu.findItem(R.id.pasteCell).setIcon(R.drawable.ic_paste_disabled)
-                    supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_check)
+                        R.drawable.ic_paste_disabled
+
+                    if (pasteIconFromCell != icon) {
+                        menu.findItem(R.id.pasteCell).setIcon(icon)
+                        pasteIconFromCell = icon
+                    }
                 }
 
                 SelectMode.ROW -> {
-                    menuInflater.inflate(R.menu.row_menu, menu)
-                    if (viewModel.isCapabilityPaste(app().copyRowList)) {
-                        menu.findItem(R.id.pasteRow).setIcon(R.drawable.ic_paste)
+                    if (oldSelectMode != SelectMode.ROW) {
+                        menuInflater.inflate(R.menu.row_menu, menu)
+                        supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_check)
+                    }
+
+                    val icon = if (viewModel.isCapabilityPasteRow(app().copyRowList)) {
+                        R.drawable.ic_paste
                     } else
-                        menu.findItem(R.id.pasteRow).setIcon(R.drawable.ic_paste_disabled)
-                    supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_check)
+                        R.drawable.ic_paste_disabled
+
+                    if (pasteIconFromRow != icon) {
+                        menu.findItem(R.id.pasteRow).setIcon(icon)
+                        pasteIconFromRow = icon
+                    }
                 }
                 else -> {
-                    menuInflater.inflate(R.menu.card_main_menu, menu)
-                    fbAddRow.speedDialMenuAdapter = null
-                    fbAddRow.setButtonIconResource(R.drawable.ic_add_not_ring_white)
-                    fbAddRow.setButtonBackgroundColour(getColorFromRes(R.color.colorSecondaryDark))
-                    // тут именно это пусть будет
-                    Handler(Looper.getMainLooper()).post { waitForAnimationsToFinish() }
-                    if (fbAddRow.isShown) {
-                        if (!appBar.isShown)
-                            fbAddRow.hide()
+                    if (oldSelectMode != SelectMode.NONE) {
+                        menuInflater.inflate(R.menu.card_main_menu, menu)
+                        supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_home)
+                        if (fbAddRow.isShown) {
+                            if (!appBar.isShown)
+                                fbAddRow.hide()
+                        }
                     }
-                    supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_home)
                 }
             }
             if (selectMode != SelectMode.NONE)
                 fbAddRow.hide()
             if (selectMode != SelectMode.CELL)
                 hideInputCell()
+
+            oldSelectMode = selectMode
         })
 
     }
@@ -128,64 +146,67 @@ open class CardActivity : CommonCardActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.search -> {
-            }
-            R.id.period -> {
-            }
-            R.id.sort -> {
-            }
-            R.id.setting -> {
-                editCardRegister.startPrefActivity(
-                    CardInfo.CardCategory.CARD,
-                    activity = this,
-                    cardId = viewModel.card.refId,
-                    title = getString(R.string.setting)
-                )
-            }
-            // cell
-            R.id.editCell -> {
-                editCell()
-            }
-            R.id.pasteCell -> {
-                pasteCell()
-            }
-            R.id.copyCell -> {
-                copySelectedCell(false)
-            }
-            R.id.cutCell -> {
-                copySelectedCell(true)
-            }
-            // row
-            R.id.deleteRow -> {
-                removeSelectedRows()
-            }
-            R.id.cutRow -> {
-                copySelectedRows(true)
-            }
-            R.id.copyRow -> {
-                copySelectedRows(false)
-            }
-            R.id.pasteRow -> {
-                pasteRows()
-            }
-            R.id.duplicateRow -> {
-                duplicateRows()
-            }
+        postDelay(200) {
+            when (item.itemId) {
+                R.id.search -> {
+                }
+                R.id.period -> {
+                }
+                R.id.sort -> {
+                }
+                R.id.setting -> {
+                    editCardRegister.startPrefActivity(
+                        CardInfo.CardCategory.CARD,
+                        activity = this,
+                        cardId = viewModel.card.refId,
+                        title = getString(R.string.setting)
+                    )
+                }
+                // cell
+                R.id.editCell -> {
+                    editCell()
+                }
+                R.id.pasteCell -> {
+                    pasteCell()
+                }
+                R.id.copyCell -> {
+                    copySelectedCell(false)
+                }
+                R.id.cutCell -> {
+                    copySelectedCell(true)
+                }
+                // row
+                R.id.deleteRow -> {
+                    removeSelectedRows()
+                }
+                R.id.cutRow -> {
+                    copySelectedRows(true)
+                }
+                R.id.copyRow -> {
+                    copySelectedRows(false)
+                }
+                R.id.pasteRow -> {
+                    pasteRows()
+                }
+                R.id.duplicateRow -> {
+                    duplicateRows()
+                }
 
-            android.R.id.home -> {
-                onBackPressed()
+                android.R.id.home -> {
+                    onBackPressed()
+                }
             }
         }
-        return super.onOptionsItemSelected(item)
+        return true
     }
 
     override fun updateActivity() {
         doStart()
         hideViewWhileScroll()
         hideUnnecessaryElementsFromTotalAmount()
-        fbAddRow.setContentCoverColour(Color.TRANSPARENT)
-        progressBar.visibility = GONE
+        adapter.setCellClickListener(rowClickListener)
+        fbAddRow.setButtonIconResource(R.drawable.ic_add_not_ring_white)
+        fbAddRow.setButtonBackgroundColour(getColorFromRes(R.color.colorSecondaryDark))
 
         tableView.isLong.observe(this@CardActivity, {
             isLongClick = it
@@ -202,33 +223,44 @@ open class CardActivity : CommonCardActivity() {
                 }
             }
         }
-        adapter.setCellClickListener(rowClickListener)
-        // наблюдатель для события выделения ячейки
         selectedModeObserve()
-
+        // наблюдатель для события выделения ячейки
+        progressBar.visibility = GONE
     }
 
     private fun duplicateRows() {
         viewModel.apply {
-            duplicateRows()
-            scrollToPosition(sortedRows.size)
+            runOnViewModel {
+                copySelectedRows(false)
+                app().copyRowList?.let { copyRows ->
+                    duplicateRows(copyRows)
+                    main {
+                        scrollToPosition(sortedRows.size)
+                    }
+
+                }
+            }
         }
     }
 
     private fun pasteRows() {
         viewModel.apply {
-            pasteRows(app().copyRowList)
-            selectMode.value = SelectMode.NONE
+            runMainOnLifeCycle {
+                app().copyRowList?.let { list ->
+                    pasteRows(list)
+                }
+            }
         }
-
     }
 
-    private fun copySelectedRows(isCut: Boolean) {
+    private suspend fun copySelectedRows(isCut: Boolean) = io {
         app().copyRowList = viewModel.getSelectedRows()
         if (isCut)
             removeSelectedRows()
         else
-            viewModel.selectMode.value = SelectMode.ROW
+            main {
+                viewModel.selectMode.value = SelectMode.ROW
+            }
     }
 
     private fun copySelectedCell(isCut: Boolean) {
@@ -243,17 +275,17 @@ open class CardActivity : CommonCardActivity() {
 
     private fun pasteCell() {
         // на вход принимается функция которая должна обновить строку после вставки
-        viewModel.pasteCell(app().copyCell) {
-            updateInputLayout()
+        app().copyCell?.let { cell ->
+            viewModel.pasteCell(cell) {
+                updateInputLayout()
+            }
         }
     }
 
-    private fun removeSelectedRows() {
-        runMainOnLifeCycle {
-            viewModel.apply {
-                deleteRows { position ->
-                    adapter.notifyItemChanged(position)
-                }
+    private suspend fun removeSelectedRows() = io {
+        viewModel.apply {
+            deleteRows { position ->
+                adapter.notifyItemChanged(position)
             }
         }
     }
@@ -317,21 +349,18 @@ open class CardActivity : CommonCardActivity() {
     }
 
     override fun onBackPressed() {
-        if (fbAddRow.isSpeedDialMenuOpen)
-            fbAddRow.closeSpeedDialMenu()
-        else
-            viewModel.apply {
-                selectMode.value.let { selectMode1 ->
-                    if (selectMode1 != SelectMode.NONE) {
-                        unSelect()
-                    } else {
-                        updatedCardStatus.observe(this@CardActivity) {
-                            if (!it)
-                                finish()
-                        }
+        viewModel.apply {
+            selectMode.value.let { selectMode1 ->
+                if (selectMode1 != SelectMode.NONE) {
+                    unSelect()
+                } else {
+                    updatedCardStatus.observe(this@CardActivity) {
+                        if (!it)
+                            finish()
                     }
                 }
             }
+        }
     }
 
     private fun editCell() {

@@ -14,8 +14,8 @@
         android:background="@color/colorSelectCard"
         android:layout_width="42dp"
         android:layout_height="42dp"
-        android:layout_alignTop="@id/_all"
-        android:layout_alignBottom="@id/_all"
+        android:layout_alignTop="@id/all"
+        android:layout_alignBottom="@id/all"
         android:layout_alignParentEnd="true"
         android:paddingEnd="8dp"
         android:paddingStart="8dp"
@@ -26,7 +26,7 @@
         tools:ignore="HardcodedText" />
 
     <LinearLayout
-        android:id="@+id/_all"
+        android:id="@+id/all"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"

@@ -24,6 +24,7 @@ import ru.developer.press.myearningkot.adapters.AdapterRow
 import ru.developer.press.myearningkot.adapters.DiffRows
 import ru.developer.press.myearningkot.dagger.CardViewModelModule
 import ru.developer.press.myearningkot.dagger.DaggerCardComponent
+import ru.developer.press.myearningkot.databinding.CardBinding
 import ru.developer.press.myearningkot.helpers.*
 import ru.developer.press.myearningkot.helpers.scoups.inflatePlate
 import ru.developer.press.myearningkot.helpers.scoups.inflateView
@@ -68,7 +69,7 @@ abstract class CommonCardActivity : AppCompatActivity(), UIControl {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_card)
         totalAmountView.backgroundColorResource = R.color.colorPrimary
-        _all.backgroundColorResource = R.color.colorPrimary
+        all.backgroundColorResource = R.color.colorPrimary
         columnContainer = LinearLayout(this).also {
             it.layoutParams =
                 LinearLayout.LayoutParams(
@@ -93,7 +94,7 @@ abstract class CommonCardActivity : AppCompatActivity(), UIControl {
             createTitles()
             // подписываем
             cardLiveData.observe(this@CommonCardActivity, {
-                it.inflatePlate(totalAmountView)
+                it.inflatePlate(CardBinding.bind(totalAmountView))
             })
             totalLiveData.observe(this@CommonCardActivity, {
                 it.updateTotalAmount(totalAmountView)

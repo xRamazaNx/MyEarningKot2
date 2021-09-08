@@ -285,12 +285,9 @@ class CardViewModel : ViewModel(), ProvideDataRows {
             val addRow = card.addRow()
             dao.addRow(addRow)
             sortList()
-            main { end.invoke() }
-            delay(animatedDuration)
-            addRow.status = Status.NONE
-            addRow.elementView.animation = null
-            card.calcTotals()
-            main { end.invoke() }
+            main {
+                end.invoke()
+            }
         }
     }
 
@@ -361,6 +358,7 @@ class CardViewModel : ViewModel(), ProvideDataRows {
         card.unSelectRows()
         selectMode.value =
             SelectMode.NONE
+        uiControl.notifyItems()
     }
 
     suspend fun getCopySelectedCell(isCut: Boolean): Cell? {
@@ -381,27 +379,17 @@ class CardViewModel : ViewModel(), ProvideDataRows {
         return null
     }
 
-    fun isEqualTypeCellAndCopyCell(copyCell: Cell?): Boolean {
-        val selectedCellType = getSelectedCellType()
-        var eq = false
-        copyCell?.let {
-            eq = it.type == selectedCellType
-        }
-        return eq
-    }
-
-    fun pasteCell(copyCell: Cell?, update: () -> Unit) {
+    fun pasteCell(copyCell: Cell, update: () -> Unit) {
         runOnViewModel {
-            if (isEqualTypeCellAndCopyCell(copyCell))
+            if (isCapabilityPasteCell(copyCell))
                 card.rows.forEach { row ->
                     row.cellList.forEach { cell ->
                         if (cell.isSelect) {
-                            copyCell?.let {
-                                cell.sourceValue = it.sourceValue
-                                updateRowToDB(row)
-                                card.updateTypeControlRow(row)
-                                updateTotals()
-                            }
+                            cell.sourceValue = copyCell.sourceValue
+                            updateRowToDB(row)
+                            card.updateTypeControlRow(row)
+                            updateTotals()
+
                             updateAdapter()
                             main {
                                 update()
@@ -421,10 +409,6 @@ class CardViewModel : ViewModel(), ProvideDataRows {
         }
     }
 
-    private fun getSelectedCellType(): ColumnType? {
-        return card.getSelectedCell()?.type
-    }
-
     suspend fun deleteRows(updateView: (position: Int) -> Unit) {
         io {
             val deletedRows = sortedRows.filter { it.status == Status.SELECT }
@@ -441,48 +425,37 @@ class CardViewModel : ViewModel(), ProvideDataRows {
             dao.deleteRows(deletedRows)
             sortList()
             updateAdapter()
-            selectMode.postValue(SelectMode.NONE)
+            main {
+                uiControl.notifyItems()
+                selectMode.value = SelectMode.NONE
+            }
         }
         // сортировка листа и обновлении происходит после анимации удаления
     }
 
     fun getSelectedRows(): List<Row> = card.getSelectedRows()
 
-    fun pasteRows(copyRowList: List<Row>?) {
-        runOnViewModel {
-            // самый нижний элемент чтобы вставить туда
-            val indexLastRow = sortedRows.indexOfLast { it.status == Status.SELECT }
-            copyRowList?.let { copyList ->
+    suspend fun pasteRows(copyRowLis: List<Row>) = io {
+        // самый нижний элемент чтобы вставить туда
+        val indexLastRow = sortedRows.indexOfLast { it.status == Status.SELECT }
 
-                if (isCapabilityPaste(copyRowList)) {
-                    // выделенные строки ниже которых надо добавить
-                    card.getSelectedRows().forEach { it.status = Status.NONE }
-                    // отдельный лист чтоб копировать элементы а не ссылки на них потому что в копилист бывают ссылки
-                    val list = copyList.fold(mutableListOf<Row>()) { mutableList, row ->
-                        mutableList.apply {
-                            add(row.copy().also {
-                                it.status = Status.ADDED
-                            })
-                        }
-                    }
-                    card.rows.addAll(indexLastRow + 1, list)
-                    list.forEach {
-                        dao.addRow(it)
-                    }
-                    sortList()
-
-                    list.forEach { row ->
-                        card.updateTypeControlRow(row)
-                    }
-
-                    updateTotals()
-                }
-
+        if (isCapabilityPasteRow(copyRowLis)) {
+            card.getSelectedRows().forEach { it.status = Status.NONE }
+            card.addRows(indexLastRow + 1, copyRowLis)
+            dao.addRows(copyRowLis)
+            sortList()
+            updateTotals()
+            main {
+                uiControl.notifyItems()
+                selectMode.value = SelectMode.NONE
             }
         }
     }
 
-    fun isCapabilityPaste(copyRowList: List<Row>?): Boolean {
+    fun isCapabilityPasteCell(copyCell: Cell?): Boolean =
+        copyCell?.type == card.getSelectedCell()?.type
+
+    fun isCapabilityPasteRow(copyRowList: List<Row>?): Boolean {
         var capability = false
         copyRowList?.let { copyList ->
             val copyFirstRow = copyList[0]
@@ -511,15 +484,14 @@ class CardViewModel : ViewModel(), ProvideDataRows {
         return capability
     }
 
-    fun duplicateRows() {
-        val selectedRows = getSelectedRows()
+    suspend fun duplicateRows(duplicatedRows: List<Row>) = io {
         val rows = card.rows
         rows.forEach {
             it.status = Status.NONE
         }
-        sortList()
         sortedRows.last().status = Status.SELECT
-        pasteRows(selectedRows)
+        pasteRows(duplicatedRows)
+        sortList()
     }
 
     // внутри обновление в main
