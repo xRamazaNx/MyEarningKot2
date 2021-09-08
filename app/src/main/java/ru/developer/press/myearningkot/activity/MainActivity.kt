@@ -69,7 +69,7 @@ class MainActivity : AppCompatActivity() {
         viewInit()
         root.progressBar.visibility = GONE
 
-        App.fireStoreChanged.observe(this@MainActivity, singleObserver { refData ->
+        App.fireStoreChanged.observe(this@MainActivity, singleCallObserver { refData ->
             if (refData.refType == FireStore.RefType.PAGE) {
                 when (refData.updatedType) {
                     ADDED -> {

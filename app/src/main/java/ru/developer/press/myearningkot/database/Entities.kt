@@ -5,6 +5,7 @@ import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.Exclude
 import ru.developer.press.myearningkot.ProvideCardPropertyForCell
 import ru.developer.press.myearningkot.helpers.MyLiveData
+import ru.developer.press.myearningkot.helpers.SingleObserverLiveData
 import ru.developer.press.myearningkot.helpers.getDate
 import ru.developer.press.myearningkot.model.*
 import java.util.*
@@ -97,7 +98,7 @@ class Page(
 
     @Ignore
     @get:Exclude
-    val cards = mutableListOf<MyLiveData<Card>>()
+    val cards = mutableListOf<SingleObserverLiveData<Card>>()
 }
 
 @Entity(

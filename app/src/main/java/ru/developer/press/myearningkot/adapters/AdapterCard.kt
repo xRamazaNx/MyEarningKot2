@@ -11,14 +11,14 @@ import org.jetbrains.anko.dip
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.database.Card
 import ru.developer.press.myearningkot.databinding.CardBinding
-import ru.developer.press.myearningkot.helpers.MyLiveData
+import ru.developer.press.myearningkot.helpers.SingleObserverLiveData
 import ru.developer.press.myearningkot.helpers.observer
 import ru.developer.press.myearningkot.helpers.scoups.inflatePlate
 import ru.developer.press.myearningkot.viewmodels.MainViewModel
 
 class AdapterCard(
     context: Context,
-    private val cards: MutableList<MyLiveData<Card>>
+    private val cards: MutableList<SingleObserverLiveData<Card>>
 ) :
     RecyclerView.Adapter<AdapterCard.CardHolder>() {
     private val selectCardDistance = context.dip(-42).toFloat()
@@ -41,27 +41,28 @@ class AdapterCard(
 
     inner class CardHolder(view: View) : RecyclerView.ViewHolder(view) {
         private val cardBinding = CardBinding.bind(view)
+        private val observer = observer<Card> { card ->
+            setClick(card)
+            setLongClick(card)
 
-        fun bind(liveData: MyLiveData<Card>) {
-            liveData.observe(cardBinding.root.context as AppCompatActivity, observer { card ->
-                setClick(card)
-                setLongClick(card)
+            card.inflatePlate(cardBinding)
 
-                card.inflatePlate(cardBinding)
-
-                if (card.isUpdating) {
-                    card.isUpdating = false
-                    cardBinding.root.animate().alpha(0f).withEndAction {
-                        cardBinding.root.animate().alpha(1f)
-                    }
+            if (card.isUpdating) {
+                card.isUpdating = false
+                cardBinding.root.animate().alpha(0f).withEndAction {
+                    cardBinding.root.animate().alpha(1f)
                 }
+            }
 
-                if (card.isSelect) {
-                    cardBinding.all.translationX = selectCardDistance
-                } else {
-                    cardBinding.all.translationX = 0f
-                }
-            })
+            if (card.isSelect) {
+                cardBinding.all.translationX = selectCardDistance
+            } else {
+                cardBinding.all.translationX = 0f
+            }
+        }
+
+        fun bind(liveData: SingleObserverLiveData<Card>) {
+            liveData.observe(cardBinding.root.context as AppCompatActivity, observer)
         }
 
         private fun setLongClick(card: Card) {

@@ -375,7 +375,7 @@ class DataController(context: Context) {
         val cards = cardDao.getAllOf(page.refId)
         cards.forEach { card ->
             inflateCard(card)
-            page.cards.add(liveDataFromMain(card))
+            page.cards.add(main { SingleObserverLiveData(card) })
         }
     }
 

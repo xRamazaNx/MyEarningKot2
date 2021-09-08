@@ -101,10 +101,11 @@ class MainViewModel : ViewModel() {
             dao.addCard(card)
             // узнать позицию для добавления во вкладку и для ее обновления во вью... а ее надо узнавать смотря какая сортировка
             val position = getPositionCardInPage(indexPage, card)
-            // добавляем во вкладку
-            page.cards.add(position, liveDataFromMain(card))
-//                pageLiveData.value = page
+
             main {
+                // добавляем во вкладку
+                page.cards.add(position, SingleObserverLiveData(card))
+//                pageLiveData.value = page
                 updateView(position)
             }
         }
@@ -174,14 +175,14 @@ class MainViewModel : ViewModel() {
 //    }
 
     fun checkUpdatedCard(selectedTabPosition: Int) {
-        val page = pageList[selectedTabPosition]
-        val find = page.value!!.cards.find { it.value!!.refId == openedCardId }
-        find?.let {
-            runOnViewModel {
+        runOnViewModel {
+            val page = pageList[selectedTabPosition]
+            val find = page.value!!.cards.find { it.value!!.refId == openedCardId }
+            find?.let { liveData ->
                 val card = dao.getCard(openedCardId)
                 openedCardId = ""
                 card.isUpdating = true
-                it.postValue(card)
+                liveData.postValue(card)
             }
 
         }
@@ -216,7 +217,7 @@ class MainViewModel : ViewModel() {
                 } else {
                     // на всякий пожарный
                     find.value!!.refId = pageDB!!.refId
-                    find.updateValue()
+                    find.postUpdate()
                 }
             }
         }

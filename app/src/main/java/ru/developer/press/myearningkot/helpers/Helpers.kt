@@ -26,7 +26,6 @@ import androidx.activity.result.ActivityResultCaller
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.MainThread
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
@@ -38,9 +37,7 @@ import org.jetbrains.anko.*
 import ru.developer.press.myearningkot.App
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.logD
-import ru.developer.press.myearningkot.model.Column
 import ru.developer.press.myearningkot.model.NumberTypePref
-import ru.developer.press.myearningkot.model.NumerationColumn
 import java.io.File
 import java.math.RoundingMode
 import java.text.DecimalFormat
@@ -59,13 +56,26 @@ abstract class MyLiveData<T>(t: T?) : MutableLiveData<T>() {
         }
     }
 
-    fun updateValue() {
+    fun postUpdate() {
         postValue(value)
     }
 }
 
 fun <T> liveData(t: T? = null): MyLiveData<T> {
     return object : MyLiveData<T>(t) {}
+}
+
+/**liveData с единственным обсерверром
+ * применяется например для recyclerView
+ * поможет избежать утечки обсерверов при notifyData
+ * */
+class SingleObserverLiveData<T>(t: T?) : MyLiveData<T>(t) {
+    private var oldObserver: Observer<in T>? = null
+    override fun observe(owner: LifecycleOwner, observer: Observer<in T>) {
+        oldObserver?.let { removeObserver(it) }
+        oldObserver = observer
+        super.observe(owner, observer)
+    }
 }
 
 suspend fun <T> liveDataFromMain(t: T? = null): MyLiveData<T> {
@@ -80,8 +90,7 @@ fun <T> observer(changed: (T) -> Unit): Observer<T> {
     }
 }
 
-
-fun <T> singleObserver(changed: (T) -> Unit): Observer<T> {
+fun <T> singleCallObserver(changed: (T) -> Unit): Observer<T> {
     return object : Observer<T> {
         private var isFirst = true
         private var oldValue: T? = null

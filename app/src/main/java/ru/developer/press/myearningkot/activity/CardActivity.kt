@@ -476,7 +476,7 @@ open class CardActivity : CommonCardActivity() {
     override fun onResume() {
         super.onResume()
         viewModelInitializer.invokeOnCompletion {
-            viewModel.selectMode.updateValue()
+            viewModel.selectMode.postUpdate()
 
         }
     }
