@@ -241,7 +241,7 @@ class RowHolder(view: View) : DragDropSwipeAdapter.ViewHolder(view), RowDataList
                 row.cellList.forEachIndexed { index, cell ->
                     val column = columns[index]
                     if (column is SwitchColumn) {
-                        val behavior = column.typePref.behavior
+                        val behavior = column.pref().behavior
                         row.crossOut(itemView, behavior.crossOut && cell.sourceValue.toBoolean())
                     }
                 }

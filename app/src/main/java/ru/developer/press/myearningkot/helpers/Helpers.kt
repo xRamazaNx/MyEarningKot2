@@ -14,7 +14,6 @@ import android.net.Uri
 import android.text.format.DateFormat
 import android.util.Log
 import android.util.TypedValue
-import android.view.Gravity
 import android.view.View
 import android.view.View.GONE
 import android.view.animation.AccelerateInterpolator

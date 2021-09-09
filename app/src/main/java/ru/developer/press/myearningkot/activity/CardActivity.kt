@@ -31,12 +31,15 @@ open class CardActivity : CommonCardActivity() {
             val data = it.data
             if (data != null) {
                 data.getStringExtra(CARD_ID)?.let { id ->
-                    viewModel.runOnViewModel {
-                        viewModel.updateCardFromDao(id)
-                        main {
-                            updateActivity()
-                            viewModel.selectMode.value = SelectMode.NONE
-                            onResume()
+                    viewModel.apply {
+                        runOnViewModel {
+                            updateCardFromDao(id)
+                            updateColumnDL()
+                            main {
+                                updateActivity()
+                                selectMode.value = SelectMode.NONE
+                                onResume()
+                            }
                         }
                     }
                 }
@@ -82,7 +85,7 @@ open class CardActivity : CommonCardActivity() {
         var pasteIconFromRow: Int = -1
         val menu = toolbar.menu
 
-        viewModel.selectMode.observe(this, { selectMode ->
+        viewModel.selectMode.observe(this, observer { selectMode ->
             if (oldSelectMode != selectMode)
                 menu.clear()
             when (selectMode) {
@@ -201,31 +204,26 @@ open class CardActivity : CommonCardActivity() {
     }
 
     override fun updateActivity() {
-        doStart()
+        super.updateActivity()
         hideViewWhileScroll()
         hideUnnecessaryElementsFromTotalAmount()
         adapter.setCellClickListener(rowClickListener)
-        fbAddRow.setButtonIconResource(R.drawable.ic_add_not_ring_white)
-        fbAddRow.setButtonBackgroundColour(getColorFromRes(R.color.colorSecondaryDark))
+        activityBinding.fbAddRow.setButtonIconResource(R.drawable.ic_add_not_ring_white)
+        activityBinding.fbAddRow.setButtonBackgroundColour(getColorFromRes(R.color.colorSecondaryDark))
 
-        tableView.isLong.observe(this@CardActivity, {
+        activityBinding.tableView.isLong.observe(this@CardActivity, {
             isLongClick = it
         })
 
-        viewModel.apply {
-            titleLiveData.observe(this@CardActivity, {
-                title = it
-            })
-
-            fbAddRow.setOnClickListener {
+        activityBinding.fbAddRow.setOnClickListener {
+            viewModel.apply {
                 addRow {
                     scrollToPosition(sortedRows.size)
                 }
             }
         }
-        selectedModeObserve()
         // наблюдатель для события выделения ячейки
-        progressBar.visibility = GONE
+        selectedModeObserve()
     }
 
     private fun duplicateRows() {
@@ -291,7 +289,7 @@ open class CardActivity : CommonCardActivity() {
     }
 
     private fun hideUnnecessaryElementsFromTotalAmount() {
-        totalAmountView.apply {
+        activityBinding.totalAmountView.apply {
             datePeriodCard.visibility = GONE
             nameCard.visibility = GONE
         }
@@ -306,13 +304,14 @@ open class CardActivity : CommonCardActivity() {
             override fun onAnimationEnd(p0: Animator?) {
                 viewModel.selectMode.value.let { selectMode ->
                     if (selectMode != SelectMode.NONE) {
-                        if (!fbAddRow.isShown)
-                            fbAddRow.show()
+                        if (!activityBinding.fbAddRow.isShown)
+                            activityBinding.fbAddRow.show()
                     } else {
-                        if (totalAmountView.translationY == 0f)
-                            fbAddRow.show()
-                        if (totalAmountView.translationY == totalAmountView.height.toFloat())
-                            fbAddRow.hide()
+                        val totalAmount = activityBinding.totalAmountView.root
+                        if (totalAmount.translationY == 0f)
+                            activityBinding.fbAddRow.show()
+                        if (totalAmount.translationY == totalAmount.height.toFloat())
+                            activityBinding.fbAddRow.hide()
                     }
                 }
             }
@@ -324,8 +323,8 @@ open class CardActivity : CommonCardActivity() {
             }
         }
 
-        totalAmountView.animate().setListener(animListener)
-        appBar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
+        activityBinding.totalAmountView.root.animate().setListener(animListener)
+        activityBinding.appBar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
 
             if (viewModel.selectMode.value != SelectMode.NONE)
                 return@OnOffsetChangedListener
@@ -334,17 +333,12 @@ open class CardActivity : CommonCardActivity() {
             val isHide = -verticalOffset == heightToolbar
             val isShow = verticalOffset == 0
 
-//            containerPlate.apply {
             if (isShow) {
-                fbAddRow.show()
-//                    animate().translationY(0f)
+                activityBinding.fbAddRow.show()
             }
             if (isHide) {
-                fbAddRow.hide()
-//                    animate().translationY(height.toFloat())
-
+                activityBinding.fbAddRow.hide()
             }
-//            }
         })
     }
 
@@ -419,8 +413,8 @@ open class CardActivity : CommonCardActivity() {
 
     private fun showInputCell() {
         updateInputLayout()
-        inputCellLayout.post {
-            inputCellLayout
+        activityBinding.inputCellLayout.post {
+            activityBinding.inputCellLayout
                 .animate()
                 .translationY(-inputCellLayout.height.toFloat())
                 .setDuration(250)
@@ -456,8 +450,8 @@ open class CardActivity : CommonCardActivity() {
                         }
 
                     })
-                inputCellLayout.removeAllViews()
-                inputCellLayout.addView(layout)
+                activityBinding.inputCellLayout.removeAllViews()
+                activityBinding.inputCellLayout.addView(layout)
             }
         }
     }
@@ -477,7 +471,7 @@ open class CardActivity : CommonCardActivity() {
         super.onResume()
         viewModelInitializer.invokeOnCompletion {
             viewModel.selectMode.postUpdate()
-
+            title = viewModel.card.name
         }
     }
 
@@ -489,8 +483,8 @@ open class CardActivity : CommonCardActivity() {
 // current animation finishes. The listener will call this method again once the
 // animation is done.
     private fun waitForAnimationsToFinish() {
-        if (recycler.isAnimating) { // The recycler view is still animating, try again when the animation has finished.
-            recycler.itemAnimator?.isRunning(animationFinishedListener)
+        if (activityBinding.recycler.isAnimating) { // The recycler view is still animating, try again when the animation has finished.
+            activityBinding.recycler.itemAnimator?.isRunning(animationFinishedListener)
             return
         }
         // The recycler view have animated all it's views

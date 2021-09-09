@@ -275,30 +275,12 @@ private fun Card.updateTypeControlCell(row: Row, columnPosition: Int) {
     val column = columns[columnPosition]
     cell.cellTypeControl = column.columnTypeControl
     cell.type = column.getType()
-    when (column) {
-        is NumerationColumn ->
-            cell.updateTypeValue(column.typePref)
-        is TextColumn ->
-            cell.updateTypeValue(column.typePref)
-        is NumberColumn -> {
-            if (column.inputType == InputTypeNumberColumn.FORMULA) {
-                cell.sourceValue = column.calcFormula(row, this)
-            }
-            cell.updateTypeValue(column.typePref)
+    if (column is NumberColumn) {
+        if (column.inputType == InputTypeNumberColumn.FORMULA) {
+            cell.sourceValue = column.calcFormula(row, this)
         }
-        is PhoneColumn ->
-            cell.updateTypeValue(column.typePref)
-        is DateColumn ->
-            cell.updateTypeValue(column.typePref)
-        is ColorColumn ->
-            cell.updateTypeValue(column.typePref)
-        is SwitchColumn ->
-            cell.updateTypeValue(column.typePref)
-        is ImageColumn ->
-            cell.updateTypeValue(column.typePref)
-        is ListColumn ->
-            cell.updateTypeValue(column.typePref)
     }
+    cell.updateTypeValue(column.pref())
 }
 
 fun Card.unSelectCell(): Int {

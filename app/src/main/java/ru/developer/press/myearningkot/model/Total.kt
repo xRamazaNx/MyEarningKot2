@@ -104,7 +104,7 @@ class Total(
                             // если нашли колону свитч
                             if (column is SwitchColumn) {
                                 // в настройках включена опция "учитывать в итоговой панели"
-                                if (column.typePref.behavior.control)
+                                if (column.pref().behavior.control)
                                 // то посмотрим переключатель на что установлен
                                     isAddSum = row.cellList[columnIndex].sourceValue.toBoolean()
                             }

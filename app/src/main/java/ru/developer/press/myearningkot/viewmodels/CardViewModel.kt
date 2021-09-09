@@ -27,7 +27,8 @@ class CardViewModel : ViewModel(), ProvideDataRows {
 
     val updatedCardStatus = liveData(false)
     var selectMode = liveData(SelectMode.NONE)
-    val titleLiveData: MyLiveData<String> = liveData()
+
+    // inflating card
     val cardLiveData: MyLiveData<Card> = liveData()
     val totalLiveData: MyLiveData<Card> = liveData()
 
@@ -37,19 +38,13 @@ class CardViewModel : ViewModel(), ProvideDataRows {
 
     override fun getColumns(): MutableList<Column> = card.columns
     override fun getWidth(): Int {
-        return if (cardLiveData.value!!.enableHorizontalScroll)
+        return if (card.enableHorizontalScroll)
             LinearLayout.LayoutParams.MATCH_PARENT
         else
             displayParam.width
     }
 
-    private fun updateCardLD() {
-        cardLiveData.postValue(card)
-        titleLiveData.postValue(card.name)
-        columnsLiveData.postValue(card.columns)
-    }
-
-    fun updatePlateChanged() {
+    fun updatePlate() {
         cardLiveData.postValue(card)
     }
 
@@ -62,7 +57,7 @@ class CardViewModel : ViewModel(), ProvideDataRows {
     }
 
     override fun isEnableHorizontalScroll(): Boolean {
-        return cardLiveData.value!!.enableHorizontalScroll
+        return card.enableHorizontalScroll
     }
 
     override fun isEnableSomeStroke(): Boolean {
@@ -86,7 +81,6 @@ class CardViewModel : ViewModel(), ProvideDataRows {
     suspend fun updateCardFromDao(cardId: String? = null) {
         cardId?.let { card = dao.getCard(it) }
         sortList()
-        updateCardLD()
     }
 
     suspend fun updateCardInDao() {
@@ -101,7 +95,6 @@ class CardViewModel : ViewModel(), ProvideDataRows {
             card.addColumn(columnType, name)
         else
             card.addColumnSample(columnType, name)
-        updateCardLD()
     }
 
     fun selectionColumn(columnIndex: Int, isSelect: Boolean) {
@@ -116,7 +109,8 @@ class CardViewModel : ViewModel(), ProvideDataRows {
     fun deleteColumn(column: Column): Boolean {
         val deleteResult = card.deleteColumn(column)
         if (deleteResult) {
-            updateCardLD()
+            updateColumnDL()
+            updatePlate()
             updateTypeControl()
         }
 
@@ -149,7 +143,7 @@ class CardViewModel : ViewModel(), ProvideDataRows {
             totals[indexOfTotal] = totalRight
         }
 
-        updatePlateChanged()
+        updatePlate()
         result(true)
     }
 
@@ -188,7 +182,7 @@ class CardViewModel : ViewModel(), ProvideDataRows {
         }
 
         updateTypeControl()
-        updateCardLD()
+        updateColumnDL()
         result(true)
     }
 
@@ -219,7 +213,7 @@ class CardViewModel : ViewModel(), ProvideDataRows {
             totals[indexOfTotal] = totalLeft
         }
 
-        updatePlateChanged()
+        updatePlate()
         result(true)
     }
 
@@ -258,7 +252,7 @@ class CardViewModel : ViewModel(), ProvideDataRows {
         }
 
         updateTypeControl()
-        updateCardLD()
+        updateColumnDL()
         result(true)
     }
 
@@ -501,27 +495,18 @@ class CardViewModel : ViewModel(), ProvideDataRows {
 
     lateinit var uiControl: UIControl
 
-    fun initialization(cardInfo: CardInfo) {
+    suspend fun initialization(cardInfo: CardInfo) {
         this.cardInfo = cardInfo
-        runOnViewModel {
-            card = if (cardInfo.cardCategory == CardInfo.CardCategory.CARD) {
-                dao.getCard(cardInfo.idCard)
-            } else {
-                dao.getSampleCard(cardInfo.idCard)
-            }
+        card = if (cardInfo.cardCategory == CardInfo.CardCategory.CARD) {
+            dao.getCard(cardInfo.idCard)
+        } else {
+            dao.getSampleCard(cardInfo.idCard)
+        }
 
-            sortList()
-            main {
-
-                titleLiveData.value = card.name
-                totalLiveData.value = card
-                cardLiveData.value = card
-
-                updateColumnDL()
-                updateCardLD()
-
-                uiControl.updateActivity()
-            }
+        sortList()
+        main {
+            cardLiveData.value = card
+            totalLiveData.value = card
         }
     }
 

@@ -21,7 +21,6 @@ import androidx.core.view.forEach
 import com.google.android.material.appbar.AppBarLayout
 import kotlinx.android.synthetic.main.activity_card.*
 import kotlinx.android.synthetic.main.card.*
-import kotlinx.android.synthetic.main.card.view.*
 import kotlinx.android.synthetic.main.total_item_layout.view.*
 import kotlinx.android.synthetic.main.total_item_value.view.*
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent
@@ -68,9 +67,9 @@ class PrefCardActivity : CommonCardActivity() {
     private val totalContainer: LinearLayout
         get() {
             return if (totalContainerDisableScroll.childCount > 0)
-                totalContainerDisableScroll.getChildAt(0) as LinearLayout
+                totalAmountView.totalContainerDisableScroll.getChildAt(0) as LinearLayout
             else
-                totalContainerScroll.getChildAt(0) as LinearLayout
+                totalAmountView.totalContainerScroll.getChildAt(0) as LinearLayout
 
         }
     private val selectedControl = PrefSelectedControl()
@@ -79,7 +78,7 @@ class PrefCardActivity : CommonCardActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         title = intent.getStringExtra(TITLE_PREF_ACTIVITY)
-        fbAddRow.visibility = GONE
+        activityBinding.fbAddRow.visibility = GONE
         supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_check)
 
         visibleHideElements()
@@ -108,7 +107,7 @@ class PrefCardActivity : CommonCardActivity() {
         prefWindow.animationStyle = R.style.popup_window_animation
         prefWindow.setOnDismissListener {
             root.animate().alpha(1f)
-            totalAmountView.animate().translationY(0f)
+            totalAmountView.root.animate().translationY(0f)
             selectedControl.unSelectAll()
         }
     }
@@ -116,12 +115,12 @@ class PrefCardActivity : CommonCardActivity() {
     fun showPrefWindow(view: View, y: Int) {
         if (y > 0) {
             view.post {
-                totalAmountView.animate().translationY(-view.height.toFloat())
+                totalAmountView.root.animate().translationY(-view.height.toFloat())
             }
         }
         view.minimumHeight = (resources.displayMetrics.heightPixels / 3)
         prefWindow.contentView = view
-        prefWindow.showAtLocation(totalAmountView, Gravity.BOTTOM, 0, 0)
+        prefWindow.showAtLocation(totalAmountView.root, Gravity.BOTTOM, 0, 0)
         root.animate().alpha(0.3f)
 
     }
@@ -157,7 +156,7 @@ class PrefCardActivity : CommonCardActivity() {
                 }
             }
 
-            nameCard.setOnClickListener {
+            totalAmountView.nameCard.setOnClickListener {
                 selectedControl.select(
                     SelectedElement.ElementTextView(
                         it.background,
@@ -167,7 +166,7 @@ class PrefCardActivity : CommonCardActivity() {
 
             }
 
-            datePeriodCard.setOnClickListener {
+            totalAmountView.datePeriodCard.setOnClickListener {
                 selectedControl.select(
                     SelectedElement.ElementTextView(
                         it.background,
@@ -225,9 +224,9 @@ class PrefCardActivity : CommonCardActivity() {
                             adapter = getAdapterForRecycler()
                             main {
                                 horizontalScrollSwitch()
-                                recycler.adapter = adapter
+                                activityBinding.recycler.adapter = adapter
 //                                setShowTotalInfo(card.isShowTotalInfo)//
-                                viewModel.updatePlateChanged()
+                                viewModel.updatePlate()
                                 initClicksOfElements()
 //                                if (card.isShowTotalInfo)
                                 selectedControl.updateSelected()
@@ -244,8 +243,7 @@ class PrefCardActivity : CommonCardActivity() {
                     val columnType = getColumnTypeEnumList()[it]
 
                     viewModel.addColumn(columnType, list[it])
-
-                    createTitles()
+                    createColumnsTitles()
                     horizontalScrollSwitch()
                     initRecyclerView()
                     // после создания адаптера надо зановго заложить умение выделяться
@@ -261,7 +259,7 @@ class PrefCardActivity : CommonCardActivity() {
             }
             R.id.addTotal -> {
                 viewModel.addTotal()
-                viewModel.updatePlateChanged()
+                viewModel.updatePlate()
                 initClicksOfElements()
                 selectedControl.unSelectAll()
                 selectTotal(viewModel.card.totals.size - 1)
@@ -289,15 +287,14 @@ class PrefCardActivity : CommonCardActivity() {
     }
 
     override fun updateActivity() {
+        super.updateActivity()
         initSelectCallback()
-        doStart()
         initClicksOfElements()
-        totalAmountView.setOnClickListener(null)
-        progressBar.visibility = GONE
+        totalAmountView.root.setOnClickListener(null)
     }
 
     private fun disableBehavior() {
-        val params = toolbar.layoutParams as AppBarLayout.LayoutParams
+        val params = activityBinding.toolbar.layoutParams as AppBarLayout.LayoutParams
         params.scrollFlags = 0
     }
 
@@ -330,7 +327,7 @@ class PrefCardActivity : CommonCardActivity() {
 
     private fun setCardOfResult() {
         runMainOnLifeCycle {
-            progressBar.visibility = VISIBLE
+            activityBinding.progressBar.visibility = VISIBLE
             viewModel.updateCardInDao()
             val data = Intent()
             data.putExtra(CARD_ID, viewModel.card.refId)
@@ -413,10 +410,10 @@ class PrefCardActivity : CommonCardActivity() {
 
                         }
                         ElementType.NAME -> {
-                            nameCard.background = selectedElement.oldDrawable
+                            totalAmountView.nameCard.background = selectedElement.oldDrawable
                         }
                         ElementType.DATE -> {
-                            datePeriodCard.background = selectedElement.oldDrawable
+                            totalAmountView.datePeriodCard.background = selectedElement.oldDrawable
                         }
                         ElementType.TOTAL -> {
                             val selectTotalItem = selectedElement as SelectedElement.ElementTotal
@@ -448,7 +445,7 @@ class PrefCardActivity : CommonCardActivity() {
                                     false
                             }
                             if (!isWorkAlignPanel) {
-                                yOff = totalAmountView.height
+                                yOff = totalAmountView.root.height
                             }
                             val prefList = mutableListOf<PrefForTextView>()
 
@@ -512,7 +509,7 @@ class PrefCardActivity : CommonCardActivity() {
                         }
 
                         TOTAL -> {
-                            yOff = totalAmountView.height
+                            yOff = totalAmountView.root.height
 
                             val listTotal = mutableListOf<Total>().apply {
                                 elementPref.selectedElementList.filterIsInstance(SelectedElement.ElementTotal::class.java)
@@ -557,7 +554,7 @@ class PrefCardActivity : CommonCardActivity() {
                         }
 
                         DATE_PERIOD -> {
-                            yOff = totalAmountView.height
+                            yOff = totalAmountView.root.height
                             getPrefDatePeriod(
                                 card.cardPref.dateOfPeriodPref,
                                 object : PrefChangedCallBack {
@@ -575,7 +572,7 @@ class PrefCardActivity : CommonCardActivity() {
                                 elementPref.columnType,
                                 object : PrefColumnChangedCallback {
                                     override fun widthChanged() {
-                                        createTitles()
+                                        viewModel.updateColumnDL()
                                         initRecyclerView()
                                         initClicksOfElements()
 
@@ -626,7 +623,7 @@ class PrefCardActivity : CommonCardActivity() {
                                                 adapter = getAdapterForRecycler()
                                             }
                                             horizontalScrollSwitch()
-                                            recycler.adapter = adapter
+                                            activityBinding.recycler.adapter = adapter
                                             clickPrefToAdapter()
                                         }
                                     }
@@ -661,7 +658,7 @@ class PrefCardActivity : CommonCardActivity() {
                 }
 
                 override fun setVisiblePrefButton(isVisible: Boolean) {
-                    toolbar.menu.findItem(R.id.elementSetting).isVisible = isVisible
+                    activityBinding.toolbar.menu.findItem(R.id.elementSetting).isVisible = isVisible
                     visibleButton(selectedControl.selectPrefType, selectedControl.isRenameMode)
 
                 }
@@ -673,7 +670,7 @@ class PrefCardActivity : CommonCardActivity() {
                         viewModel.moveToRightColumn(columnList) {
                             if (!it) toast(getString(R.string.moving_not_available))
                             else {
-                                createTitles()
+                                viewModel.updateColumnDL()
                                 initRecyclerView()
                                 initClicksOfElements()
                                 reSelectAfterMove(columnList)
@@ -710,7 +707,7 @@ class PrefCardActivity : CommonCardActivity() {
                         viewModel.moveToLeftColumn(columnList) {
                             if (!it) toast(getString(R.string.moving_not_available))
                             else {
-                                createTitles()
+                                viewModel.updateColumnDL()
                                 initRecyclerView()
                                 initClicksOfElements()
                                 reSelectAfterMove(columnList)
@@ -739,7 +736,7 @@ class PrefCardActivity : CommonCardActivity() {
                                 toast(getString(R.string.cannot_delete_numbering_column))
                             }
                         }
-                        createTitles()
+                        viewModel.updateColumnDL()
                         initRecyclerView()
                         initClicksOfElements()
                     } else {
@@ -749,7 +746,7 @@ class PrefCardActivity : CommonCardActivity() {
                             val deleteTotal = viewModel.deleteTotal(it)
                             deleteTotal.let { delTotal ->
                                 if (delTotal) {
-                                    viewModel.updatePlateChanged()
+                                    viewModel.updatePlate()
                                 } else {
                                     //#edit надо тут показать окошко с этим сообщением
                                     toast("Нельзя удалить единственный итог, если хотите отключить итоговую панель, отключите ее в настройках карточки")
@@ -821,23 +818,28 @@ class PrefCardActivity : CommonCardActivity() {
 
     override fun onResume() {
         super.onResume()
-        toolbar.post {
+        activityBinding.toolbar.post {
             val isVisible = selectedControl.isSelect
-            toolbar.menu.findItem(R.id.elementSetting).isVisible = isVisible
+            activityBinding.toolbar.menu.findItem(R.id.elementSetting).isVisible = isVisible
             visibleButton(selectedControl.selectPrefType, selectedControl.isRenameMode)
         }
     }
 
     private fun visibleButton(prefType: ElementPrefType, isRenameMode: Boolean) {
         val isColumnOrTotal = prefType == TOTAL || prefType == COLUMN
-        toolbar.menu.findItem(R.id.moveToRight).isVisible = isColumnOrTotal
-        toolbar.menu.findItem(R.id.moveToLeft).isVisible = isColumnOrTotal
-        toolbar.menu.findItem(R.id.deleteColumn).isVisible = isColumnOrTotal
-        toolbar.menu.findItem(R.id.renameElement).isVisible = isRenameMode
+
+        setVisibleMenuItem(R.id.moveToRight, isColumnOrTotal)
+        setVisibleMenuItem(R.id.moveToLeft, isColumnOrTotal)
+        setVisibleMenuItem(R.id.deleteColumn, isColumnOrTotal)
+        setVisibleMenuItem(R.id.renameElement, isRenameMode)
+    }
+
+    private fun setVisibleMenuItem(id: Int, visible: Boolean) {
+        activityBinding.toolbar.menu.findItem(id)?.isVisible = visible
     }
 
     private fun updatePlate() {
-        viewModel.updatePlateChanged()
+        viewModel.updatePlate()
         selectedControl.updateSelected()
         initClickTotals(viewModel.card)
     }

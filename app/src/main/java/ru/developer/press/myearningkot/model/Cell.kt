@@ -36,8 +36,8 @@ data class Cell(
     @Transient
     var displayValue: String = ""
 
-    fun updateTypeValue(typePref: Prefs) {
-        when (typePref) {
+    fun updateTypeValue(pref: Prefs) {
+        when (pref) {
             is NumberTypePref -> {
                 displayValue =
                         if (sourceValue == "")
@@ -45,7 +45,7 @@ data class Cell(
                         else
                             try {
                                 val value = Calc.evaluate(sourceValue)!!
-                                getDecimalFormatNumber(value, typePref)
+                                getDecimalFormatNumber(value, pref)
                             } catch (exception: Exception) {
                                 "Error numbers"
                             }
@@ -56,7 +56,7 @@ data class Cell(
                             ""
                         else {
                             val timeML: Long = sourceValue.toLong()
-                            getDate(typePref.type, timeML, typePref.enableTime)
+                            getDate(pref.type, timeML, pref.enableTime)
                         }
             }
             is PhoneTypePref -> {
@@ -76,20 +76,20 @@ data class Cell(
 
                 val info = StringBuilder("")
 
-                typePref.sort.forEachIndexed { index, id ->
+                pref.sort.forEachIndexed { index, id ->
                     var s = ""
                     when (id) {
                         0 ->
-                            if (typePref.name)
+                            if (pref.name)
                                 s = name
                         1 ->
-                            if (typePref.lastName)
+                            if (pref.lastName)
                                 s = lastName
                         2 ->
-                            if (typePref.phone)
+                            if (pref.phone)
                                 s = number
                         3 ->
-                            if (typePref.organization)
+                            if (pref.organization)
                                 s = organization
                     }
                     val notEmpty = s.isNotEmpty()

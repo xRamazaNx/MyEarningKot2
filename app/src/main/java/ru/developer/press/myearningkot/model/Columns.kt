@@ -12,7 +12,7 @@ import java.math.BigDecimal
 import java.util.*
 import kotlin.random.Random
 
-abstract class Column(
+sealed class Column(
     var name: String,
     pageId: String,
     cardId: String
@@ -37,6 +37,8 @@ abstract class Column(
         color = titleColor
     }
 
+    abstract fun pref(): Prefs
+
     fun resetTitlePref() {
         titlePref.apply {
             isBold = true
@@ -53,12 +55,11 @@ abstract class Column(
     }
 
     protected fun getProvideProperty(provideCardPropertyForCell: ProvideCardPropertyForCell): ProvideValueProperty {
-
         return object : ProvideValueProperty {
             override fun getWidthColumn(): Int = width
             override var provideCardPropertyForCell =
                 provideCardPropertyForCell
-            override var typePref: Prefs? = null
+            override var typePref: Prefs? = pref()
 
         }
     }
@@ -75,7 +76,6 @@ abstract class Column(
         is ImageColumn -> ColumnType.IMAGE
         is SwitchColumn -> ColumnType.SWITCH
         is ColorColumn -> ColumnType.COLOR
-        else -> ColumnType.NONE
     }
 
 }
@@ -87,14 +87,13 @@ class NumerationColumn(name: String, pageId: String, cardId: String) :
     }
 
     @SerializedName("cp")
-    var typePref = TextTypePref()
+    private var typePref = TextTypePref()
+    override fun pref(): TextTypePref {
+        return typePref
+    }
 
     override fun updateTypeControl(provideCardProperty: ProvideCardPropertyForCell) {
-
-        columnTypeControl =
-            NumerationTypeControl(getProvideProperty(provideCardProperty)).apply {
-                provideValueProperty.typePref = typePref
-            }
+        columnTypeControl = NumerationTypeControl(getProvideProperty(provideCardProperty))
     }
 
     init {
@@ -114,37 +113,39 @@ class NumerationColumn(name: String, pageId: String, cardId: String) :
 
 class TextColumn(name: String, pageId: String, cardId: String) : Column(name, pageId, cardId) {
     @SerializedName("cp")
-    var typePref = TextTypePref()
+    private var typePref = TextTypePref()
 
     override fun updateTypeControl(provideCardProperty: ProvideCardPropertyForCell) {
-
-        columnTypeControl = TextTypeControl(getProvideProperty(provideCardProperty)).apply {
-            provideValueProperty.typePref = typePref
-        }
+        columnTypeControl = TextTypeControl(getProvideProperty(provideCardProperty))
     }
 
     override fun setDefaultPref() {
         typePref.resetPref()
+    }
+
+    override fun pref(): TextTypePref {
+        return typePref
     }
 }
 
 class NumberColumn(name: String, pageId: String, cardId: String) : Column(name, pageId, cardId) {
     @SerializedName("cp")
-    var typePref = NumberTypePref()
+    private var typePref = NumberTypePref()
 
     var formula: Formula = Formula()
     var inputType: InputTypeNumberColumn = InputTypeNumberColumn.MANUAL
 
     override fun updateTypeControl(provideCardProperty: ProvideCardPropertyForCell) {
-
-        columnTypeControl = NumberTypeControl(getProvideProperty(provideCardProperty)).apply {
-            provideValueProperty.typePref = typePref
-        }
+        columnTypeControl = NumberTypeControl(getProvideProperty(provideCardProperty))
     }
 
     override fun setDefaultPref() {
         typePref.resetPref()
 
+    }
+
+    override fun pref(): NumberTypePref {
+        return typePref
     }
 
     fun calcFormula(row: Row, card: Card): String {
@@ -196,17 +197,18 @@ class PhoneColumn(name: String, pageId: String, cardId: String) : Column(name, p
     }
 
     @SerializedName("cp")
-    var typePref = PhoneTypePref()
+    private var typePref = PhoneTypePref()
 
     override fun updateTypeControl(provideCardProperty: ProvideCardPropertyForCell) {
-
-        columnTypeControl = PhoneTypeControl(getProvideProperty(provideCardProperty)).apply {
-            provideValueProperty.typePref = typePref
-        }
+        columnTypeControl = PhoneTypeControl(getProvideProperty(provideCardProperty))
     }
 
     override fun setDefaultPref() {
         typePref.resetPref()
+    }
+
+    override fun pref(): PhoneTypePref {
+        return typePref
     }
 
     fun getPhoneParamList(): MutableList<ParamModel> {
@@ -248,82 +250,91 @@ class PhoneColumn(name: String, pageId: String, cardId: String) : Column(name, p
 
 class DateColumn(name: String, pageId: String, cardId: String) : Column(name, pageId, cardId) {
     @SerializedName("cp")
-    var typePref = DateTypePref()
+    private var typePref = DateTypePref()
 
     override fun updateTypeControl(provideCardProperty: ProvideCardPropertyForCell) {
-
-        columnTypeControl = DateTypeControl(getProvideProperty(provideCardProperty)).apply {
-            provideValueProperty.typePref = typePref
-        }
+        columnTypeControl = DateTypeControl(getProvideProperty(provideCardProperty))
     }
 
     override fun setDefaultPref() {
         typePref.resetPref()
+    }
+
+    override fun pref(): DateTypePref {
+        return typePref
     }
 
 }
 
 class ColorColumn(name: String, pageId: String, cardId: String) : Column(name, pageId, cardId) {
     @SerializedName("cp")
-    var typePref = ColorTypePref()
+    private var typePref = ColorTypePref()
 
     override fun updateTypeControl(provideCardProperty: ProvideCardPropertyForCell) {
-        columnTypeControl = ColorTypeControl(getProvideProperty(provideCardProperty)).apply {
-            provideValueProperty.typePref = typePref
-        }
+        columnTypeControl = ColorTypeControl(getProvideProperty(provideCardProperty))
     }
 
     override fun setDefaultPref() {
         typePref.resetPref()
+    }
+
+    override fun pref(): ColorTypePref {
+        return typePref
     }
 //        выбор фигруы для цвета
 }
 
 class SwitchColumn(name: String, pageId: String, cardId: String) : Column(name, pageId, cardId) {
     @SerializedName("cp")
-    var typePref = SwitchTypePref()
+    private var typePref = SwitchTypePref()
 
     override fun updateTypeControl(provideCardProperty: ProvideCardPropertyForCell) {
-        columnTypeControl = SwitchTypeControl(getProvideProperty(provideCardProperty)).apply {
-            provideValueProperty.typePref = typePref
-        }
+        columnTypeControl = SwitchTypeControl(getProvideProperty(provideCardProperty))
     }
 
     override fun setDefaultPref() {
         typePref.resetPref()
+    }
+
+    override fun pref(): SwitchTypePref {
+        return typePref
     }
     // может будут выборы типа
 }
 
 class ImageColumn(name: String, pageId: String, cardId: String) : Column(name, pageId, cardId) {
     @SerializedName("cp")
-    var typePref = ImageTypePref()
+    private var typePref = ImageTypePref()
 
     override fun updateTypeControl(provideCardProperty: ProvideCardPropertyForCell) {
-        columnTypeControl = ImageTypeControl(getProvideProperty(provideCardProperty)).apply {
-            provideValueProperty.typePref = typePref
-        }
+        columnTypeControl = ImageTypeControl(getProvideProperty(provideCardProperty))
     }
 
     override fun setDefaultPref() {
         typePref.resetPref()
     }
+
+    override fun pref(): ImageTypePref {
+        return typePref
+    }
+
     // может рамки не знаю
 }
 
 class ListColumn(name: String, pageId: String, cardId: String) : Column(name, pageId, cardId) {
     @SerializedName("cp")
-    var typePref = ListTypePref()
+    private var typePref = ListTypePref()
 
     override fun updateTypeControl(provideCardProperty: ProvideCardPropertyForCell) {
-
-        columnTypeControl = ListTypeControl(getProvideProperty(provideCardProperty)).apply {
-            provideValueProperty.typePref = typePref
-        }
+        columnTypeControl = ListTypeControl(getProvideProperty(provideCardProperty))
     }
 
     override fun setDefaultPref() {
         typePref.resetPref()
+    }
+
+    override fun pref(): ListTypePref {
+        return typePref
     }
 
 }

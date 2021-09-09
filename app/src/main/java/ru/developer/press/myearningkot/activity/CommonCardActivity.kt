@@ -8,6 +8,8 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.activity.viewModels
+import androidx.annotation.CallSuper
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.contains
 import androidx.lifecycle.lifecycleScope
@@ -22,8 +24,7 @@ import org.jetbrains.anko.backgroundColorResource
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.adapters.AdapterRow
 import ru.developer.press.myearningkot.adapters.DiffRows
-import ru.developer.press.myearningkot.dagger.CardViewModelModule
-import ru.developer.press.myearningkot.dagger.DaggerCardComponent
+import ru.developer.press.myearningkot.databinding.ActivityCardBinding
 import ru.developer.press.myearningkot.databinding.CardBinding
 import ru.developer.press.myearningkot.helpers.*
 import ru.developer.press.myearningkot.helpers.scoups.inflatePlate
@@ -34,10 +35,6 @@ import ru.developer.press.myearningkot.viewmodels.CardViewModel
 
 
 interface UIControl {
-    // для первичного и единстенного вызова
-    // обновляет активити после инициализации viewModel и т.д.
-    fun updateActivity()
-
     // 3 метода для адаптера
     fun notifyItem(position: Int)
     fun notifyItemRange(start: Int, count: Int)
@@ -56,20 +53,65 @@ abstract class CommonCardActivity : AppCompatActivity(), UIControl {
     protected lateinit var adapter: AdapterRow
     lateinit var columnContainer: LinearLayout
     lateinit var viewModel: CardViewModel
+    lateinit var activityBinding: ActivityCardBinding
+    lateinit var totalAmountView: CardBinding
 
     protected val viewModelInitializer: Job = lifecycleScope.launchWhenCreated {
-        viewModel =
-            DaggerCardComponent
-                .builder()
-                .cardViewModelModule(CardViewModelModule(this@CommonCardActivity)).build()
-                .createCardViewModel()
+        val id = intent.getStringExtra(CARD_ID)!!
+        val category = intent.getStringExtra(CARD_CATEGORY)!!
+        val cardInfo = CardInfo(id, CardInfo.CardCategory.valueOf(category))
+
+        viewModel = viewModels<CardViewModel>().value
+        viewModel.apply {
+            val diametric = resources.displayMetrics
+            displayParam.width = diametric.widthPixels
+            displayParam.height = diametric.heightPixels
+            uiControl = this@CommonCardActivity
+            initialization(cardInfo)
+            createColumnsTitles()
+            updateActivity()
+        }
+    }
+
+    // для первичного и единстенного вызова
+    // обновляет активити после инициализации viewModel и т.д.
+    @CallSuper // need to call first
+    open fun updateActivity() {
+        horizontalScrollSwitch()
+        initRecyclerView()
+        viewModel.apply {
+            // подписываем
+            cardLiveData.observe(this@CommonCardActivity, observer {
+                it.inflatePlate(totalAmountView)
+            })
+            totalLiveData.observe(this@CommonCardActivity, observer {
+                it.updateTotalAmount(totalAmountView.root)
+            })
+            columnsLiveData.observe(this@CommonCardActivity, observer { columns ->
+                val columnCount = columns.size
+                if (columnContainer.childCount != columnCount) {
+                    createColumnsTitles()
+                } else
+                    columns.forEachIndexed { index, column ->
+                        val title = columnContainer.getChildAt(index)
+                        column.inflateView(title as TextView)
+                    }
+            })
+        }
+
+        activityBinding.progressBar.visibility = GONE
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_card)
-        totalAmountView.backgroundColorResource = R.color.colorPrimary
-        all.backgroundColorResource = R.color.colorPrimary
+        
+        activityBinding = ActivityCardBinding.inflate(layoutInflater)
+        totalAmountView = activityBinding.totalAmountView
+        
+        setContentView(activityBinding.root)
+
+        totalAmountView.root.backgroundColorResource = R.color.colorPrimary
+        totalAmountView.all.backgroundColorResource = R.color.colorPrimary
         columnContainer = LinearLayout(this).also {
             it.layoutParams =
                 LinearLayout.LayoutParams(
@@ -78,10 +120,10 @@ abstract class CommonCardActivity : AppCompatActivity(), UIControl {
                 )
         }
 
-        setSupportActionBar(toolbar)
+        setSupportActionBar(activityBinding.toolbar)
         supportActionBar?.setHomeButtonEnabled(true)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        toolbar.setTitleTextColor(getColorFromRes(R.color.colorOnPrimary))
+        activityBinding.toolbar.setTitleTextColor(getColorFromRes(R.color.colorOnPrimary))
 
         // для того что бы тоталвью не пропускал сквозь себя клики на ресайклер с записями
 //        totalAmountView.callOnClick()
@@ -89,41 +131,27 @@ abstract class CommonCardActivity : AppCompatActivity(), UIControl {
     }
 
     @SuppressLint("InflateParams")
-    fun doStart() {
-        viewModel.apply {
-            createTitles()
-            // подписываем
-            cardLiveData.observe(this@CommonCardActivity, {
-                it.inflatePlate(CardBinding.bind(totalAmountView))
-            })
-            totalLiveData.observe(this@CommonCardActivity, {
-                it.updateTotalAmount(totalAmountView)
-            })
-        }
-        horizontalScrollSwitch()
-        initRecyclerView()
-    }
-
-    @SuppressLint("InflateParams")
-    fun createTitles() {
+    fun createColumnsTitles() {
         // создаем заголовки колон и подписываемся
-        columnContainer.removeAllViews()
-        repeat(viewModel.card.columns.size) {
-            val title: TextView = layoutInflater.inflate(R.layout.title_column, null) as TextView
-            columnContainer.addView(title)
-        }
-
-        viewModel.columnsLiveData.observe(this@CommonCardActivity) { columns ->
-            columns.forEachIndexed { index, column ->
-                val title = columnContainer.getChildAt(index)
-                column.inflateView(title as TextView)
+        fun create(columnCount: Int) {
+            columnContainer.removeAllViews()
+            repeat(columnCount) {
+                val title: TextView =
+                    layoutInflater.inflate(R.layout.title_column, null) as TextView
+                columnContainer.addView(title)
             }
         }
+
+        create(viewModel.card.columns.size)
+        viewModel.updateColumnDL()
     }
 
     fun horizontalScrollSwitch() {
 
         val currentLayout: View?
+        val columnDisableScrollContainer = activityBinding.columnDisableScrollContainer
+        val columnScrollContainer = activityBinding.columnScrollContainer
+        
         if (viewModel.isEnableHorizontalScroll()) {
             if (columnDisableScrollContainer.contains(columnContainer)) {
                 columnDisableScrollContainer.removeView(columnContainer)
@@ -144,11 +172,11 @@ abstract class CommonCardActivity : AppCompatActivity(), UIControl {
                 columnDisableScrollContainer.addView(columnContainer)
             currentLayout = columnDisableScrollContainer
         }
-        currentLayout?.backgroundColorResource = R.color.colorPrimary
+        currentLayout.backgroundColorResource = R.color.colorPrimary
     }
 
     protected open fun initRecyclerView() {
-        recycler.apply {
+        activityBinding.recycler.apply {
 
             layoutManager = CustomLinearLayoutManager(this@CommonCardActivity)
 
@@ -160,7 +188,7 @@ abstract class CommonCardActivity : AppCompatActivity(), UIControl {
     }
 
     protected fun getAdapterForRecycler(): AdapterRow {
-        return AdapterRow(null, viewModel, totalAmountView).also {
+        return AdapterRow(null, viewModel, totalAmountView.root).also {
             it.setHasStableIds(true)
             viewModel.diffRowsUpdater = DiffRows(viewModel.sortedRows, it)
         }

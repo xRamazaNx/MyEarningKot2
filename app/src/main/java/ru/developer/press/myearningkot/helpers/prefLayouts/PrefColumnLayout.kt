@@ -79,7 +79,7 @@ fun Context.getPrefColumnLayout(
             prefColumnChangedCallback
         )
     }
-    return columnLayout?.getPrefColumnView(this) ?: View(this)
+    return columnLayout.getPrefColumnView(this)
 }
 
 // интерфейс для обратной связи когда надо показать изменения столбца в вью
@@ -152,12 +152,12 @@ open class PrefTextColumnLayout(
         mutableListOf<PrefForTextView>().apply {
             columnList.forEach {
                 val prefForTextView = when (it) {
-                    is NumerationColumn -> it.typePref.prefForTextView
-                    is NumberColumn -> it.typePref.prefForTextView
-                    is TextColumn -> it.typePref.prefForTextView
-                    is PhoneColumn -> it.typePref.prefForTextView
-                    is DateColumn -> it.typePref.prefForTextView
-                    is ListColumn -> it.typePref.prefForTextView
+                    is NumerationColumn -> it.pref().prefForTextView
+                    is NumberColumn -> it.pref().prefForTextView
+                    is TextColumn -> it.pref().prefForTextView
+                    is PhoneColumn -> it.pref().prefForTextView
+                    is DateColumn -> it.pref().prefForTextView
+                    is ListColumn -> it.pref().prefForTextView
                     else -> null
                 }
                 if (prefForTextView != null) {
@@ -184,7 +184,7 @@ class PrefNumberColumnLayout(
         val numberColumn = columnList[0] as NumberColumn
         val numberColumns = columnList.filterIsInstance(NumberColumn::class.java)
 
-        val typePref = numberColumn.typePref
+        val typePref = numberColumn.pref()
 
         textPrefButtonsInit(view, getPrefForTextViewList()) {
             prefColumnChangedCallback.prefChanged()
@@ -199,7 +199,7 @@ class PrefNumberColumnLayout(
         grouping.isChecked = typePref.isGrouping
         grouping.setOnCheckedChangeListener { _, b ->
             numberColumns.forEach {
-                it.typePref.isGrouping = b
+                it.pref().isGrouping = b
             }
             prefColumnChangedCallback.prefChanged()
         }
@@ -212,7 +212,7 @@ class PrefNumberColumnLayout(
                 digit = 0
 
             numberColumns.forEach {
-                it.typePref.digitsCount = digit
+                it.pref().digitsCount = digit
             }
             prefColumnChangedCallback.prefChanged()
             digitsSizeTextView.text = digit.toString()
@@ -377,7 +377,7 @@ class PrefDateColumnLayout(
 
     override fun initBasicPref(view: View) {
         initSeekBarAndToolbarButtons(view)
-        val typePref = (columnList[0] as DateColumn).typePref
+        val typePref = (columnList[0] as DateColumn).pref()
 
         textPrefButtonsInit(view, getPrefForTextViewList()) {
             prefColumnChangedCallback.prefChanged()
@@ -403,7 +403,7 @@ class PrefDateColumnLayout(
                 null
             ) { type ->
                 columnList.filterIsInstance(DateColumn::class.java).forEach {
-                    it.typePref.type = type
+                    it.pref().type = type
                 }
                 prefColumnChangedCallback.prefChanged()
                 updateDateType()
@@ -411,7 +411,7 @@ class PrefDateColumnLayout(
         }
         showTime.setOnCheckedChangeListener { _, b ->
             columnList.filterIsInstance(DateColumn::class.java).forEach {
-                it.typePref.enableTime = b
+                it.pref().enableTime = b
             }
             prefColumnChangedCallback.prefChanged()
         }
@@ -455,7 +455,7 @@ class PrefSwitchColumnLayout(
             prefColumnChangedCallback.recreateView()
             initBasicPref(view)
         }
-        val firstTypePref = (columnList[0] as SwitchColumn).typePref
+        val firstTypePref = (columnList[0] as SwitchColumn).pref()
 
         val container = view.switchTextSettingContainer
         val enableTextSwitch = view.enableTextSwitch
@@ -495,7 +495,7 @@ class PrefSwitchColumnLayout(
         init()
         enableTextSwitch.setOnCheckedChangeListener { _, isChecked ->
             columnList.filterIsInstance(SwitchColumn::class.java).forEach {
-                it.typePref.isTextSwitchMode = isChecked
+                it.pref().isTextSwitchMode = isChecked
             }
             prefColumnChangedCallback.recreateView()
             init()
@@ -507,7 +507,7 @@ class PrefSwitchColumnLayout(
                 return@addTextChangedListener
 
             columnList.filterIsInstance(SwitchColumn::class.java).forEach { switchColumn ->
-                switchColumn.typePref.textEnable = it.toString()
+                switchColumn.pref().textEnable = it.toString()
             }
             prefColumnChangedCallback.prefChanged()
         }
@@ -516,7 +516,7 @@ class PrefSwitchColumnLayout(
                 return@addTextChangedListener
 
             columnList.filterIsInstance(SwitchColumn::class.java).forEach { switchColumn ->
-                switchColumn.typePref.textDisable = it.toString()
+                switchColumn.pref().textDisable = it.toString()
             }
             prefColumnChangedCallback.prefChanged()
         }
@@ -528,9 +528,9 @@ class PrefSwitchColumnLayout(
                 val isEnableSetting = it == enableTextSetting
                 columnList.filterIsInstance(SwitchColumn::class.java).forEach {
                     if (isEnableSetting)
-                        prefForTextView.add(it.typePref.enablePref)
+                        prefForTextView.add(it.pref().enablePref)
                     else
-                        prefForTextView.add(it.typePref.disablePref)
+                        prefForTextView.add(it.pref().disablePref)
                 }
                 setView(
                     context.getPrefTextLayout(
@@ -555,14 +555,14 @@ class PrefSwitchColumnLayout(
 
         crossOutText.setOnCheckedChangeListener { _, isChecked ->
             columnList.filterIsInstance(SwitchColumn::class.java).forEach {
-                it.typePref.behavior.crossOut = isChecked
+                it.pref().behavior.crossOut = isChecked
             }
             init()
             prefColumnChangedCallback.prefChanged()
         }
         acceptRowInTotal.setOnCheckedChangeListener { _, isChecked ->
             columnList.filterIsInstance(SwitchColumn::class.java).forEach {
-                it.typePref.behavior.control = isChecked
+                it.pref().behavior.control = isChecked
             }
             init()
             prefColumnChangedCallback.prefChanged()
@@ -591,14 +591,14 @@ class PrefImageColumnLayout(
         val view = context.layoutInflater.inflate(R.layout.pref_column_image, null)
         val radioGroup = view.imageViewSettingInCellRG
         val firstColumn = columnList[0] as ImageColumn
-        if (firstColumn.typePref.imageViewMode == 0)
+        if (firstColumn.pref().imageViewMode == 0)
             radioGroup.check(R.id.putImageRB)
         else
             radioGroup.check(R.id.cutImageRB)
 
         radioGroup.setOnCheckedChangeListener { _: RadioGroup, id: Int ->
             columnList.filterIsInstance<ImageColumn>().forEach {
-                it.typePref.imageViewMode = if (id == R.id.putImageRB) 0 else 1
+                it.pref().imageViewMode = if (id == R.id.putImageRB) 0 else 1
             }
             prefColumnChangedCallback.prefChanged()
         }
@@ -615,7 +615,7 @@ class PrefListColumnLayout(
     override fun initBasicPref(view: View) {
         val context = view.context
         initSeekBarAndToolbarButtons(view)
-        val typePref = (columnList[0] as ListColumn).typePref
+        val typePref = (columnList[0] as ListColumn).pref()
 
         textPrefButtonsInit(view, getPrefForTextViewList()) {
             prefColumnChangedCallback.prefChanged()
@@ -667,11 +667,11 @@ class PrefListColumnLayout(
                             }
                             allList = dao.getAllListType()
                             columnList.filterIsInstance(ListColumn::class.java).forEach {
-                                it.typePref.listTypeIndex = allList.size - 1
+                                it.pref().listTypeIndex = allList.size - 1
                             }
                         } else
                             columnList.filterIsInstance(ListColumn::class.java).forEach {
-                                it.typePref.listTypeIndex = index
+                                it.pref().listTypeIndex = index
                             }
                         initBasicPref(view)
                         prefColumnChangedCallback.prefChanged()
