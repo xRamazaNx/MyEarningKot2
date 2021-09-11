@@ -29,13 +29,13 @@ import org.jetbrains.anko.matchParent
 import org.jetbrains.anko.toast
 import org.jetbrains.anko.wrapContent
 import ru.developer.press.myearningkot.R
-import ru.developer.press.myearningkot.database.Card
 import ru.developer.press.myearningkot.dialogs.DialogBasicPrefCard
 import ru.developer.press.myearningkot.dialogs.DialogSetName
 import ru.developer.press.myearningkot.dialogs.choiceDialog
 import ru.developer.press.myearningkot.helpers.*
 import ru.developer.press.myearningkot.helpers.prefLayouts.*
 import ru.developer.press.myearningkot.helpers.prefLayouts.ElementPrefType.*
+import ru.developer.press.myearningkot.helpers.scoups.setClickToTotals
 import ru.developer.press.myearningkot.model.*
 import splitties.alertdialog.appcompat.negativeButton
 import splitties.alertdialog.appcompat.positiveButton
@@ -175,29 +175,22 @@ class PrefCardActivity : CommonCardActivity() {
                 )
             }
 
-            initClickTotals(card)
+            setClickTotals()
         }
     }
 
-    private fun initClickTotals(card: Card?) {
-        // как в колоне надо сделать
-        val titleContainer = totalContainer.totalTitleContainer
-        val valueContainer = totalContainer.totalValueContainer
-        card?.totals?.forEachIndexed { index, _ ->
-            // клик по значению
-            valueContainer.getChildAt(index).setOnClickListener {
+    private fun setClickTotals() {
+        viewModel.card.setClickToTotals(totalAmountView) { view, _, type, index ->
+            if (type == ElementType.TOTAL)
                 selectTotal(index)
-            }
-            // клик по заголовку
-            titleContainer.getChildAt(index).setOnClickListener {
+            if (type == ElementType.TOTAL_TITLE)
                 selectedControl.select(
                     SelectedElement.ElementTotal(
                         index,
-                        it.background,
+                        view.background,
                         ElementType.TOTAL_TITLE
                     )
                 )
-            }
         }
     }
 
@@ -226,7 +219,7 @@ class PrefCardActivity : CommonCardActivity() {
                                 horizontalScrollSwitch()
                                 activityBinding.recycler.adapter = adapter
 //                                setShowTotalInfo(card.isShowTotalInfo)//
-                                viewModel.updatePlate()
+                                updatePlate()
                                 initClicksOfElements()
 //                                if (card.isShowTotalInfo)
                                 selectedControl.updateSelected()
@@ -243,7 +236,6 @@ class PrefCardActivity : CommonCardActivity() {
                     val columnType = getColumnTypeEnumList()[it]
 
                     viewModel.addColumn(columnType, list[it])
-                    createColumnsTitles()
                     horizontalScrollSwitch()
                     initRecyclerView()
                     // после создания адаптера надо зановго заложить умение выделяться
@@ -259,7 +251,7 @@ class PrefCardActivity : CommonCardActivity() {
             }
             R.id.addTotal -> {
                 viewModel.addTotal()
-                viewModel.updatePlate()
+                updatePlate(false)
                 initClicksOfElements()
                 selectedControl.unSelectAll()
                 selectTotal(viewModel.card.totals.size - 1)
@@ -746,7 +738,7 @@ class PrefCardActivity : CommonCardActivity() {
                             val deleteTotal = viewModel.deleteTotal(it)
                             deleteTotal.let { delTotal ->
                                 if (delTotal) {
-                                    viewModel.updatePlate()
+                                    updatePlate(false)
                                 } else {
                                     //#edit надо тут показать окошко с этим сообщением
                                     toast("Нельзя удалить единственный итог, если хотите отключить итоговую панель, отключите ее в настройках карточки")
@@ -838,9 +830,10 @@ class PrefCardActivity : CommonCardActivity() {
         activityBinding.toolbar.menu.findItem(id)?.isVisible = visible
     }
 
-    private fun updatePlate() {
+    private fun updatePlate(reselect: Boolean = true) {
         viewModel.updatePlate()
-        selectedControl.updateSelected()
-        initClickTotals(viewModel.card)
+        setClickTotals()
+        if (reselect)
+            selectedControl.updateSelected()
     }
 }

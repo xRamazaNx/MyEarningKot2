@@ -58,6 +58,10 @@ abstract class MyLiveData<T>(t: T?) : MutableLiveData<T>() {
     fun postUpdate() {
         postValue(value)
     }
+
+    suspend fun setVal(value: T) = main {
+        setValue(value)
+    }
 }
 
 fun <T> liveData(t: T? = null): MyLiveData<T> {

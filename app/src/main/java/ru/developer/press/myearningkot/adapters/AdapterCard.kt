@@ -14,6 +14,7 @@ import ru.developer.press.myearningkot.databinding.CardBinding
 import ru.developer.press.myearningkot.helpers.SingleObserverLiveData
 import ru.developer.press.myearningkot.helpers.observer
 import ru.developer.press.myearningkot.helpers.scoups.inflatePlate
+import ru.developer.press.myearningkot.helpers.scoups.setClickToTotals
 import ru.developer.press.myearningkot.viewmodels.MainViewModel
 
 class AdapterCard(
@@ -42,10 +43,23 @@ class AdapterCard(
     inner class CardHolder(view: View) : RecyclerView.ViewHolder(view) {
         private val cardBinding = CardBinding.bind(view)
         private val observer = observer<Card> { card ->
-            setClick(card)
-            setLongClick(card)
 
             card.inflatePlate(cardBinding)
+
+            cardBinding.root.setOnClickListener {
+                click.invoke(it, card)
+            }
+            cardBinding.root.setOnLongClickListener {
+                longClick.invoke(it, card)
+            }
+
+            card.setClickToTotals(cardBinding) { view, isLong, _, _ ->
+                if (isLong) {
+                    longClick.invoke(view, card)
+                } else {
+                    click.invoke(view, card)
+                }
+            }
 
             if (card.isUpdating) {
                 card.isUpdating = false
@@ -65,25 +79,17 @@ class AdapterCard(
             liveData.observe(cardBinding.root.context as AppCompatActivity, observer)
         }
 
-        private fun setLongClick(card: Card) {
-            val longClick: (View) -> Boolean = {
+        private val click: (View, Card) -> Unit = { _, card ->
+            if (MainViewModel.isSelectMode.get()) {
                 switchSelection(card)
-                MainViewModel.cardLongClick.invoke(card.refId)
-                true
             }
-            cardBinding.root.setOnLongClickListener(longClick)
-            cardBinding.totalContainerScroll.setOnLongClickListener(longClick)
+            MainViewModel.cardClick.invoke(card.refId)
         }
 
-        private fun setClick(card: Card) {
-            val click: (View) -> Unit = {
-                if (MainViewModel.isSelectMode.get()) {
-                    switchSelection(card)
-                }
-                MainViewModel.cardClick.invoke(card.refId)
-            }
-            cardBinding.root.setOnClickListener(click)
-            cardBinding.totalContainerScroll.setOnClickListener(click)
+        private val longClick: (View, Card) -> Boolean = { _, card ->
+            switchSelection(card)
+            MainViewModel.cardLongClick.invoke(card.refId)
+            true
         }
 
         private fun switchSelection(card: Card) {

@@ -31,6 +31,7 @@ import ru.developer.press.myearningkot.helpers.scoups.inflatePlate
 import ru.developer.press.myearningkot.helpers.scoups.inflateView
 import ru.developer.press.myearningkot.helpers.scoups.updateTotalAmount
 import ru.developer.press.myearningkot.logD
+import ru.developer.press.myearningkot.viewmodels.CardUpdatingAction
 import ru.developer.press.myearningkot.viewmodels.CardViewModel
 
 
@@ -68,7 +69,6 @@ abstract class CommonCardActivity : AppCompatActivity(), UIControl {
             displayParam.height = diametric.heightPixels
             uiControl = this@CommonCardActivity
             initialization(cardInfo)
-            createColumnsTitles()
             updateActivity()
         }
     }
@@ -81,11 +81,13 @@ abstract class CommonCardActivity : AppCompatActivity(), UIControl {
         initRecyclerView()
         viewModel.apply {
             // подписываем
-            cardLiveData.observe(this@CommonCardActivity, observer {
-                it.inflatePlate(totalAmountView)
-            })
-            totalLiveData.observe(this@CommonCardActivity, observer {
-                it.updateTotalAmount(totalAmountView.root)
+            cardLiveData.observe(this@CommonCardActivity, observer { action ->
+                action.runIfFind(CardUpdatingAction.Action.inflateView) {
+                    it.inflatePlate(totalAmountView)
+                }
+                action.runIfFind(CardUpdatingAction.Action.updateTotals) {
+                    it.updateTotalAmount(totalAmountView.root)
+                }
             })
             columnsLiveData.observe(this@CommonCardActivity, observer { columns ->
                 val columnCount = columns.size
@@ -97,6 +99,9 @@ abstract class CommonCardActivity : AppCompatActivity(), UIControl {
                         column.inflateView(title as TextView)
                     }
             })
+
+            updateColumnDL()
+            updatePlate()
         }
 
         activityBinding.progressBar.visibility = GONE
@@ -104,10 +109,10 @@ abstract class CommonCardActivity : AppCompatActivity(), UIControl {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         activityBinding = ActivityCardBinding.inflate(layoutInflater)
         totalAmountView = activityBinding.totalAmountView
-        
+
         setContentView(activityBinding.root)
 
         totalAmountView.root.backgroundColorResource = R.color.colorPrimary
@@ -131,7 +136,7 @@ abstract class CommonCardActivity : AppCompatActivity(), UIControl {
     }
 
     @SuppressLint("InflateParams")
-    fun createColumnsTitles() {
+    private fun createColumnsTitles() {
         // создаем заголовки колон и подписываемся
         fun create(columnCount: Int) {
             columnContainer.removeAllViews()
@@ -151,7 +156,7 @@ abstract class CommonCardActivity : AppCompatActivity(), UIControl {
         val currentLayout: View?
         val columnDisableScrollContainer = activityBinding.columnDisableScrollContainer
         val columnScrollContainer = activityBinding.columnScrollContainer
-        
+
         if (viewModel.isEnableHorizontalScroll()) {
             if (columnDisableScrollContainer.contains(columnContainer)) {
                 columnDisableScrollContainer.removeView(columnContainer)

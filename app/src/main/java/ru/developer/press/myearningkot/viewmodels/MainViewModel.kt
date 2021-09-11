@@ -27,15 +27,7 @@ class MainViewModel : ViewModel() {
 
     val initializeLD = liveData<Boolean>()
     suspend fun initialization() {
-        dao.getPageList().forEach { page ->
-            page.cards.forEach { it.value!!.isUpdating = false }
-            pageList.add(liveDataFromMain(page))
-        }
-        initializeLD.postValue(true)
-    }
-
-    init {
-        initializeLD.postValue(false)
+        initializeLD.setVal(false)
         isSelectMode.set(false)
         // нажали на карточку
         cardClick = { idCard ->
@@ -55,6 +47,12 @@ class MainViewModel : ViewModel() {
             }
             isSelectMode.set(selectedCardIds.isNotEmpty())
         }
+
+        dao.getPageList().forEach { page ->
+            page.cards.forEach { it.value!!.isUpdating = false }
+            pageList.add(liveDataFromMain(page))
+        }
+        initializeLD.setVal(true)
     }
 
     val openCardEvent = SingleLiveEvent<String>()
@@ -105,7 +103,6 @@ class MainViewModel : ViewModel() {
             main {
                 // добавляем во вкладку
                 page.cards.add(position, SingleObserverLiveData(card))
-//                pageLiveData.value = page
                 updateView(position)
             }
         }
@@ -182,6 +179,7 @@ class MainViewModel : ViewModel() {
                 val card = dao.getCard(openedCardId)
                 openedCardId = ""
                 card.isUpdating = true
+                // можно оставить post
                 liveData.postValue(card)
             }
 

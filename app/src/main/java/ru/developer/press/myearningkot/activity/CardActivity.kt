@@ -19,8 +19,11 @@ import kotlinx.coroutines.*
 import ru.developer.press.myearningkot.*
 import ru.developer.press.myearningkot.helpers.*
 import ru.developer.press.myearningkot.helpers.prefLayouts.InputLayout
+import ru.developer.press.myearningkot.helpers.scoups.inflatePlate
+import ru.developer.press.myearningkot.helpers.scoups.updateTotalAmount
 import ru.developer.press.myearningkot.helpers.scoups.updateTypeControlRow
 import ru.developer.press.myearningkot.model.*
+import ru.developer.press.myearningkot.viewmodels.CardUpdatingAction
 import ru.developer.press.myearningkot.viewmodels.CardViewModel.SelectMode
 import java.lang.Runnable
 
@@ -34,7 +37,6 @@ open class CardActivity : CommonCardActivity() {
                     viewModel.apply {
                         runOnViewModel {
                             updateCardFromDao(id)
-                            updateColumnDL()
                             main {
                                 updateActivity()
                                 selectMode.value = SelectMode.NONE
@@ -224,29 +226,26 @@ open class CardActivity : CommonCardActivity() {
         }
         // наблюдатель для события выделения ячейки
         selectedModeObserve()
+
     }
 
-    private fun duplicateRows() {
+    private suspend fun duplicateRows() = io {
         viewModel.apply {
-            runOnViewModel {
-                copySelectedRows(false)
-                app().copyRowList?.let { copyRows ->
-                    duplicateRows(copyRows)
-                    main {
-                        scrollToPosition(sortedRows.size)
-                    }
-
+            copySelectedRows(false)
+            app().copyRowList?.let { copyRows ->
+                duplicateRows(copyRows)
+                main {
+                    scrollToPosition(sortedRows.size)
                 }
+
             }
         }
     }
 
-    private fun pasteRows() {
+    private suspend fun pasteRows() {
         viewModel.apply {
-            runMainOnLifeCycle {
-                app().copyRowList?.let { list ->
-                    pasteRows(list)
-                }
+            app().copyRowList?.let { list ->
+                pasteRows(list)
             }
         }
     }
@@ -261,17 +260,19 @@ open class CardActivity : CommonCardActivity() {
             }
     }
 
-    private fun copySelectedCell(isCut: Boolean) {
-        viewModel.apply {
-            runOnViewModel {
+    private suspend fun copySelectedCell(isCut: Boolean) {
+        io {
+            viewModel.apply {
                 app().copyCell = getCopySelectedCell(isCut)
                 // заного назначаю чтоб меню создалось заного и иконка вставки если надо станет серой или белой
-                selectMode.postValue(SelectMode.CELL)
+                main {
+                    selectMode.value = SelectMode.CELL
+                }
             }
         }
     }
 
-    private fun pasteCell() {
+    private suspend fun pasteCell() {
         // на вход принимается функция которая должна обновить строку после вставки
         app().copyCell?.let { cell ->
             viewModel.pasteCell(cell) {

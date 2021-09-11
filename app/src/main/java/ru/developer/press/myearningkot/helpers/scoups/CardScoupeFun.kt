@@ -1,13 +1,138 @@
 package ru.developer.press.myearningkot.helpers.scoups
 
+import android.annotation.SuppressLint
 import android.graphics.Color
+import android.text.TextUtils
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
+import android.widget.LinearLayout
+import android.widget.TextView
 import com.google.gson.Gson
+import kotlinx.android.synthetic.main.total_item_layout.view.*
+import kotlinx.android.synthetic.main.total_item_value.view.*
+import org.jetbrains.anko.dip
+import org.jetbrains.anko.matchParent
+import org.jetbrains.anko.padding
+import org.jetbrains.anko.sdk27.coroutines.onClick
+import org.jetbrains.anko.sdk27.coroutines.onLongClick
+import org.jetbrains.anko.wrapContent
 import ru.developer.press.myearningkot.R
+import ru.developer.press.myearningkot.activity.CardActivity
 import ru.developer.press.myearningkot.database.Card
+import ru.developer.press.myearningkot.databinding.CardBinding
 import ru.developer.press.myearningkot.helpers.getPathForResource
+import ru.developer.press.myearningkot.helpers.prefLayouts.ElementType
 import ru.developer.press.myearningkot.model.*
 import java.util.*
 
+@SuppressLint("InflateParams")
+fun Card.inflatePlate(plateView: CardBinding) {
+    val context = plateView.root.context
+    val nameCard = plateView.nameCard
+    val datePeriodCard = plateView.datePeriodCard
+    nameCard.text = name
+    val isCardActivity = context is CardActivity
+    datePeriodCard.visibility = if (isShowDatePeriod && !isCardActivity) View.VISIBLE else View.GONE
+    datePeriodCard.text = dateOfPeriod
+
+    // визуальная настройка
+    cardPref.namePref.customize(nameCard, R.font.roboto_medium)
+    cardPref.dateOfPeriodPref.prefForTextView.customize(datePeriodCard, R.font.roboto_medium)
+
+    //главный контейнер для заголовков и значений
+    val inflater = LayoutInflater.from(context)
+    val totalContainer: LinearLayout =
+        inflater.inflate(R.layout.total_item_layout, null) as LinearLayout
+    totalContainer.layoutParams = LinearLayout.LayoutParams(matchParent, wrapContent).apply {
+        weight = 1f
+    }
+
+    val totalContainerDisableScroll = plateView.totalContainerDisableScroll
+    val totalContainerScroll = plateView.totalContainerScroll
+
+    //удаляем где бы не были
+    totalContainerDisableScroll.removeAllViews()
+    totalContainerScroll.removeAllViews()
+
+    // добавляем в главный лейаут для тоталов
+    if (enableHorizontalScrollTotal) {
+        totalContainerScroll.addView(totalContainer)
+        totalContainerDisableScroll.visibility = View.GONE
+    } else {
+        totalContainerDisableScroll.addView(totalContainer)
+        totalContainerScroll.visibility = View.GONE
+    }
+    // контейнер для всех значений
+    val totalValueLayout = totalContainer.totalValueContainer
+    // кнтейнер для всех заголовков
+    val totalTitleLayout = totalContainer.totalTitleContainer
+
+    totals.forEachIndexed { index, totalItem ->
+        // лайот где валуе и линия
+        val valueLayout = inflater.inflate(R.layout.total_item_value, null)
+
+        val layoutParams = LinearLayout.LayoutParams(totalItem.width, matchParent).apply {
+            weight = 1f
+        }
+        valueLayout.layoutParams = layoutParams
+        val title = TextView(context).apply {
+            this.layoutParams = layoutParams
+            gravity = Gravity.CENTER
+            padding = dip(3)
+        }
+        val value = valueLayout.totalValue
+
+        title.text = totalItem.title
+        title.maxLines = 1
+        title.ellipsize = TextUtils.TruncateAt.END
+        totalItem.titlePref.customize(title)
+
+        totalItem.totalPref.prefForTextView.customize(value)
+        totalItem.calcFormula(this)
+        value.text = totalItem.value
+
+        totalTitleLayout.addView(title)
+        totalValueLayout.addView(valueLayout)
+
+        if (index == totals.size - 1) {
+            valueLayout._verLine.visibility = View.GONE
+        }
+    }
+}
+
+fun Card.setClickToTotals(
+    cardBinding: CardBinding,
+    click: (view: View, long: Boolean, elementType: ElementType, position: Int) -> Unit
+) {
+    val totalContainer = if (enableHorizontalScrollTotal) {
+        cardBinding.totalContainerScroll.getChildAt(0)
+    } else {
+        cardBinding.totalContainerDisableScroll.getChildAt(0)
+    }
+
+    val totalTitleContainer = totalContainer.totalTitleContainer
+    val totalValueContainer = totalContainer.totalValueContainer
+
+    totals.forEachIndexed { index, _ ->
+
+        val title = totalTitleContainer.getChildAt(index)
+        title.onClick {
+            click.invoke(title, false, ElementType.TOTAL_TITLE, index)
+        }
+        title.onLongClick {
+            click.invoke(title, true, ElementType.TOTAL_TITLE, index)
+        }
+
+        val value = totalValueContainer.getChildAt(index)
+        value.onClick {
+            click.invoke(value, false, ElementType.TOTAL, index)
+        }
+        value.onLongClick {
+            click.invoke(value, true, ElementType.TOTAL, index)
+        }
+    }
+}
 
 fun Card.addTotal(): Total {
     val totalItem = Total(pageId, refId).apply {

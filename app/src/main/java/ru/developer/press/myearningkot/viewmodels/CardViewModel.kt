@@ -13,6 +13,7 @@ import ru.developer.press.myearningkot.database.Card
 import ru.developer.press.myearningkot.helpers.*
 import ru.developer.press.myearningkot.helpers.scoups.*
 import ru.developer.press.myearningkot.model.*
+import ru.developer.press.myearningkot.viewmodels.CardUpdatingAction.Action
 
 class CardViewModel : ViewModel(), ProvideDataRows {
 
@@ -29,8 +30,7 @@ class CardViewModel : ViewModel(), ProvideDataRows {
     var selectMode = liveData(SelectMode.NONE)
 
     // inflating card
-    val cardLiveData: MyLiveData<Card> = liveData()
-    val totalLiveData: MyLiveData<Card> = liveData()
+    val cardLiveData: MyLiveData<CardUpdatingAction> = liveData()
 
     var columnsLiveData: MyLiveData<List<Column>> = liveData()
 
@@ -45,11 +45,11 @@ class CardViewModel : ViewModel(), ProvideDataRows {
     }
 
     fun updatePlate() {
-        cardLiveData.postValue(card)
+        cardLiveData.value = CardUpdatingAction(card, Action.inflateView)
     }
 
     fun updateTotals() {
-        totalLiveData.postValue(card)
+        cardLiveData.value = CardUpdatingAction(card, Action.updateTotals)
     }
 
     private fun updateTypeControl() {
@@ -95,6 +95,7 @@ class CardViewModel : ViewModel(), ProvideDataRows {
             card.addColumn(columnType, name)
         else
             card.addColumnSample(columnType, name)
+        updateColumnDL()
     }
 
     fun selectionColumn(columnIndex: Int, isSelect: Boolean) {
@@ -262,7 +263,7 @@ class CardViewModel : ViewModel(), ProvideDataRows {
 
     // тут не создается а обновляется
     fun updateColumnDL() {
-        columnsLiveData.postValue(card.columns)
+        columnsLiveData.value = card.columns
     }
 
     fun addTotal() {
@@ -331,13 +332,13 @@ class CardViewModel : ViewModel(), ProvideDataRows {
                         card.unSelectCell()
                     }
                 }
-                main {
-                    selectMode.value =
-                        if (card.getSelectedRows().isEmpty())
-                            SelectMode.NONE
-                        else
-                            SelectMode.ROW
-                }
+
+                selectMode.setVal(
+                    if (card.getSelectedRows().isEmpty())
+                        SelectMode.NONE
+                    else
+                        SelectMode.ROW
+                )
             }
 
             main {
@@ -350,8 +351,7 @@ class CardViewModel : ViewModel(), ProvideDataRows {
     fun unSelect() {
         card.unSelectCell()
         card.unSelectRows()
-        selectMode.value =
-            SelectMode.NONE
+        selectMode.value = SelectMode.NONE
         uiControl.notifyItems()
     }
 
@@ -373,34 +373,29 @@ class CardViewModel : ViewModel(), ProvideDataRows {
         return null
     }
 
-    fun pasteCell(copyCell: Cell, update: () -> Unit) {
-        runOnViewModel {
-            if (isCapabilityPasteCell(copyCell))
-                card.rows.forEach { row ->
-                    row.cellList.forEach { cell ->
-                        if (cell.isSelect) {
-                            cell.sourceValue = copyCell.sourceValue
-                            updateRowToDB(row)
-                            card.updateTypeControlRow(row)
+    suspend fun pasteCell(copyCell: Cell, update: () -> Unit) = io {
+        if (isCapabilityPasteCell(copyCell))
+            card.rows.forEach { row ->
+                row.cellList.forEach { cell ->
+                    if (cell.isSelect) {
+                        cell.sourceValue = copyCell.sourceValue
+                        updateRowToDB(row)
+                        card.updateTypeControlRow(row)
+                        updateAdapter()
+                        main {
                             updateTotals()
-
-                            updateAdapter()
-                            main {
-                                update()
-                            }
-                            return@runOnViewModel
+                            update()
                         }
+                        return@io
                     }
                 }
-        }
+            }
     }
 
     suspend fun updateRowToDB(row: Row) {
-        io {
-            updatedCardStatus.postValue(true)
-            dao.updateRow(row)
-            updatedCardStatus.postValue(false)
-        }
+        updatedCardStatus.setVal(true)
+        dao.updateRow(row)
+        updatedCardStatus.setVal(false)
     }
 
     suspend fun deleteRows(updateView: (position: Int) -> Unit) {
@@ -421,8 +416,8 @@ class CardViewModel : ViewModel(), ProvideDataRows {
             updateAdapter()
             main {
                 uiControl.notifyItems()
-                selectMode.value = SelectMode.NONE
             }
+            selectMode.setVal(SelectMode.NONE)
         }
         // сортировка листа и обновлении происходит после анимации удаления
     }
@@ -441,8 +436,8 @@ class CardViewModel : ViewModel(), ProvideDataRows {
             updateTotals()
             main {
                 uiControl.notifyItems()
-                selectMode.value = SelectMode.NONE
             }
+            selectMode.setVal(SelectMode.NONE)
         }
     }
 
@@ -504,10 +499,14 @@ class CardViewModel : ViewModel(), ProvideDataRows {
         }
 
         sortList()
-        main {
-            cardLiveData.value = card
-            totalLiveData.value = card
-        }
+
+        cardLiveData.setVal(
+            CardUpdatingAction(
+                card,
+                Action.inflateView,
+                Action.updateTotals
+            )
+        )
     }
 
     enum class SelectMode {
