@@ -363,7 +363,9 @@ class CardViewModel : ViewModel(), ProvideDataRows {
                     if (isCut) {
                         cell.clear()
                         card.updateTypeControlRow(row)
-                        updateTotals()
+                        main {
+                            updateTotals()
+                        }
                         updateAdapter()
                     }
                     return copy
@@ -433,8 +435,8 @@ class CardViewModel : ViewModel(), ProvideDataRows {
             card.addRows(indexLastRow + 1, copyRowLis)
             dao.addRows(copyRowLis)
             sortList()
-            updateTotals()
             main {
+                updateTotals()
                 uiControl.notifyItems()
             }
             selectMode.setVal(SelectMode.NONE)

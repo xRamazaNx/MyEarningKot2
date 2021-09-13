@@ -19,11 +19,8 @@ import kotlinx.coroutines.*
 import ru.developer.press.myearningkot.*
 import ru.developer.press.myearningkot.helpers.*
 import ru.developer.press.myearningkot.helpers.prefLayouts.InputLayout
-import ru.developer.press.myearningkot.helpers.scoups.inflatePlate
-import ru.developer.press.myearningkot.helpers.scoups.updateTotalAmount
 import ru.developer.press.myearningkot.helpers.scoups.updateTypeControlRow
 import ru.developer.press.myearningkot.model.*
-import ru.developer.press.myearningkot.viewmodels.CardUpdatingAction
 import ru.developer.press.myearningkot.viewmodels.CardViewModel.SelectMode
 import java.lang.Runnable
 
@@ -395,8 +392,9 @@ open class CardActivity : CommonCardActivity() {
                         card.updateTypeControlRow(row)
 
                         updateRowToDB(row)
-                        updateTotals()
-
+                        main {
+                            updateTotals()
+                        }
                         updateAdapter()
                         main {
                             updateInputLayout()
