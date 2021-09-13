@@ -23,7 +23,7 @@ class EditCellControl private constructor(
     private val changed: (sourceValue: String) -> Unit
 ) {
     companion object {
-        fun showEditCellDialog(
+        fun edit(
             cardActivity: CardActivity,
             column: Column,
             sourceValue: String,

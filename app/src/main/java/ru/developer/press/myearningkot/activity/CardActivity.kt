@@ -345,7 +345,7 @@ open class CardActivity : CommonCardActivity() {
                 val column = card.columns[columnPosition]
                 val selectCell = sortedRows[rowPosition].cellList[columnPosition]
 
-                EditCellControl.showEditCellDialog(
+                EditCellControl.edit(
                     cardActivity = this@CardActivity,
                     column = column,
                     sourceValue = selectCell.sourceValue

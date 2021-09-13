@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.DialogInterface
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.text.method.DigitsKeyListener
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
@@ -20,6 +21,7 @@ import kotlinx.android.synthetic.main.edit_cell_text.view.*
 import org.jetbrains.anko.layoutInflater
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.databinding.EditCellNumberBinding
+import ru.developer.press.myearningkot.databinding.FormulaSymbolsBinding
 import ru.developer.press.myearningkot.helpers.getColorFromRes
 import ru.developer.press.myearningkot.helpers.prefLayouts.FormulaLayout
 import ru.developer.press.myearningkot.helpers.setAlertButtonColors
@@ -27,6 +29,7 @@ import ru.developer.press.myearningkot.model.Column
 import ru.developer.press.myearningkot.model.ColumnType
 import ru.developer.press.myearningkot.model.PhoneTypeValue
 import java.util.*
+
 
 const val PICK_IMAGE_MULTIPLE = 1
 const val editCellTag = "dialogEditCell"
@@ -85,9 +88,9 @@ class DialogEditCell(
 
     private fun getNumberDialog(): AlertDialog {
         return getAlertDialog().apply {
-            val view = EditCellNumberBinding.inflate(context.layoutInflater)
-            view.titleNumberEdit.text = column.name
-            val editCellText = view.editCellText
+            val cellNumberBinding = EditCellNumberBinding.inflate(context.layoutInflater)
+            cellNumberBinding.titleNumberEdit.text = column.name
+            val editCellText = cellNumberBinding.editCellText
             val callBackOperatorClick: (String) -> Unit = {
                 val stringBuilder = StringBuilder()
                 val toMutableList = value.toMutableList()
@@ -99,13 +102,17 @@ class DialogEditCell(
                 editCellText.setText(value)
                 editCellText.setSelection(value.length)
             }
-            FormulaLayout.initClickOperation(view.root, callBackOperatorClick)
+            FormulaLayout.initClickOperation(cellNumberBinding.root, callBackOperatorClick)
+            FormulaSymbolsBinding.bind(cellNumberBinding.root).point.visibility = View.GONE
             editCellText.setText(value)
             editCellText.addTextChangedListener {
                 value = it.toString()
             }
+
             editCellText.showKeyboard()
-            setView(view.root)
+            editCellText.keyListener = DigitsKeyListener.getInstance("0123456789$.,")
+
+            setView(cellNumberBinding.root)
         }.create()
     }
 
