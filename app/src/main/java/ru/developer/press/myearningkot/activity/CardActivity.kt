@@ -1,6 +1,5 @@
 package ru.developer.press.myearningkot.activity
 
-import android.animation.Animator
 import android.os.Handler
 import android.os.Looper
 import android.view.Menu
@@ -36,7 +35,7 @@ open class CardActivity : CommonCardActivity() {
                             updateCardFromDao(id)
                             main {
                                 updateActivity()
-                                selectMode.value = SelectMode.NONE
+                                setSelectMode(SelectMode.NONE)
                                 onResume()
                             }
                         }
@@ -48,24 +47,23 @@ open class CardActivity : CommonCardActivity() {
 
     private val rowClickListener = object : RowClickListener {
         override var isOpenEditDialogProcess: Boolean = false
-        override fun cellClick(rowPosition: Int, cellPosition: Int) {
+        override fun cellClick(cellInfo: CellInfo) {
             if (isLongClick) {
-                viewModel.rowClicked(rowPosition)
+                viewModel.rowClicked(cellInfo.rowPosition)
             } else {
-                if (viewModel.selectMode.value == SelectMode.ROW) {
+                if (viewModel.selectMode() == SelectMode.ROW) {
                     isLongClick = true
-                    cellClick(rowPosition, cellPosition)
+                    cellClick(cellInfo)
                     return
                 }
-                viewModel.cellClicked(
-                    rowPosition,
-                    cellPosition
-                ) { isDoubleTap ->
+                viewModel.cellClicked(cellInfo) { isDoubleTap ->
                     if (isDoubleTap) {
                         if (!isOpenEditDialogProcess) {
-                            isOpenEditDialogProcess = true
-                            postDelay(500) {
-                                isOpenEditDialogProcess = false
+                            if (cellInfo.cell.type != ColumnType.SWITCH) {
+                                isOpenEditDialogProcess = true
+                                postDelay(500) {
+                                    isOpenEditDialogProcess = false
+                                }
                             }
                             editCell()
                         }
@@ -125,15 +123,15 @@ open class CardActivity : CommonCardActivity() {
                     if (oldSelectMode != SelectMode.NONE) {
                         menuInflater.inflate(R.menu.card_main_menu, menu)
                         supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_home)
-                        if (fbAddRow.isShown) {
+                        if (activityBinding.fbAddRow.isShown) {
                             if (!appBar.isShown)
-                                fbAddRow.hide()
+                                activityBinding.fbAddRow.hide()
                         }
                     }
                 }
             }
             if (selectMode != SelectMode.NONE)
-                fbAddRow.hide()
+                activityBinding.fbAddRow.hide()
             if (selectMode != SelectMode.CELL)
                 hideInputCell()
 
@@ -204,8 +202,8 @@ open class CardActivity : CommonCardActivity() {
 
     override fun updateActivity() {
         super.updateActivity()
-        hideViewWhileScroll()
         hideUnnecessaryElementsFromTotalAmount()
+        setAppBarOffsetChangedListener()
         adapter.setCellClickListener(rowClickListener)
         activityBinding.fbAddRow.setButtonIconResource(R.drawable.ic_add_not_ring_white)
         activityBinding.fbAddRow.setButtonBackgroundColour(getColorFromRes(R.color.colorSecondaryDark))
@@ -252,9 +250,7 @@ open class CardActivity : CommonCardActivity() {
         if (isCut)
             removeSelectedRows()
         else
-            main {
-                viewModel.selectMode.value = SelectMode.ROW
-            }
+            viewModel.setSelectMode(SelectMode.ROW)
     }
 
     private suspend fun copySelectedCell(isCut: Boolean) {
@@ -262,9 +258,7 @@ open class CardActivity : CommonCardActivity() {
             viewModel.apply {
                 app().copyCell = getCopySelectedCell(isCut)
                 // заного назначаю чтоб меню создалось заного и иконка вставки если надо станет серой или белой
-                main {
-                    selectMode.value = SelectMode.CELL
-                }
+                setSelectMode(SelectMode.CELL)
             }
         }
     }
@@ -293,38 +287,10 @@ open class CardActivity : CommonCardActivity() {
         }
     }
 
-    private fun hideViewWhileScroll() {
-        val animListener = object :
-            Animator.AnimatorListener {
-            override fun onAnimationRepeat(p0: Animator?) {
-            }
-
-            override fun onAnimationEnd(p0: Animator?) {
-                viewModel.selectMode.value.let { selectMode ->
-                    if (selectMode != SelectMode.NONE) {
-                        if (!activityBinding.fbAddRow.isShown)
-                            activityBinding.fbAddRow.show()
-                    } else {
-                        val totalAmount = activityBinding.totalAmountView.root
-                        if (totalAmount.translationY == 0f)
-                            activityBinding.fbAddRow.show()
-                        if (totalAmount.translationY == totalAmount.height.toFloat())
-                            activityBinding.fbAddRow.hide()
-                    }
-                }
-            }
-
-            override fun onAnimationCancel(p0: Animator?) {
-            }
-
-            override fun onAnimationStart(p0: Animator?) {
-            }
-        }
-
-        activityBinding.totalAmountView.root.animate().setListener(animListener)
+    private fun setAppBarOffsetChangedListener() {
         activityBinding.appBar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
 
-            if (viewModel.selectMode.value != SelectMode.NONE)
+            if (viewModel.selectMode() != SelectMode.NONE)
                 return@OnOffsetChangedListener
             val heightToolbar = appBarLayout.toolbar.height
 
@@ -342,14 +308,12 @@ open class CardActivity : CommonCardActivity() {
 
     override fun onBackPressed() {
         viewModel.apply {
-            selectMode.value.let { selectMode1 ->
-                if (selectMode1 != SelectMode.NONE) {
-                    unSelect()
-                } else {
-                    updatedCardStatus.observe(this@CardActivity) {
-                        if (!it)
-                            finish()
-                    }
+            if (selectMode() != SelectMode.NONE) {
+                unSelect()
+            } else {
+                updatedCardStatus.observe(this@CardActivity) {
+                    if (!it)
+                        finish()
                 }
             }
         }
@@ -373,9 +337,9 @@ open class CardActivity : CommonCardActivity() {
 
 
         viewModel.apply {
-            getSelectCellPairIndexes()?.let {
-                val columnPosition = it.second
-                val rowPosition = it.first
+            selectCellInfo()?.let {
+                val columnPosition = it.columnPosition
+                val rowPosition = it.rowPosition
 
                 val row = sortedRows[rowPosition]
                 val column = card.columns[columnPosition]
@@ -411,27 +375,26 @@ open class CardActivity : CommonCardActivity() {
     }
 
     private fun showInputCell() {
-        updateInputLayout()
-        activityBinding.inputCellLayout.post {
-            activityBinding.inputCellLayout
-                .animate()
-                .translationY(-inputCellLayout.height.toFloat())
-                .setDuration(250)
-                .setInterpolator(DecelerateInterpolator())
-                .start()
-        }
+        if (updateInputLayout()) {
+            activityBinding.inputCellLayout.post {
+                activityBinding.inputCellLayout
+                    .animate()
+                    .translationY(-inputCellLayout.height.toFloat())
+                    .setDuration(250)
+                    .setInterpolator(DecelerateInterpolator())
+                    .start()
+            }
+        } else hideInputCell()
     }
 
-    private fun updateInputLayout() {
+    private fun updateInputLayout(): Boolean {
         viewModel.apply {
-            getSelectCellPairIndexes()?.let {
-                val rowPosition = it.first
-                val columnPosition = it.second
-
-                val cell = sortedRows[rowPosition].cellList[columnPosition]
+            selectCellInfo()?.let {
+                if (it.cell.type == ColumnType.SWITCH)
+                    return false
                 val layout = InputLayout.inflateInputLayout(
                     this@CardActivity,
-                    cell,
+                    it.cell,
                     object : InputLayout.InputCallBack {
                         override fun openCellDialog() {
                             editCell()
@@ -439,7 +402,7 @@ open class CardActivity : CommonCardActivity() {
 
                         override fun notifyCellChanged() {
                             runOnLifeCycle {
-                                card.updateTypeControlRow(sortedRows[rowPosition])
+                                card.updateTypeControlRow(sortedRows[it.rowPosition])
                                 updateAdapter()
                             }
                         }
@@ -453,6 +416,7 @@ open class CardActivity : CommonCardActivity() {
                 activityBinding.inputCellLayout.addView(layout)
             }
         }
+        return true
     }
 
     private fun hideInputCell() {

@@ -23,11 +23,10 @@ class CardViewModel : ViewModel(), ProvideDataRows {
 
     private var rowSelectPosition: Int = -1
     private var cellSelectPosition: Int = -1
+    val selectMode = liveData(SelectMode.NONE)
 
     val displayParam = DisplayParam()
-
     val updatedCardStatus = liveData(false)
-    var selectMode = liveData(SelectMode.NONE)
 
     // inflating card
     val cardLiveData: MyLiveData<CardUpdatingAction> = liveData()
@@ -36,8 +35,8 @@ class CardViewModel : ViewModel(), ProvideDataRows {
 
     override val sortedRows: MutableList<Row> = mutableListOf()
 
-    override fun getColumns(): MutableList<Column> = card.columns
-    override fun getWidth(): Int {
+    override fun columns(): MutableList<Column> = card.columns
+    override fun width(): Int {
         return if (card.enableHorizontalScroll)
             LinearLayout.LayoutParams.MATCH_PARENT
         else
@@ -64,14 +63,12 @@ class CardViewModel : ViewModel(), ProvideDataRows {
         return card.enableSomeStroke
     }
 
-    override fun getRowHeight(): Int = card.heightCells
-    override fun getSelectCellPairIndexes(): Pair<Int, Int>? {
-        var pair: Pair<Int, Int>?
-        sortedRows.forEachIndexed { indexRow, row ->
-            row.cellList.forEachIndexed { indexCell, cell ->
+    override fun rowHeight(): Int = card.heightCells
+    override fun selectCellInfo(): CellInfo? {
+        sortedRows.forEachIndexed { rowPosition, row ->
+            row.cellList.forEachIndexed { columnPosition, cell ->
                 if (cell.isSelect) {
-                    pair = Pair(indexRow, indexCell)
-                    return pair
+                    return CellInfo(cell, rowPosition, columnPosition)
                 }
             }
         }
@@ -275,14 +272,12 @@ class CardViewModel : ViewModel(), ProvideDataRows {
 
     }
 
-    fun addRow(end: () -> Unit) {
-        runOnViewModel {
-            val addRow = card.addRow()
-            dao.addRow(addRow)
-            sortList()
-            main {
-                end.invoke()
-            }
+    fun addRow(end: () -> Unit) = runOnViewModel {
+        val addRow = card.addRow()
+        dao.addRow(addRow)
+        sortList()
+        main {
+            end.invoke()
         }
     }
 
@@ -293,16 +288,11 @@ class CardViewModel : ViewModel(), ProvideDataRows {
         return this.sortedRows
     }
 
-    fun cellClicked(
-        rowPosition: Int,
-        cellPosition: Int,
-        function: (Boolean) -> Unit
-    ) {
+    fun cellClicked(cellInfo: CellInfo, function: (Boolean) -> Unit) = runOnViewModel {
+        this.rowSelectPosition = cellInfo.rowPosition
+        this.cellSelectPosition = cellInfo.columnPosition
 
-        this.rowSelectPosition = rowPosition
-        this.cellSelectPosition = cellPosition
-
-        val cell = sortList()[rowPosition].cellList[cellPosition]
+        val cell = cellInfo.cell
         val isDoubleTap = cell.isSelect
         cell.isSelect = true
 
@@ -312,47 +302,48 @@ class CardViewModel : ViewModel(), ProvideDataRows {
                 card.unSelectRows()
             }
         }
-        selectMode.value =
-            SelectMode.CELL
-        function(isDoubleTap)
-    }
-
-    fun rowClicked(position: Int = card.rows.size - 1) {
-        runOnViewModel {
-            rowSelectPosition = position
-
-            val row = this.sortedRows[position]
-            val oldStatus = row.status
-            row.status = if (oldStatus == Status.SELECT) Status.NONE else Status.SELECT
-
-            // присваиваем cell только если не было выделено
-            selectMode.value?.let {
-                if (it != SelectMode.ROW) {
-                    if (it == SelectMode.CELL) {
-                        card.unSelectCell()
-                    }
-                }
-
-                selectMode.setVal(
-                    if (card.getSelectedRows().isEmpty())
-                        SelectMode.NONE
-                    else
-                        SelectMode.ROW
-                )
-            }
-
-            main {
-                uiControl.notifyItems()
-                uiControl.notifyItem(position)
-            }
+        setSelectMode(SelectMode.CELL)
+        main {
+            function(isDoubleTap)
         }
     }
 
-    fun unSelect() {
+    fun rowClicked(position: Int = card.rows.size - 1) = runOnViewModel {
+        rowSelectPosition = position
+
+        val row = this.sortedRows[position]
+        val oldStatus = row.status
+        row.status = if (oldStatus == Status.SELECT) Status.NONE else Status.SELECT
+
+        // присваиваем cell только если не было выделено
+        selectMode.value?.let {
+            if (it != SelectMode.ROW) {
+                if (it == SelectMode.CELL) {
+                    card.unSelectCell()
+                }
+            }
+
+            selectMode.setVal(
+                if (card.getSelectedRows().isEmpty())
+                    SelectMode.NONE
+                else
+                    SelectMode.ROW
+            )
+        }
+
+        main {
+            uiControl.notifyItems()
+            uiControl.notifyItem(position)
+        }
+    }
+
+    fun unSelect() = runOnViewModel {
         card.unSelectCell()
         card.unSelectRows()
-        selectMode.value = SelectMode.NONE
-        uiControl.notifyItems()
+        setSelectMode(SelectMode.NONE)
+        main {
+            uiControl.notifyItems()
+        }
     }
 
     suspend fun getCopySelectedCell(isCut: Boolean): Cell? {
@@ -509,6 +500,12 @@ class CardViewModel : ViewModel(), ProvideDataRows {
                 Action.updateTotals
             )
         )
+    }
+
+    fun selectMode(): SelectMode = selectMode.value!!
+
+    suspend fun setSelectMode(selectMode: SelectMode) = main {
+        this@CardViewModel.selectMode.value = selectMode
     }
 
     enum class SelectMode {

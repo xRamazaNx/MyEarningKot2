@@ -3,27 +3,23 @@ package ru.developer.press.myearningkot
 //import ru.developer.press.myearningkot.model.card
 import android.content.Context
 import android.view.View
-import ru.developer.press.myearningkot.database.Card
-import ru.developer.press.myearningkot.database.Page
-import ru.developer.press.myearningkot.helpers.MyLiveData
+import ru.developer.press.myearningkot.model.CellInfo
 import ru.developer.press.myearningkot.model.Column
 import ru.developer.press.myearningkot.model.Prefs
 import ru.developer.press.myearningkot.model.Row
-import ru.developer.press.myearningkot.model.Status
 
 // для получения данных списка записей реализатор CardViewModel
 interface ProvideDataRows {
     val sortedRows: MutableList<Row>
 
-    fun getColumns(): MutableList<Column>
-
+    fun columns(): MutableList<Column>
     // отдает ширину или мачпарент или ширину дисплея
-    fun getWidth(): Int
+    fun width(): Int
 
     fun isEnableHorizontalScroll(): Boolean
     fun isEnableSomeStroke(): Boolean
-    fun getRowHeight(): Int
-    fun getSelectCellPairIndexes(): Pair<Int, Int>?
+    fun rowHeight(): Int
+    fun selectCellInfo(): CellInfo?
 
 }
 
@@ -35,13 +31,7 @@ interface ProvideValueProperty {
 
 interface RowClickListener {
     var isOpenEditDialogProcess: Boolean
-    fun cellClick(rowPosition: Int, cellPosition: Int)
-}
-
-interface NotifyCallback {
-    fun setPositionPage(index: Int)
-    fun scrollToPosition(indexCard: Int)
-    fun isRecyclerInPageScrolled(): Boolean
+    fun cellClick(cellInfo: CellInfo)
 }
 
 interface RowDataListener {

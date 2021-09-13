@@ -46,7 +46,7 @@ class InputLayout private constructor(
                         imageTintList =
                             ColorStateList.valueOf(context.getColorFromRes(R.color.colorRed))
                         onClick {
-                            cell.sourceValue = ""
+                            cell.clear()
                             textCell?.text = ""
                             inputCallBack.notifyCellChanged()
                         }

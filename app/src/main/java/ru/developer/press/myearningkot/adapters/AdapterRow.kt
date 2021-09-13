@@ -3,7 +3,6 @@ package ru.developer.press.myearningkot.adapters
 import android.graphics.Color
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.FrameLayout
 import android.widget.LinearLayout
@@ -16,14 +15,10 @@ import ru.developer.press.myearningkot.ProvideDataRows
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.RowClickListener
 import ru.developer.press.myearningkot.RowDataListener
-import ru.developer.press.myearningkot.activity.CreateCardActivity
 import ru.developer.press.myearningkot.helpers.animateColor
 import ru.developer.press.myearningkot.helpers.getColorFromRes
 import ru.developer.press.myearningkot.helpers.prefLayouts.setSelectBackground
-import ru.developer.press.myearningkot.model.Column
-import ru.developer.press.myearningkot.model.Row
-import ru.developer.press.myearningkot.model.Status
-import ru.developer.press.myearningkot.model.SwitchColumn
+import ru.developer.press.myearningkot.model.*
 
 class AdapterRow(
     private var rowClickListener: RowClickListener?,
@@ -51,9 +46,9 @@ class AdapterRow(
             return RowHolder(FrameLayout(context).apply {
                 backgroundColorResource = R.color.colorPrimaryDark
             })
-        val width = provideDataRows.getWidth()
+        val width = provideDataRows.width()
 
-        val rowHeight = context.dip(provideDataRows.getRowHeight())
+        val rowHeight = context.dip(provideDataRows.rowHeight())
         val rowView = LinearLayout(context).apply {
             layoutParams = LinearLayout.LayoutParams(
                 width,
@@ -68,7 +63,7 @@ class AdapterRow(
             addView(rowView)
         })
 
-        provideDataRows.getColumns().forEachIndexed { index, column ->
+        provideDataRows.columns().forEachIndexed { index, column ->
             val cellView: View = column.createCellView(context)
             if (index == 0)
                 rowHolder.rowNumber = cellView as TextView
@@ -98,7 +93,7 @@ class AdapterRow(
         return provideDataRows.sortedRows.size + 1 // отступ от тотал
     }
 
-    override fun onBindViewHolder(holder: RowHolder, position: Int) {
+    override fun onBindViewHolder(holder: RowHolder, rowPosition: Int) {
         if (holder.itemViewType == -1) {
             holder.itemView.layoutParams =
                 FrameLayout.LayoutParams(matchParent, totalView?.height ?: 0)
@@ -106,11 +101,11 @@ class AdapterRow(
         }
 
         val sortedRows = provideDataRows.sortedRows
-        val row = sortedRows[position]
+        val row = sortedRows[rowPosition]
 
         // выделение ячейки без обновления холдера а то мигает мерзко
-        holder.viewList.forEachIndexed { columnIndex, view ->
-            val cell = row.cellList[columnIndex]
+        holder.viewList.forEachIndexed { columnPosition, view ->
+            val cell = row.cellList[columnPosition]
             cell.elementView = view
             cell.displayCellView()
             when {
@@ -128,39 +123,36 @@ class AdapterRow(
 
             if (cellClickPrefFunction != null) {
                 view.setOnClickListener {
-                    cellClickPrefFunction!!.invoke(columnIndex)
+                    cellClickPrefFunction!!.invoke(columnPosition)
                 }
             } else {
-                if (columnIndex > 0) {
-                    rowClickListener?.let { listener ->
+                if (columnPosition > 0) {
+                    rowClickListener?.let { clickListener ->
                         view.setOnClickListener { _ ->
-                            if (view.context !is CreateCardActivity) {
-                                // индексы (ряд и колона) предыдущего выделеного элемента (ячейки)
-                                val selectCellPairIndexes =
-                                    provideDataRows.getSelectCellPairIndexes()
-                                selectCellPairIndexes?.let {
-                                    val selectedCell = sortedRows[it.first].cellList[it.second]
-                                    // если ячейка на которую кликнули не равна той что была кликнута
-                                    // то надо убирается выделение из предыдущего элемента
-                                    if (selectedCell !== cell) {
-                                        selectedCell.isSelect = false
-                                        selectedCell.setBackground(R.drawable.cell_default_background)
-                                    }
+                            // информация предыдущего выделеного элемента (ячейки)
+                            provideDataRows.selectCellInfo()?.let {
+                                val selectedCell = it.cell
+                                // если ячейка на которую кликнули не равна той что была кликнута
+                                // то надо убирается выделение из предыдущего элемента
+                                if (selectedCell !== cell) {
+                                    selectedCell.isSelect = false
+                                    selectedCell.setBackground(R.drawable.cell_default_background)
                                 }
-                                cell.setBackground(R.drawable.cell_selected_background)
                             }
-                            listener.cellClick(position, columnIndex)
+                            cell.setBackground(R.drawable.cell_selected_background)
+                            clickListener.cellClick(CellInfo(cell, rowPosition, columnPosition))
                         }
                     }
                 }
             }
         }
 
-        val previousRow = if (position > 0) sortedRows[position - 1] else null
-        val secondRow = if (position < sortedRows.lastIndex) sortedRows[position + 1] else null
+        val previousRow = if (rowPosition > 0) sortedRows[rowPosition - 1] else null
+        val secondRow =
+            if (rowPosition < sortedRows.lastIndex) sortedRows[rowPosition + 1] else null
         holder.bind(
             row,
-            provideDataRows.getColumns(),
+            provideDataRows.columns(),
             previousRow,
             secondRow
         )

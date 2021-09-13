@@ -199,5 +199,10 @@ class Formula {
         @SerializedName("v")
         var value: String = ""
     )
-
 }
+
+data class CellInfo(
+    val cell: Cell,
+    val rowPosition: Int,
+    val columnPosition: Int
+)
