@@ -57,11 +57,13 @@ fun Card.inflatePlate(plateView: CardBinding) {
 
     // добавляем в главный лейаут для тоталов
     if (enableHorizontalScrollTotal) {
-        totalContainerScroll.addView(totalContainer)
+        totalContainerScroll.visibility = View.VISIBLE
         totalContainerDisableScroll.visibility = View.GONE
+        totalContainerScroll.addView(totalContainer)
     } else {
-        totalContainerDisableScroll.addView(totalContainer)
         totalContainerScroll.visibility = View.GONE
+        totalContainerDisableScroll.visibility = View.VISIBLE
+        totalContainerDisableScroll.addView(totalContainer)
     }
     // контейнер для всех значений
     val totalValueLayout = totalContainer.totalValueContainer

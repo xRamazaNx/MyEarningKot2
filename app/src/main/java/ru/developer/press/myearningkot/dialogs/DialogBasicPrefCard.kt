@@ -1,7 +1,7 @@
 package ru.developer.press.myearningkot.dialogs
 
+import android.annotation.SuppressLint
 import android.app.Dialog
-import android.content.DialogInterface
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
@@ -12,13 +12,21 @@ import kotlinx.coroutines.delay
 import org.jetbrains.anko.layoutInflater
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.database.Card
-import ru.developer.press.myearningkot.helpers.*
+import ru.developer.press.myearningkot.helpers.getValutaTypeList
+import ru.developer.press.myearningkot.helpers.runOnLifeCycle
+import ru.developer.press.myearningkot.helpers.showItemChangeDialog
 
 class DialogBasicPrefCard(
     private val card: Card,
-    private val basicPrefEvent: () -> Unit
+    init: DialogBasicPrefCard.() -> Unit
 ) : DialogFragment() {
+    lateinit var prefChanged: (TypeOfChange) -> Unit
 
+    init {
+        init.invoke(this)
+    }
+
+    @SuppressLint("InflateParams")
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = AlertDialog.Builder(requireContext()).apply {
 //            setCustomTitle(TextView(context).apply {
@@ -34,8 +42,8 @@ class DialogBasicPrefCard(
             // выбор валюты
             val textViewValutaType = layout.textViewValutaType
             val listValutaType = getValutaTypeList(context)
-            textViewValutaType.text =
-                "${getString(R.string.valuta)} (${listValutaType[card.valuta]})"
+            val valuta = "${getString(R.string.valuta)} (${listValutaType[card.valuta]})"
+            textViewValutaType.text = valuta
             textViewValutaType.setOnClickListener {
                 context.showItemChangeDialog(
                     "Выберите валюту",
@@ -44,12 +52,12 @@ class DialogBasicPrefCard(
                     null,
                     fun(selected) {
                         card.valuta = selected
-                        textViewValutaType.text =
+                        val newValuta =
                             "${getString(R.string.valuta)} (${listValutaType[selected]})"
-                        updateCard()
+                        textViewValutaType.text = newValuta
+                        updateCard(TypeOfChange.rows)
                     })
             }
-
 
             val switchEnableHorizontalScroll = layout.switchEnableHorizontalScrollItems
             val switchEnableSomeStroke = layout.switchEnableSomeStroke
@@ -59,11 +67,11 @@ class DialogBasicPrefCard(
 
             switchEnableHorizontalScroll.setOnCheckedChangeListener { _, b ->
                 card.enableHorizontalScroll = b
-                updateCard()
+                updateCard(TypeOfChange.rows)
             }
             switchEnableSomeStroke.setOnCheckedChangeListener { _, b ->
                 card.enableSomeStroke = b
-                updateCard()
+                updateCard(TypeOfChange.rows)
             }
             val heightUp = layout.heightSizeUp
             val heightDown = layout.heightSizeDown
@@ -77,12 +85,12 @@ class DialogBasicPrefCard(
             heightUp.setOnClickListener {
                 card.heightCells += 1
                 updateHeightInfo()
-                updateCard()
+                updateCard(TypeOfChange.rows)
             }
             heightDown.setOnClickListener {
                 card.heightCells -= 1
                 updateHeightInfo()
-                updateCard()
+                updateCard(TypeOfChange.rows)
             }
 
             val switchEnableShowDatePeriod = layout.switchEnableDatePeriod
@@ -95,11 +103,11 @@ class DialogBasicPrefCard(
 
             switchEnableShowDatePeriod.setOnCheckedChangeListener { _, isChecked ->
                 card.isShowDatePeriod = isChecked
-                updateCard()
+                updateCard(TypeOfChange.plate)
             }
             switchEnableHorizontalScrollTotals.setOnCheckedChangeListener { _, b ->
                 card.enableHorizontalScrollTotal = b
-                updateCard()
+                updateCard(TypeOfChange.plate)
             }
 //            switchShowTotalInfo.setOnCheckedChangeListener { _, isChecked ->
 //                card.isShowTotalInfo = isChecked
@@ -117,10 +125,10 @@ class DialogBasicPrefCard(
         return alertDialog
     }
 
-    private fun updateCard() {
+    private fun updateCard(typeOfChange: TypeOfChange) {
         runOnLifeCycle {
             delay(250)
-            basicPrefEvent()
+            prefChanged(typeOfChange)
         }
     }
 
@@ -136,6 +144,11 @@ class DialogBasicPrefCard(
                 )
             )
         }
+    }
+
+    enum class TypeOfChange {
+        rows,
+        plate
     }
 }
 //    override fun onStart() {

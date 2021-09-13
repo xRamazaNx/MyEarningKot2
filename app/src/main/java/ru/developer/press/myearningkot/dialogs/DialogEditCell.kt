@@ -30,8 +30,6 @@ import ru.developer.press.myearningkot.model.ColumnType
 import ru.developer.press.myearningkot.model.PhoneTypeValue
 import java.util.*
 
-
-const val PICK_IMAGE_MULTIPLE = 1
 const val editCellTag = "dialogEditCell"
 
 class DialogEditCell(
