@@ -36,6 +36,7 @@ import org.jetbrains.anko.*
 import ru.developer.press.myearningkot.App
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.logD
+import ru.developer.press.myearningkot.model.Column
 import ru.developer.press.myearningkot.model.NumberTypePref
 import java.io.File
 import java.math.RoundingMode
@@ -43,6 +44,7 @@ import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 
 fun Activity.app(): App {
     return application as App
@@ -393,4 +395,130 @@ class ActivityResultHelper(
         result.launch(intent)
     }
 
+}
+
+fun calcWidthOfColumns(
+    columns: List<Column>,
+    changedPosition: Int,
+    size: Int,
+    displayWidth: Int
+) {
+    val changedColumn = columns[changedPosition]
+    changedColumn.width += size
+    var allWithColumn = 0
+
+    val list = columns.filter { it !== changedColumn }
+    logD("____________begin")
+    list.forEachIndexed { index, column ->
+        // общая ширина всех колон кроме той которую изменили
+        var allWidth = 0
+        // собираем этот обьем
+        logD("________________column $index width before = ${column.width}")
+        list.forEachIndexed { index1, column1 ->
+            if (index1 >= index) {
+                allWidth += column1.width
+            }
+        }
+        val percent = allWidth / column.width
+        logD("________________percent = $percent")
+        val newAddedWidth = -size / percent
+        logD("________________newAddedWidth = $newAddedWidth")
+        column.width += newAddedWidth
+        logD("________________column $index width after = ${column.width}")
+        allWithColumn += column.width
+    }
+    logD("____________allWidthColumn =  $allWithColumn")
+
+    if (allWithColumn < displayWidth) {
+        columns.minByOrNull { it.width }?.let { column ->
+            column.width += displayWidth - allWithColumn
+            logD("____________minColumn width = ${column.width}")
+        }
+    } else {
+        columns.maxByOrNull { it.width }?.let { column ->
+            column.width -= allWithColumn - displayWidth
+            logD("____________maxColumn width = ${column.width}")
+        }
+    }
+}
+
+fun getMinWidthOfColumns(displayWidth: Int, widths: List<Width>): Int {
+    val percentFromDisplayWidth = displayWidth / 100F
+    logD("____________ percentFromDisplayWidth =  $percentFromDisplayWidth")
+    val percentFromColumnsWidth =
+        widths.fold(AtomicInteger(0)) { allWidth, width ->
+            allWidth.addAndGet(width.width)
+            allWidth
+        }.get() / 100F
+    logD("____________ percentFromColumnsWidth =  $percentFromColumnsWidth")
+    val percentForMinWidth = Column.minWidth / percentFromDisplayWidth
+    logD("____________ percentForMinWidth =  $percentForMinWidth")
+    val minWidthOfColumns = percentFromColumnsWidth * percentForMinWidth
+    logD("____________ minWidthForColumn =  $minWidthOfColumns")
+
+    return minWidthOfColumns.toInt()
+}
+
+fun setMinWidthToColumns(displayWidth: Int, widths: List<Width>) {
+    val minWidthForColumn = getMinWidthOfColumns(displayWidth, widths)
+    var findMin = false
+    widths.forEach {
+        logD("____________ setMinWidthToColumns =  column.width = ${it.width}")
+        if (it.width < minWidthForColumn) {
+            it.width = minWidthForColumn
+            if (!findMin)
+                findMin = true
+        }
+    }
+
+    if (findMin)
+        setMinWidthToColumns(displayWidth, widths)
+}
+
+fun setWidthToTitles(
+    displayWidth: Int,
+    selectedColumns: List<Width>,
+    otherColumns: List<Width>,
+    progress: Int
+) {
+    // сколько осталось от общей ширины с учетом изменения колон
+    // 600-500= 100; 100*2 = 200
+    val changedSize = (progress - selectedColumns[0].width) * selectedColumns.size.toFloat()
+    val pStart =
+        displayWidth - (selectedColumns.sumOf { it.width } - changedSize)
+
+    val coefficient = mutableListOf<Float>()
+    otherColumns.forEach {
+        coefficient.add(it.width / pStart)
+    }
+
+    val widthSelectedColumns = selectedColumns.sumOf { it.width }
+
+    otherColumns.forEachIndexed { index, width ->
+        width.width = (coefficient[index] * widthSelectedColumns).toInt()
+    }
+    selectedColumns.forEach {
+        it.width = progress
+    }
+}
+
+
+//
+fun sizeDistribution(
+    addValue: Int,
+    changedValues: List<Int>
+): List<Int> {
+    val newSizes = mutableListOf<Int>()
+    val sumOfUnselected = changedValues.sumOf { it }
+    changedValues.forEach {
+        val coef = it / sumOfUnselected.toFloat()
+        val sumOfDifAndUnselect = sumOfUnselected + addValue
+        newSizes.add((sumOfDifAndUnselect * coef).toInt())
+    }
+    
+    return newSizes
+}
+
+interface Width {
+    var width: Int
 }

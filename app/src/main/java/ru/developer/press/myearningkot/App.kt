@@ -42,7 +42,7 @@ class App : Application(), ActivityLifecycleCallbacks {
 
     override fun onCreate() {
         dao = DataController(applicationContext)
-        authUser = Firebase.auth
+//        authUser = Firebase.auth
 
         runOnIO {
             registerActivityLifecycleCallbacks(this@App)

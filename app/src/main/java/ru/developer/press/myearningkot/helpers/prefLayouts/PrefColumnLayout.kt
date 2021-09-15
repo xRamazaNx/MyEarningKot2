@@ -86,9 +86,10 @@ fun Context.getPrefColumnLayout(
 interface PrefColumnChangedCallback {
     fun widthChanged()
     fun prefChanged()
-    fun widthProgress()
+    fun widthProgress(progress: Int)
     fun recreateView() //  для колоны переключателя
     fun getNumberColumns(): MutableList<NumberColumn>
+    fun maxWidth(): Int
 }
 
 abstract class PrefColumnLayout(
@@ -100,17 +101,13 @@ abstract class PrefColumnLayout(
     protected fun initSeekBarAndToolbarButtons(view: View) {
         val widthColumnSeekBar = view.widthColumnSeekBar
         val column = columnList[0]
+        widthColumnSeekBar.max = prefColumnChangedCallback.maxWidth()
         widthColumnSeekBar.progress = column.width
         widthColumnSeekBar.setOnSeekBarChangeListener(object :
             SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
                 val progress = p0!!.progress
-                if (progress > 30) {
-                    columnList.forEach {
-                        it.width = progress
-                    }
-                    prefColumnChangedCallback.widthProgress()
-                }
+                prefColumnChangedCallback.widthProgress(progress)
             }
 
             override fun onStartTrackingTouch(p0: SeekBar?) {
@@ -118,6 +115,7 @@ abstract class PrefColumnLayout(
 
             override fun onStopTrackingTouch(p0: SeekBar?) {
                 prefColumnChangedCallback.widthChanged()
+                widthColumnSeekBar.progress = column.width
             }
         })
 

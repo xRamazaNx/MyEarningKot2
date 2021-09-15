@@ -22,6 +22,8 @@ sealed class Column(
     override var position: Int = -1
 
     companion object {
+        const val minWidth: Int = 70
+
         @SerializedName("tc")
         var titleColor: Int = 0
     }

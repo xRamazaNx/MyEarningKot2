@@ -7,12 +7,14 @@ import android.graphics.DashPathEffect
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
+import android.widget.LinearLayout
+import androidx.core.view.forEach
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.helpers.getColorFromRes
 
 class WidthLineDrawer(context: Context, attributeSet: AttributeSet) : View(context, attributeSet) {
 
-    var positionList: MutableList<Float> = mutableListOf()
+    val positionList: MutableList<Float> = mutableListOf()
     private val paint = Paint().apply {
         isAntiAlias = true
         style = Paint.Style.STROKE
@@ -33,5 +35,17 @@ class WidthLineDrawer(context: Context, attributeSet: AttributeSet) : View(conte
             )
 
         }
+    }
+
+    fun updateLines(columnContainer: LinearLayout, offset: Int) {
+        positionList.clear()
+        columnContainer.forEach { title ->
+            val rightPosition =
+                title.x + title.width - offset
+            positionList.add(
+                rightPosition
+            )
+        }
+        invalidate()
     }
 }

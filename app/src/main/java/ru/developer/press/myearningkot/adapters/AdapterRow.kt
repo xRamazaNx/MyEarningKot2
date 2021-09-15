@@ -47,8 +47,8 @@ class AdapterRow(
                 backgroundColorResource = R.color.colorPrimaryDark
             })
         val width = provideDataRows.width()
-
         val rowHeight = context.dip(provideDataRows.rowHeight())
+
         val rowView = LinearLayout(context).apply {
             layoutParams = LinearLayout.LayoutParams(
                 width,

@@ -17,7 +17,6 @@ import android.widget.PopupWindow
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
-import androidx.core.view.forEach
 import com.google.android.material.appbar.AppBarLayout
 import kotlinx.android.synthetic.main.activity_card.*
 import kotlinx.android.synthetic.main.card.*
@@ -39,6 +38,7 @@ import ru.developer.press.myearningkot.helpers.scoups.setClickToTotals
 import ru.developer.press.myearningkot.model.*
 import splitties.alertdialog.appcompat.negativeButton
 import splitties.alertdialog.appcompat.positiveButton
+import java.util.concurrent.atomic.AtomicInteger
 
 
 const val CARD_ID = "card_id"
@@ -573,13 +573,14 @@ class PrefCardActivity : CommonCardActivity() {
                             elementPref.columnType,
                             object : PrefColumnChangedCallback {
                                 override fun widthChanged() {
-                                    viewModel.updateColumnDL()
-                                    initRecyclerView()
-                                    initClicksOfElements()
+                                    runMainOnLifeCycle {
+                                        viewModel.updateColumnDL()
+                                        initRecyclerView()
+                                        initClicksOfElements()
 
-                                    widthDrawer.positionList.clear()
-                                    widthDrawer.invalidate()
-                                    // фуакция на изменение ширины колоны
+                                        widthDrawer.positionList.clear()
+                                        widthDrawer.invalidate()
+                                    }
                                 }
 
                                 override fun prefChanged() {
@@ -596,26 +597,60 @@ class PrefCardActivity : CommonCardActivity() {
                                     }
                                 }
 
-                                override fun widthProgress() {
-                                    columnList.forEach { column ->
+                                override fun widthProgress(p: Int) {
+                                    if (p < Column.minWidth)
+                                        return
+                                    var progress = p
 
-                                        val index = card.columns.indexOf(column)
-                                        columnContainer.getChildAt(index).layoutParams.width =
-                                            column.width
+                                    if (!card.enableHorizontalScroll) {
+                                        val unselectTitles = mutableListOf<View>()
+                                        val selectedNewWidths = progress * columnList.size
+                                        val newAllWidth =
+                                            selectedNewWidths + card.columns.subtract(columnList)
+                                                .fold(AtomicInteger(0)) { integer, column ->
+                                                    val index = card.columns.indexOf(column)
+                                                    val title = columnContainer.getChildAt(index)
+                                                    if (column !is NumerationColumn)
+                                                        unselectTitles.add(title)
+                                                    integer.addAndGet(title.width)
+                                                    integer
+                                                }.get()
+
+                                        val addValueToUnselected = viewModel.displayParam.width - newAllWidth
+
+                                        val addedSizes = sizeDistribution(
+                                            addValueToUnselected,
+                                            unselectTitles.fold(mutableListOf()) { list, title ->
+                                                list.add(title.width)
+                                                list
+                                            }
+                                        )
+
+                                        unselectTitles.forEachIndexed { index, title ->
+                                            var new = addedSizes[index]
+                                            if (new < Column.minWidth) {
+                                                progress -= ((Column.minWidth - new) / columnList.size.toFloat()).toInt()
+                                                new = Column.minWidth
+                                            }
+                                            title.layoutParams.width = new
+                                        }
+
                                     }
+                                    columnList.forEach { column ->
+                                        val index = card.columns.indexOf(column)
+                                        val title = columnContainer.getChildAt(index)
+                                        val layoutParams = title.layoutParams
+                                        layoutParams.width = progress
+                                    }
+
                                     columnContainer.requestLayout()
 
-                                    widthDrawer.positionList.clear()
-                                    columnContainer.forEach {
-                                        val title = it
-                                        val rightPosition =
-                                            title.x + it.width - horizontalScrollView.scrollX
-                                        widthDrawer.positionList.add(
-                                            rightPosition
-                                        )
-                                    }
+                                    widthDrawer.updateLines(columnContainer, offset = horizontalScrollView.scrollX)
 
-                                    widthDrawer.invalidate()
+                                    card.columns.forEachIndexed { index, column ->
+                                        val width = columnContainer.getChildAt(index).width
+                                        column.width = width
+                                    }
                                 }
 
                                 override fun recreateView() {
@@ -634,6 +669,21 @@ class PrefCardActivity : CommonCardActivity() {
                                         card.columns.filterIsInstance<NumberColumn>()
                                     return filterIsInstance.toMutableList()
 
+                                }
+
+                                override fun maxWidth(): Int {
+                                    val unselectColumnSize = card.columns.subtract(columnList).size
+                                    val fixSize =
+                                        if (unselectColumnSize == 0)
+                                            0
+                                        else
+                                            unselectColumnSize * Column.minWidth
+                                    val displayWidth = viewModel.displayParam.width
+                                    val grantedWidth = displayWidth - fixSize
+                                    return if (card.enableHorizontalScroll)
+                                        displayWidth - Column.minWidth
+                                    else
+                                        grantedWidth / columnList.size
                                 }
                             })
                     }
