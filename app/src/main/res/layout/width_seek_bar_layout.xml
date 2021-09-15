@@ -10,7 +10,7 @@
     <!--        android:background="@color/colorControlNormal"-->
     <!--        android:layout_width="match_parent"-->
     <!--        android:layout_height="1dp"/>-->
-    <SeekBar
+    <androidx.appcompat.widget.AppCompatSeekBar
         android:padding="16dp"
         android:id="@+id/widthColumnSeekBar"
         android:layout_width="match_parent"

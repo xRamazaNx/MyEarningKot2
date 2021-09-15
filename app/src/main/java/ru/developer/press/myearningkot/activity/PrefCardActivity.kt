@@ -634,7 +634,6 @@ class PrefCardActivity : CommonCardActivity() {
                                             }
                                             title.layoutParams.width = new
                                         }
-
                                     }
                                     columnList.forEach { column ->
                                         val index = card.columns.indexOf(column)

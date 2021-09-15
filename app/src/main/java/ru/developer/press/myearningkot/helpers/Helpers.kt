@@ -45,6 +45,7 @@ import java.text.DecimalFormatSymbols
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.math.roundToInt
 
 fun Activity.app(): App {
     return application as App
@@ -508,15 +509,14 @@ fun sizeDistribution(
     addValue: Int,
     changedValues: List<Int>
 ): List<Int> {
-    val newSizes = mutableListOf<Int>()
     val sumOfUnselected = changedValues.sumOf { it }
-    changedValues.forEach {
-        val coef = it / sumOfUnselected.toFloat()
-        val sumOfDifAndUnselect = sumOfUnselected + addValue
-        newSizes.add((sumOfDifAndUnselect * coef).toInt())
+    return changedValues.fold(mutableListOf()) { list, value ->
+        val coef: Float = value / sumOfUnselected.toFloat()
+        val sumOf = (sumOfUnselected + addValue)
+        val v = sumOf * coef
+        list.add(v.roundToInt())
+        list
     }
-    
-    return newSizes
 }
 
 interface Width {

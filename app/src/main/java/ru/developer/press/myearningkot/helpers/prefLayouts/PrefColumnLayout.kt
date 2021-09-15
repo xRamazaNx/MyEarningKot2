@@ -105,8 +105,7 @@ abstract class PrefColumnLayout(
         widthColumnSeekBar.progress = column.width
         widthColumnSeekBar.setOnSeekBarChangeListener(object :
             SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
-                val progress = p0!!.progress
+            override fun onProgressChanged(p0: SeekBar?, progress: Int, p2: Boolean) {
                 prefColumnChangedCallback.widthProgress(progress)
             }
 
@@ -115,7 +114,6 @@ abstract class PrefColumnLayout(
 
             override fun onStopTrackingTouch(p0: SeekBar?) {
                 prefColumnChangedCallback.widthChanged()
-                widthColumnSeekBar.progress = column.width
             }
         })
 
