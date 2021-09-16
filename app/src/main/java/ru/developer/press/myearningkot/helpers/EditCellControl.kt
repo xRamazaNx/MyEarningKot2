@@ -1,10 +1,6 @@
 package ru.developer.press.myearningkot.helpers
 
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
-import com.jaredrummler.android.colorpicker.ColorPickerDialog
-import com.jaredrummler.android.colorpicker.ColorPickerDialogListener
-import org.jetbrains.anko.backgroundColorResource
 import org.jetbrains.anko.toast
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.activity.CardActivity
@@ -17,27 +13,10 @@ import ru.developer.press.myearningkot.model.NumberColumn
 class EditCellControl private constructor(
     private val cardActivity: CardActivity,
     private val column: Column,
-    sourceValue: String,
+    private var value: String,
     private val changed: (sourceValue: String) -> Unit
 ) {
-    companion object {
-        fun edit(
-            cardActivity: CardActivity,
-            column: Column,
-            sourceValue: String,
-            changed: (sourceValue: String) -> Unit
-        ): EditCellControl {
-            return EditCellControl(cardActivity, column, sourceValue, changed)
-                .editCell()
-        }
-    }
-
-    private var value = ""
     private var dialog: DialogFragment? = null
-
-    init {
-        value = sourceValue
-    }
 
     private fun editCell(): EditCellControl {
         dialog = when (column.getType()) {
@@ -85,17 +64,15 @@ class EditCellControl private constructor(
         return this
     }
 
-    private fun dismissListener(dismiss: () -> Unit): EditCellControl {
-        dialog?.addDismissListener {
-            dismiss.invoke()
+    companion object {
+        fun edit(
+            cardActivity: CardActivity,
+            column: Column,
+            sourceValue: String,
+            changed: (sourceValue: String) -> Unit
+        ): EditCellControl {
+            return EditCellControl(cardActivity, column, sourceValue, changed)
+                .editCell()
         }
-        return this
-    }
-
-    private fun showListener(shown: (DialogFragment) -> Unit): EditCellControl {
-        dialog?.addShownListener {
-            shown.invoke(it)
-        }
-        return this
     }
 }
