@@ -21,6 +21,7 @@ import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.activity.CardActivity
 import ru.developer.press.myearningkot.database.Card
 import ru.developer.press.myearningkot.databinding.CardBinding
+import ru.developer.press.myearningkot.helpers.Width
 import ru.developer.press.myearningkot.helpers.getPathForResource
 import ru.developer.press.myearningkot.helpers.prefLayouts.ElementType
 import ru.developer.press.myearningkot.model.*
@@ -210,7 +211,12 @@ fun Card.addRows(index: Int, rowLis: List<Row>) {
     calcTotals()
 }
 
-fun Card.addColumn(type: ColumnType, name: String, position: Int = columns.size): Column {
+fun Card.addColumn(
+    type: ColumnType,
+    name: String,
+    width: Int? = null,
+    position: Int = columns.size
+): Column {
     val column = when (type) {
         ColumnType.NUMERATION -> NumerationColumn(name, pageId, refId)
         ColumnType.NUMBER -> NumberColumn(name, pageId, refId)
@@ -224,7 +230,9 @@ fun Card.addColumn(type: ColumnType, name: String, position: Int = columns.size)
         // не будет ни когда использоваться
         ColumnType.NONE -> TextColumn(name, pageId, refId)
     }
-
+    if (width != null) {
+        column.width = width
+    }
     columns.add(position, column)
     column.updateTypeControl(this)
     rows.forEach {

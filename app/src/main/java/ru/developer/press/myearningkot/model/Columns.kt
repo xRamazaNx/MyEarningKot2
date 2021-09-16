@@ -28,7 +28,7 @@ sealed class Column(
         var titleColor: Int = 0
     }
 
-    var width: Int = 350
+    var width: Int = minWidth
 
     @SerializedName(column_cast_gson)
     var className: String = javaClass.name

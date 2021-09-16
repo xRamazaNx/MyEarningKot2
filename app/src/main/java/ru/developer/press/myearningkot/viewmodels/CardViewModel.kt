@@ -89,9 +89,9 @@ class CardViewModel : ViewModel(), ProvideDataRows {
 
     fun addColumn(columnType: ColumnType, name: String) {
         if (cardInfo.cardCategory == CardInfo.CardCategory.CARD)
-            card.addColumn(columnType, name)
+            card.addColumn(columnType, name, 300)
         else
-            card.addColumnSample(columnType, name)
+            card.addColumnSample(columnType, name, 300)
         updateColumnDL()
     }
 

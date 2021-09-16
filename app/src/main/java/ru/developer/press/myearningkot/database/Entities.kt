@@ -7,6 +7,7 @@ import ru.developer.press.myearningkot.ProvideCardPropertyForCell
 import ru.developer.press.myearningkot.helpers.MyLiveData
 import ru.developer.press.myearningkot.helpers.SingleObserverLiveData
 import ru.developer.press.myearningkot.helpers.getDate
+import ru.developer.press.myearningkot.helpers.scoups.addColumn
 import ru.developer.press.myearningkot.model.*
 import java.util.*
 
@@ -159,6 +160,10 @@ class Card(var pageId: String, var name: String = "") : Ref(), ProvideCardProper
     override fun isSingleLine(): Boolean = !enableSomeStroke
 
     override fun getValutaType(): Int = valuta
+
+    init {
+        addColumn(ColumnType.NUMERATION, "№")
+    }
 }
 
 open class JsonValue(pageId: String, cardId: String) : BelongIds(pageId, cardId) {

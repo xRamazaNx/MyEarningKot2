@@ -460,50 +460,6 @@ fun getMinWidthOfColumns(displayWidth: Int, widths: List<Width>): Int {
     return minWidthOfColumns.toInt()
 }
 
-fun setMinWidthToColumns(displayWidth: Int, widths: List<Width>) {
-    val minWidthForColumn = getMinWidthOfColumns(displayWidth, widths)
-    var findMin = false
-    widths.forEach {
-        logD("____________ setMinWidthToColumns =  column.width = ${it.width}")
-        if (it.width < minWidthForColumn) {
-            it.width = minWidthForColumn
-            if (!findMin)
-                findMin = true
-        }
-    }
-
-    if (findMin)
-        setMinWidthToColumns(displayWidth, widths)
-}
-
-fun setWidthToTitles(
-    displayWidth: Int,
-    selectedColumns: List<Width>,
-    otherColumns: List<Width>,
-    progress: Int
-) {
-    // сколько осталось от общей ширины с учетом изменения колон
-    // 600-500= 100; 100*2 = 200
-    val changedSize = (progress - selectedColumns[0].width) * selectedColumns.size.toFloat()
-    val pStart =
-        displayWidth - (selectedColumns.sumOf { it.width } - changedSize)
-
-    val coefficient = mutableListOf<Float>()
-    otherColumns.forEach {
-        coefficient.add(it.width / pStart)
-    }
-
-    val widthSelectedColumns = selectedColumns.sumOf { it.width }
-
-    otherColumns.forEachIndexed { index, width ->
-        width.width = (coefficient[index] * widthSelectedColumns).toInt()
-    }
-    selectedColumns.forEach {
-        it.width = progress
-    }
-}
-
-
 //
 fun sizeDistribution(
     addValue: Int,
