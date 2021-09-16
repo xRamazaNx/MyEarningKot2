@@ -43,19 +43,23 @@ class PhoneTypeValue(
     @SerializedName("o")
     var organization: String = ""
 ) {
-    fun getPhoneInfo(phoneTypePref: PhoneTypePref): String {
+    fun getPhoneInfo(phoneTypePref: PhoneTypePref, hideUnselect: Boolean = true): String {
         val infoBuilder = StringBuilder()
-        phoneTypePref.sort.forEach {
+        val sort = phoneTypePref.sort
+        sort.forEach {
             var append = ""
             when (it) {
-                0 -> if (phoneTypePref.name)
+                0 -> if (phoneTypePref.name || !hideUnselect)
                     append = name
-                1 -> if (phoneTypePref.lastName)
+                1 -> if (phoneTypePref.lastName || !hideUnselect)
                     append = lastName
-                2 -> if (phoneTypePref.phone)
+                2 -> if (phoneTypePref.phone || !hideUnselect)
                     append = phone
-                3 -> if (phoneTypePref.organization)
+                3 -> if (phoneTypePref.organization || !hideUnselect)
                     append = organization
+            }
+            if (it != sort.first() && append.isNotEmpty()) {
+                infoBuilder.append(", ")
             }
             infoBuilder.append(append)
         }

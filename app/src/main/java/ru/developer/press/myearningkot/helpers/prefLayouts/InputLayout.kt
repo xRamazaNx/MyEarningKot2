@@ -99,41 +99,46 @@ class InputLayout private constructor(
     }
 
     private fun text(cell: Cell): String {
-        return when (cell.type) {
-            ColumnType.TEXT -> cell.sourceValue
-            ColumnType.NUMBER -> {
-                var text = ""
-                card.rows.forEach { row ->
-                    row.cellList.forEachIndexed { index, cell ->
-                        if (this.cell === cell) {
-                            val column = card.columns[index]
-                            if (column is NumberColumn) {
-                                text = if (column.inputType == InputTypeNumberColumn.FORMULA)
-                                    column.formulaString(card, row)
-                                else
-                                    cell.sourceValue
+        var text = ""
+        card.rows.forEach { row ->
+            row.cellList.forEachIndexed { index, cell ->
+                if (this.cell === cell) {
+                    val column: Column = card.columns[index]
+                    text = when (cell.type) {
+                        ColumnType.TEXT -> cell.sourceValue
+                        ColumnType.NUMBER -> {
+                            column.let { numberColumn ->
+                                if (numberColumn is NumberColumn) {
+                                    text =
+                                        if (numberColumn.inputType == InputTypeNumberColumn.FORMULA)
+                                            numberColumn.formulaString(card, row)
+                                        else
+                                            cell.sourceValue
+                                }
                             }
+                            text
+                        }
+                        ColumnType.PHONE -> {
+                            val typeValue: PhoneTypeValue =
+                                gson.fromJson(cell.sourceValue, PhoneTypeValue::class.java)
+                            val phoneTypePref = (column as PhoneColumn).pref()
+                            typeValue.getPhoneInfo(phoneTypePref, false)
+                        }
+                        ColumnType.DATE -> {
+                            if (cell.sourceValue.isNotEmpty()) {
+                                val calendar = Calendar.getInstance()
+                                calendar.timeInMillis = cell.sourceValue.toLong()
+                                calendar.time.toString()
+                            } else ""
+                        }
+                        else -> {
+                            cell.displayValue
                         }
                     }
                 }
-                text
-            }
-            ColumnType.PHONE -> {
-                val typeValue: PhoneTypeValue =
-                    gson.fromJson(cell.sourceValue, PhoneTypeValue::class.java)
-                typeValue.phone
-            }
-            ColumnType.DATE -> {
-                if (cell.sourceValue.isNotEmpty()) {
-                    val calendar = Calendar.getInstance()
-                    calendar.timeInMillis = cell.sourceValue.toLong()
-                    calendar.time.toString()
-                } else ""
-            }
-            else -> {
-                cell.displayValue
             }
         }
+        return text
     }
 
     interface InputCallBack {
