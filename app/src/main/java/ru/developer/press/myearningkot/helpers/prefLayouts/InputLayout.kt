@@ -8,24 +8,25 @@ import android.widget.TextView
 import org.jetbrains.anko.*
 import org.jetbrains.anko.sdk27.coroutines.onClick
 import ru.developer.press.myearningkot.R
+import ru.developer.press.myearningkot.database.Card
 import ru.developer.press.myearningkot.database.gson
 import ru.developer.press.myearningkot.helpers.getColorFromRes
-import ru.developer.press.myearningkot.model.Cell
-import ru.developer.press.myearningkot.model.ColumnType
-import ru.developer.press.myearningkot.model.PhoneTypeValue
+import ru.developer.press.myearningkot.model.*
 import java.util.*
 
 class InputLayout private constructor(
     private val cell: Cell,
+    private val card: Card,
     private val inputCallBack: InputCallBack
 ) {
     companion object {
         fun inflateInputLayout(
             context: Context,
             cell: Cell,
+            card: Card,
             inputCallBack: InputCallBack
         ): LinearLayout {
-            return InputLayout(cell, inputCallBack).inputView(context)
+            return InputLayout(cell, card, inputCallBack).inputView(context)
         }
     }
 
@@ -99,9 +100,23 @@ class InputLayout private constructor(
 
     private fun text(cell: Cell): String {
         return when (cell.type) {
-            ColumnType.TEXT,
+            ColumnType.TEXT -> cell.sourceValue
             ColumnType.NUMBER -> {
-                cell.sourceValue
+                var text = ""
+                card.rows.forEach { row ->
+                    row.cellList.forEachIndexed { index, cell ->
+                        if (this.cell === cell) {
+                            val column = card.columns[index]
+                            if (column is NumberColumn) {
+                                text = if (column.inputType == InputTypeNumberColumn.FORMULA)
+                                    column.formulaString(card, row)
+                                else
+                                    cell.sourceValue
+                            }
+                        }
+                    }
+                }
+                text
             }
             ColumnType.PHONE -> {
                 val typeValue: PhoneTypeValue =

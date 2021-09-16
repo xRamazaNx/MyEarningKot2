@@ -3,9 +3,6 @@ package ru.developer.press.myearningkot.helpers
 import android.os.Handler
 import android.os.Looper
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 import kotlinx.coroutines.*
 
@@ -50,10 +47,12 @@ fun ViewModel.postDelay(delay: Long, delayBlock: suspend () -> Unit) {
 }
 
 fun View.postDelay(delay: Long, delayBlock: suspend () -> Unit) {
-    findViewTreeLifecycleOwner()?.runOnLifeCycle {
-        delay(delay)
-        main {
-            delayBlock.invoke()
+    post {
+        findViewTreeLifecycleOwner()?.runOnLifeCycle {
+            delay(delay)
+            main {
+                delayBlock.invoke()
+            }
         }
     }
 }

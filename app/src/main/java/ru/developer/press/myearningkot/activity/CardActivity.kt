@@ -318,22 +318,6 @@ open class CardActivity : CommonCardActivity() {
     }
 
     private fun editCell() {
-        /**
-         * тип:
-         *      text:          просто показать там ткест в одну строку с прокруткой
-         *      цифры:         показать сурс то как мы ввели туда эти цифры уравненем или просто цифры со скролом
-         *          формула:   показать формулу (со скролом) и при нажатии предупреждение
-         *      контакт:       показать номер человека можно настроить на показ только имени а при наведении можно будет посмотреть номер
-         *      дата:          показать полную дату с временем в плоть до секунды и дня недели
-         *      цвет:          показать базовую палитру в ряд для выбора с скролом
-         *      переключатель: не нужно показывать
-         *      изображение:   показать в ряд изображения которые есть с прокрутой, при нажатии меняется ава ячейки
-         *      чат:           показать последнее сообщение
-         *
-         *      [кнопка показа полного экрана] [место для показа инпута] [кнопка ок(галочка)]
-         * */
-
-
         viewModel.apply {
             selectCellInfo()?.let {
                 val columnPosition = it.columnPosition
@@ -387,12 +371,13 @@ open class CardActivity : CommonCardActivity() {
 
     private fun updateInputLayout(): Boolean {
         viewModel.apply {
-            selectCellInfo()?.let {
-                if (it.cell.type == ColumnType.SWITCH)
+            selectCellInfo()?.let { cellInfo ->
+                if (cellInfo.cell.type == ColumnType.SWITCH)
                     return false
                 val layout = InputLayout.inflateInputLayout(
                     this@CardActivity,
-                    it.cell,
+                    cellInfo.cell,
+                    card,
                     object : InputLayout.InputCallBack {
                         override fun openCellDialog() {
                             editCell()
@@ -400,7 +385,7 @@ open class CardActivity : CommonCardActivity() {
 
                         override fun notifyCellChanged() {
                             runOnLifeCycle {
-                                card.updateTypeControlRow(sortedRows[it.rowPosition])
+                                card.updateTypeControlRow(sortedRows[cellInfo.rowPosition])
                                 updateAdapter()
                             }
                         }
@@ -462,13 +447,3 @@ open class CardActivity : CommonCardActivity() {
             Handler(Looper.getMainLooper()).post(waitForAnimationsToFinishRunnable)
         }
 }
-
-/**
- * - обновление активити
- * - выделение ячейки
- * - обновление ячейки (вырезать, вставить, изменить)
- * - добавление строки (вставка)
- * - удаление строк
- * - вырезать строки
- *
- * */

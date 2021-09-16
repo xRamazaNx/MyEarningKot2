@@ -151,8 +151,21 @@ class NumberColumn(name: String, pageId: String, cardId: String) : Column(name, 
     }
 
     fun calcFormula(row: Row, card: Card): String {
-        val string = StringBuilder()
         return try {
+            val string = formulaString(card, row)
+            val value: Double? = Calc.evaluate(string)
+            value?.let { BigDecimal(it).toPlainString() } ?: ""
+        } catch (exception: Exception) {
+            "Error formula cell"
+        }
+    }
+
+    fun formulaString(
+        card: Card,
+        row: Row,
+    ): String {
+        val string = StringBuilder()
+        try {
             formula.formulaElements.forEach {
                 if (it.type == Formula.COLUMN_ID) {
                     var index = -1
@@ -182,11 +195,11 @@ class NumberColumn(name: String, pageId: String, cardId: String) : Column(name, 
                 } else
                     string.append(it.value)
             }
-            val value: Double? = Calc.evaluate(string.toString())
-            value?.let { BigDecimal(it).toPlainString() } ?: ""
-        } catch (exception: Exception) {
-            "Error formula cell"
+        } catch (ex: Exception) {
+            string.clear()
+            string.append("")
         }
+        return string.toString()
     }
 }
 
