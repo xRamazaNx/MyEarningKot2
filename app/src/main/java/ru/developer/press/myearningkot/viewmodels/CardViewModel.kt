@@ -368,14 +368,14 @@ class CardViewModel : ViewModel(), ProvideDataRows {
 
     suspend fun pasteCell(copyCell: Cell, update: () -> Unit) = io {
         if (isCapabilityPasteCell(copyCell))
-            card.rows.forEach { row ->
+            card.rows.forEachIndexed { rowPosition,  row ->
                 row.cellList.forEach { cell ->
                     if (cell.isSelect) {
                         cell.sourceValue = copyCell.sourceValue
                         updateRowToDB(row)
                         card.updateTypeControlRow(row)
-                        updateAdapter()
                         main {
+                            uiControl.notifyItem(rowPosition)
                             updateTotals()
                             update()
                         }

@@ -146,7 +146,7 @@ open class CardActivity : CommonCardActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        postDelay(200) {
+        postDelay(250) {
             when (item.itemId) {
                 R.id.search -> {
                 }
@@ -238,10 +238,8 @@ open class CardActivity : CommonCardActivity() {
     }
 
     private suspend fun pasteRows() {
-        viewModel.apply {
-            app().copyRowList?.let { list ->
-                pasteRows(list)
-            }
+        app().copyRowList?.let { list ->
+            viewModel.pasteRows(list)
         }
     }
 
