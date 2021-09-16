@@ -3,6 +3,7 @@ package ru.developer.press.myearningkot.database
 import android.content.Context
 import androidx.room.*
 import androidx.room.Database
+import org.jetbrains.anko.displayMetrics
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.helpers.getColumnFromJson
 import ru.developer.press.myearningkot.helpers.scoups.addColumn
@@ -207,18 +208,18 @@ class SampleHelper {
     companion object {
 
         fun defaultSamples(context: Context): List<Card> {
+            val widthDisplay = context.displayMetrics.widthPixels
+            val percent = widthDisplay / 100F
+            fun width(widthPercent: Int): Int = (widthPercent * percent).toInt()
             val list = mutableListOf<Card>()
             // доход
             list.add(Card(samplePageName, name = context.getString(R.string.earning)).apply {
-
                 val summaColumn =
-                    addColumn(ColumnType.NUMBER, context.getString(R.string.summa), 350)
-
+                    addColumn(ColumnType.NUMBER, context.getString(R.string.summa), width(20))
                 val avansColumn =
-                    addColumn(ColumnType.NUMBER, context.getString(R.string.avans), 350)
-
-                addColumn(ColumnType.TEXT, context.getString(R.string.note), 450)
-                addColumn(ColumnType.DATE, context.getString(R.string.date), 430)
+                    addColumn(ColumnType.NUMBER, context.getString(R.string.avans), width(20))
+                addColumn(ColumnType.TEXT, context.getString(R.string.note), width(35))
+                addColumn(ColumnType.DATE, context.getString(R.string.date), width(25))
 
                 val summaTotal = addTotal().apply {
                     title = context.getString(R.string.SUMMA)
@@ -273,18 +274,19 @@ class SampleHelper {
                     addColumn(
                         ColumnType.NUMBER,
                         context.getString(R.string.budget),
-                    350) as NumberColumn
+                        width(17)
+                    ) as NumberColumn
 
                 val avansColumn =
                     addColumn(
                         ColumnType.NUMBER,
                         context.getString(R.string.expenses),
-                        350
+                        width(17)
                     ) as NumberColumn
 
-                addColumn(ColumnType.LIST, context.getString(R.string.category), 430)
-                addColumn(ColumnType.TEXT, context.getString(R.string.note), 450)
-                addColumn(ColumnType.DATE, context.getString(R.string.date), 430)
+                addColumn(ColumnType.LIST, context.getString(R.string.category), width(15))
+                addColumn(ColumnType.TEXT, context.getString(R.string.note), width(27))
+                addColumn(ColumnType.DATE, context.getString(R.string.date), width(24))
                 val summaTotal = addTotal().apply {
                     title = context.getString(R.string.BUDGET)
                     formula = Formula().apply {
