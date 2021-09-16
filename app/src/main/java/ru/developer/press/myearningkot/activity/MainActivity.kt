@@ -453,12 +453,9 @@ class MainActivity : AppCompatActivity() {
         }.attach()
         viewModel.getPages().forEachIndexed { index, myLiveData ->
             myLiveData.observe(this, observer { page ->
-                val customView = tabs.getTabAt(index)?.customView
-                (customView as TextView).text = page.name
-                customView.animate().scaleX(1.2f).setUpdateListener {
-                    it.doOnEnd {
-                        customView.animate().scaleX(1f)
-                    }
+                tabs.getTabAt(index)?.customView?.let {
+                    val textView = it as TextView
+                    textView.text = page.name
                 }
             })
         }
