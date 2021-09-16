@@ -216,11 +216,11 @@ class SampleHelper {
             list.add(Card(samplePageName, name = context.getString(R.string.earning)).apply {
                 addColumn(ColumnType.NUMERATION, "№", width(7))
                 val summaColumn =
-                    addColumn(ColumnType.NUMBER, context.getString(R.string.summa), width(18))
+                    addColumn(ColumnType.NUMBER, context.getString(R.string.summa), width(15))
                 val avansColumn =
-                    addColumn(ColumnType.NUMBER, context.getString(R.string.avans), width(18))
-                addColumn(ColumnType.TEXT, context.getString(R.string.note), width(34))
-                addColumn(ColumnType.DATE, context.getString(R.string.date), width(23))
+                    addColumn(ColumnType.NUMBER, context.getString(R.string.avans), width(15))
+                addColumn(ColumnType.TEXT, context.getString(R.string.note), width(38))
+                addColumn(ColumnType.DATE, context.getString(R.string.date), width(25))
 
                 val summaTotal = addTotal().apply {
                     title = context.getString(R.string.SUMMA)
@@ -276,17 +276,17 @@ class SampleHelper {
                     addColumn(
                         ColumnType.NUMBER,
                         context.getString(R.string.budget),
-                        width(16)
+                        width(15)
                     ) as NumberColumn
 
                 val avansColumn =
                     addColumn(
                         ColumnType.NUMBER,
                         context.getString(R.string.expenses),
-                        width(16)
+                        width(15)
                     ) as NumberColumn
 
-                addColumn(ColumnType.LIST, context.getString(R.string.category), width(15))
+                addColumn(ColumnType.LIST, context.getString(R.string.category), width(17))
                 addColumn(ColumnType.TEXT, context.getString(R.string.note), width(25))
                 addColumn(ColumnType.DATE, context.getString(R.string.date), width(21))
                 val summaTotal = addTotal().apply {
