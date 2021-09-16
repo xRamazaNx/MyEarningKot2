@@ -17,6 +17,7 @@ import org.jetbrains.anko.*
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.activity.CommonCardActivity
 import ru.developer.press.myearningkot.databinding.*
+import ru.developer.press.myearningkot.dialogs.colorDialog
 import ru.developer.press.myearningkot.helpers.getColorFromRes
 import ru.developer.press.myearningkot.helpers.getDate
 import ru.developer.press.myearningkot.helpers.getDateTypeList
@@ -398,28 +399,13 @@ fun textPrefButtonsInit(
 
     textColor.setOnClickListener {
         val activity = context as CommonCardActivity
-        ColorPickerDialog
-            .newBuilder()
-            .setColor(firstPrefForTextView.color)
-            .setShowAlphaSlider(false)
-            .create().apply {
-                setColorPickerDialogListener(
-                    object : ColorPickerDialogListener {
-                        override fun onDialogDismissed(dialogId: Int) {
-
-                        }
-
-                        override fun onColorSelected(dialogId: Int, color: Int) {
-                            prefForTextViewList.forEach {
-
-                                it.color = color
-                            }
-                            initColorTextView()
-                            prefChanged()
-                        }
-
-                    })
-            }.show(activity.supportFragmentManager, "colorPicker")
+        colorDialog(firstPrefForTextView.color) { color ->
+            prefForTextViewList.forEach {
+                it.color = color
+            }
+            initColorTextView()
+            prefChanged()
+        }.show(activity.supportFragmentManager, "colorPicker")
     }
 }
 

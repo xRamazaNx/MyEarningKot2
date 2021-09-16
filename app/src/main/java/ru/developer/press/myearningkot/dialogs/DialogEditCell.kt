@@ -24,7 +24,7 @@ import ru.developer.press.myearningkot.databinding.EditCellNumberBinding
 import ru.developer.press.myearningkot.databinding.FormulaSymbolsBinding
 import ru.developer.press.myearningkot.helpers.getColorFromRes
 import ru.developer.press.myearningkot.helpers.prefLayouts.FormulaLayout
-import ru.developer.press.myearningkot.helpers.setAlertButtonColors
+import ru.developer.press.myearningkot.helpers.setAlertButtonColorsAfterShown
 import ru.developer.press.myearningkot.model.Column
 import ru.developer.press.myearningkot.model.ColumnType
 import ru.developer.press.myearningkot.model.PhoneTypeValue
@@ -48,7 +48,7 @@ class DialogEditCell(
 
             else -> AlertDialog.Builder(context).create()
         }
-        alertDialog.setAlertButtonColors(R.color.colorAccent, R.color.colorAccent)
+        alertDialog.setAlertButtonColorsAfterShown(R.color.colorAccent, R.color.colorAccent)
         return alertDialog
     }
 

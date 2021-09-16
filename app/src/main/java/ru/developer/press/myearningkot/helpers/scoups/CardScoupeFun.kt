@@ -104,6 +104,17 @@ fun Card.inflatePlate(plateView: CardBinding) {
     }
 }
 
+fun Card.updateTotalAmount(plateView: View) {
+    val totalValueLayout = plateView.totalValueContainer
+    totals.forEachIndexed { index, totalItem ->
+        // лайот где валуе и линия
+        val valueLayout = totalValueLayout.getChildAt(index)
+        val value = valueLayout.totalValue
+        totalItem.calcFormula(this)
+        value.text = totalItem.value
+    }
+}
+
 fun Card.setClickToTotals(
     cardBinding: CardBinding,
     click: (view: View, long: Boolean, elementType: ElementType, position: Int) -> Unit

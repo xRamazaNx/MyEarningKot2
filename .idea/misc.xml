@@ -5,6 +5,7 @@
       <map>
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/drawable/background_for_card_in_card_activity.xml" value="0.3769230769230769" />
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/drawable/background_for_card_selected.xml" value="0.3828125" />
+        <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/drawable/cell_selected_background.xml" value="0.3828125" />
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/drawable/ic_add_not_ring_white.xml" value="0.22135416666666666" />
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/drawable/ic_check.xml" value="0.3828125" />
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/drawable/ic_delete.xml" value="0.3828125" />
@@ -13,6 +14,7 @@
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/drawable/ic_paste.xml" value="0.3828125" />
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/drawable/ic_paste_disabled.xml" value="0.3828125" />
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/drawable/ic_select_card.xml" value="0.3828125" />
+        <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/drawable/row_selected_background.xml" value="0.3828125" />
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/layout-v16/pref_column_date.xml" value="0.3066123188405797" />
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/layout/activity_card.xml" value="0.36666666666666664" />
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/layout/activity_main.xml" value="0.16927083333333334" />
@@ -20,6 +22,7 @@
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/layout/card_basic_pref_layout.xml" value="0.5" />
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/layout/create_card_layout.xml" value="0.16927083333333334" />
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/layout/edit_cell_number.xml" value="0.25" />
+        <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/layout/edit_cell_text.xml" value="0.28442028985507245" />
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/layout/formula_layout.xml" value="0.5" />
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/layout/formula_symbols.xml" value="0.20520833333333333" />
         <entry key="..\:/myFolder/MyEarningKot/app/src/main/res/layout/list_item_change_layout.xml" value="0.16927083333333334" />

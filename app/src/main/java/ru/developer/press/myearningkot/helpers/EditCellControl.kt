@@ -1,16 +1,14 @@
 package ru.developer.press.myearningkot.helpers
 
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import com.jaredrummler.android.colorpicker.ColorPickerDialog
 import com.jaredrummler.android.colorpicker.ColorPickerDialogListener
+import org.jetbrains.anko.backgroundColorResource
 import org.jetbrains.anko.toast
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.activity.CardActivity
-import ru.developer.press.myearningkot.dialogs.DialogEditCell
-import ru.developer.press.myearningkot.dialogs.DialogEditImageCell
-import ru.developer.press.myearningkot.dialogs.editCellTag
-import ru.developer.press.myearningkot.helpers.scoups.addDismissListener
-import ru.developer.press.myearningkot.helpers.scoups.addShownListener
+import ru.developer.press.myearningkot.dialogs.*
 import ru.developer.press.myearningkot.model.Column
 import ru.developer.press.myearningkot.model.ColumnType
 import ru.developer.press.myearningkot.model.InputTypeNumberColumn
@@ -50,23 +48,10 @@ class EditCellControl private constructor(
                 null
             }
             ColumnType.COLOR -> {
-                dialog = ColorPickerDialog
-                    .newBuilder()
-                    .setColor(value.toInt())
-                    .setShowAlphaSlider(false)
-                    .create().apply {
-                        setColorPickerDialogListener(
-                            object : ColorPickerDialogListener {
-                                override fun onDialogDismissed(dialogId: Int) {
-
-                                }
-
-                                override fun onColorSelected(dialogId: Int, color: Int) {
-                                    value = color.toString()
-                                    changed(value)
-                                }
-                            })
-                    }
+                dialog = colorDialog(value.toInt()) { color ->
+                    value = color.toString()
+                    changed(value)
+                }
                 dialog?.show(cardActivity.supportFragmentManager, "colorPicker")
                 dialog
             }
@@ -107,9 +92,9 @@ class EditCellControl private constructor(
         return this
     }
 
-    private fun showListener(shown: () -> Unit): EditCellControl {
+    private fun showListener(shown: (DialogFragment) -> Unit): EditCellControl {
         dialog?.addShownListener {
-            shown.invoke()
+            shown.invoke(it)
         }
         return this
     }

@@ -100,7 +100,7 @@ class DialogEditImageCell(
                 setView(imageViewer)
             }
         }.create()
-        alertDialog.setAlertButtonColors(R.color.colorAccent, R.color.colorAccent)
+        alertDialog.setAlertButtonColorsAfterShown(R.color.colorAccent, R.color.colorAccent)
         return alertDialog
     }
 

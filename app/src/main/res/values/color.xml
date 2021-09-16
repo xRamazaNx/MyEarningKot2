@@ -169,6 +169,7 @@
     <color name="md_green_400">#66BB6A</color>
     <color name="md_green_50">#E8F5E9</color>
     <color name="md_green_500">#4CAF50</color>
+    <color name="formula_element_column">#4CAF50</color>
     <color name="md_green_600">#43A047</color>
     <color name="md_green_700">#388E3C</color>
     <color name="md_green_800">#2E7D32</color>
@@ -210,6 +211,7 @@
     <color name="md_light_blue_400">#29B6F6</color>
     <color name="md_light_blue_50">#E1F5FE</color>
     <color name="md_light_blue_500">#03A9F4</color>
+    <color name="formula_element_number">#03A9F4</color>
     <color name="md_light_blue_600">#039BE5</color>
     <color name="md_light_blue_700">#0288D1</color>
     <color name="md_light_blue_800">#0277BD</color>
@@ -312,6 +314,8 @@
     <color name="md_teal_400">#26A69A</color>
     <color name="md_teal_50">#E0F2F1</color>
     <color name="md_teal_500">#009688</color>
+    <color name="formula_element_total">#00BCD4</color>
+
     <color name="md_teal_600">#00897B</color>
     <color name="md_teal_700">#00796B</color>
     <color name="md_teal_800">#00695C</color>
@@ -327,6 +331,7 @@
     <color name="md_yellow_400">#FFEE58</color>
     <color name="md_yellow_50">#FFFDE7</color>
     <color name="md_yellow_500">#FFEB3B</color>
+    <color name="formula_element_symbol">#FFEB3B</color>
     <color name="md_yellow_600">#FDD835</color>
     <color name="md_yellow_700">#FBC02D</color>
     <color name="md_yellow_800">#F9A825</color>

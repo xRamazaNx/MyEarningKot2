@@ -1,7 +1,6 @@
 package ru.developer.press.myearningkot.model
 
 import android.content.Context
-import android.graphics.Color
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
@@ -97,9 +96,15 @@ class Formula {
         columnList: List<NumberColumn>,
         totalList: List<Total>?
     ): Spannable {
+        val colorForColumn = context.getColorFromRes(R.color.formula_element_column)
+        val colorForSymbol = context.getColorFromRes(R.color.formula_element_symbol)
+        val colorForNumber = context.getColorFromRes(R.color.formula_element_number)
+        val colorForTotal = context.getColorFromRes(R.color.formula_element_total)
+
+
         val spannable = SpannableStringBuilder()
         val strBuilder = java.lang.StringBuilder()
-        formulaElements.forEach { element ->
+        formulaElements.forEachIndexed { elementIndex, element ->
             when (element.type) {
                 COLUMN_ID -> {
                     columnList.forEach {
@@ -108,7 +113,7 @@ class Formula {
                             strBuilder.append(name)
                             spannable.append(SpannableString(name).apply {
                                 setSpan(
-                                    ForegroundColorSpan(context.getColorFromRes(R.color.md_green_300)),
+                                    ForegroundColorSpan(colorForColumn),
                                     0,
                                     name.length,
                                     Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -124,8 +129,7 @@ class Formula {
                             strBuilder.append(title)
                             spannable.append(SpannableString(title).apply {
                                 setSpan(
-                                    // fixme добавить нормальные цветовые различия
-                                    ForegroundColorSpan(context.getColorFromRes(R.color.colorSecondaryLight)),
+                                    ForegroundColorSpan(colorForTotal),
                                     0,
                                     title.length,
                                     Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -140,10 +144,32 @@ class Formula {
                         value = subtractChar
                     if (value == " * ")
                         value = multiplyChar
+
+                    var color = colorForSymbol
+
+                    if (value in "0".."9")
+                        color = colorForNumber
+                    if (value == " . " || value == " , ") {
+                        if (strBuilder.lastOrNull() in '0'..'9') {
+                            color = colorForNumber
+                        }
+                    }
+                    if (value == subtractChar) {
+                        formulaElements.getOrNull(elementIndex + 1)?.let { nextElement ->
+                            if (nextElement.type == 0) {
+                                val prevElement = formulaElements.getOrNull(elementIndex - 1)
+                                val nextIsNumber = nextElement.value in "0".."9"
+                                val prevIsNotNumber = prevElement?.value.toString() !in "0".."9"
+                                if (nextIsNumber && prevIsNotNumber)
+                                    color = colorForNumber
+                            }
+                        }
+                    }
+
                     strBuilder.append(value)
                     spannable.append(SpannableString(value).apply {
                         setSpan(
-                            ForegroundColorSpan(Color.YELLOW),
+                            ForegroundColorSpan(color),
                             0,
                             value.length,
                             Spannable.SPAN_EXCLUSIVE_EXCLUSIVE

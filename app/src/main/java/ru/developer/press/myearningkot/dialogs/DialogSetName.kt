@@ -11,7 +11,7 @@ import androidx.fragment.app.DialogFragment
 import kotlinx.android.synthetic.main.set_name_layout.view.*
 import org.jetbrains.anko.layoutInflater
 import ru.developer.press.myearningkot.R
-import ru.developer.press.myearningkot.helpers.setAlertButtonColors
+import ru.developer.press.myearningkot.helpers.setAlertButtonColorsAfterShown
 
 class DialogSetName : DialogFragment() {
 
@@ -53,7 +53,7 @@ class DialogSetName : DialogFragment() {
         }
 
         val alertDialog: AlertDialog = dialog.create()
-        alertDialog.setAlertButtonColors(R.color.colorAccent, R.color.colorAccent)
+        alertDialog.setAlertButtonColorsAfterShown(R.color.colorAccent, R.color.colorAccent)
         return alertDialog
     }
 

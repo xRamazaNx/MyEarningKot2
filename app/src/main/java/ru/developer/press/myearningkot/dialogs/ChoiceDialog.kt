@@ -7,7 +7,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import ru.developer.press.myearningkot.R
-import ru.developer.press.myearningkot.helpers.setAlertButtonColors
+import ru.developer.press.myearningkot.helpers.setAlertButtonColorsAfterShown
 
 fun choiceDialog(init: AlertDialog.Builder.() -> Unit): ChoiceDialog {
     return ChoiceDialog().apply {
@@ -27,7 +27,7 @@ class ChoiceDialog : DialogFragment() {
         }
 
         val alertDialog = dialog.create()
-        alertDialog.setAlertButtonColors(positiveButtonColorRes, negativeButtonColorRes)
+        alertDialog.setAlertButtonColorsAfterShown(positiveButtonColorRes, negativeButtonColorRes)
         return alertDialog
     }
 
