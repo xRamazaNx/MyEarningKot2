@@ -141,6 +141,8 @@ class PrefCardActivity : CommonCardActivity() {
     private fun initClicksOfElements() {
         viewModelInitializer.invokeOnCompletion {
 
+            initSelectCallback()
+
             clickPrefToAdapter()
 
             val card = viewModel.card
@@ -214,27 +216,18 @@ class PrefCardActivity : CommonCardActivity() {
                     // ps покрывает обновление всех четырех настроек которые настраиваются в диалоге
                     val dialogBasicPrefCard = DialogBasicPrefCard(card) {
                         prefChanged = {
-                            runOnLifeCycle {
-                                if (it == DialogBasicPrefCard.TypeOfChange.rows) {
-                                    adapter = getAdapterForRecycler()
-                                    main {
-                                        horizontalScrollSwitch()
-                                        activityBinding.recycler.adapter = adapter
-                                    }
-
-                                } else {
-                                    main {
+                            if (it == DialogBasicPrefCard.TypeOfChange.rows) {
+                                horizontalScrollSwitch()
+                                initRecyclerView()
+                            } else {
 //                                        setShowTotalInfo(card.isShowTotalInfo)//
-                                        updatePlate()
-                                    }
-                                }
-                                main {
-                                    initClicksOfElements()
-//                                    if (card.isShowTotalInfo)
-                                    selectedControl.updateSelected()
-//                                    else selectedControl.unSelectAll()
-                                }
+                                updatePlate()
+
                             }
+                            initClicksOfElements()
+//                                    if (card.isShowTotalInfo)
+                            selectedControl.updateSelected()
+//                                    else selectedControl.unSelectAll()
                         }
                     }
                     dialogBasicPrefCard.show(supportFragmentManager, "dialogBasicPrefCard")
@@ -290,7 +283,6 @@ class PrefCardActivity : CommonCardActivity() {
 
     override fun updateActivity() {
         super.updateActivity()
-        initSelectCallback()
         initClicksOfElements()
         totalAmountView.root.setOnClickListener(null)
     }
@@ -616,7 +608,8 @@ class PrefCardActivity : CommonCardActivity() {
                                                     integer
                                                 }.get()
 
-                                        val addValueToUnselected = viewModel.displayParam.width - newAllWidth
+                                        val addValueToUnselected =
+                                            viewModel.displayParam.width - newAllWidth
 
                                         val addedSizes = sizeDistribution(
                                             addValueToUnselected,
@@ -644,7 +637,10 @@ class PrefCardActivity : CommonCardActivity() {
 
                                     columnContainer.requestLayout()
 
-                                    widthDrawer.updateLines(columnContainer, offset = horizontalScrollView.scrollX)
+                                    widthDrawer.updateLines(
+                                        columnContainer,
+                                        offset = horizontalScrollView.scrollX
+                                    )
 
                                     card.columns.forEachIndexed { index, column ->
                                         val width = columnContainer.getChildAt(index).width
@@ -654,11 +650,8 @@ class PrefCardActivity : CommonCardActivity() {
 
                                 override fun recreateView() {
                                     runMainOnLifeCycle {
-                                        io {
-                                            adapter = getAdapterForRecycler()
-                                        }
                                         horizontalScrollSwitch()
-                                        activityBinding.recycler.adapter = adapter
+                                        initRecyclerView()
                                         clickPrefToAdapter()
                                     }
                                 }

@@ -13,6 +13,7 @@ import org.jetbrains.anko.layoutInflater
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.database.Card
 import ru.developer.press.myearningkot.helpers.getValutaTypeList
+import ru.developer.press.myearningkot.helpers.main
 import ru.developer.press.myearningkot.helpers.runOnLifeCycle
 import ru.developer.press.myearningkot.helpers.showItemChangeDialog
 
@@ -20,7 +21,7 @@ class DialogBasicPrefCard(
     private val card: Card,
     init: DialogBasicPrefCard.() -> Unit
 ) : DialogFragment() {
-    lateinit var prefChanged: (TypeOfChange) -> Unit
+    lateinit var prefChanged: suspend (TypeOfChange) -> Unit
 
     init {
         init.invoke(this)
@@ -128,7 +129,9 @@ class DialogBasicPrefCard(
     private fun updateCard(typeOfChange: TypeOfChange) {
         runOnLifeCycle {
             delay(250)
-            prefChanged(typeOfChange)
+            main {
+                prefChanged(typeOfChange)
+            }
         }
     }
 

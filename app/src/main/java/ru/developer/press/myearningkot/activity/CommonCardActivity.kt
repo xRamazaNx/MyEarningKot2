@@ -192,7 +192,7 @@ abstract class CommonCardActivity : AppCompatActivity(), UIControl {
 
     }
 
-    protected fun getAdapterForRecycler(): AdapterRow {
+    private fun getAdapterForRecycler(): AdapterRow {
         return AdapterRow(null, viewModel, totalAmountView.root).also {
             it.setHasStableIds(true)
             viewModel.diffRowsUpdater = DiffRows(viewModel.sortedRows, it)
