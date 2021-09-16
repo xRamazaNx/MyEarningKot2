@@ -110,6 +110,11 @@ class Page(
                 onDelete = ForeignKey.CASCADE
         )]
 )
+
+/**
+ *
+ * Нельзя в init{} добавлять колону так как появляется лишняяя колона.
+ * */
 class Card(var pageId: String, var name: String = "") : Ref(), ProvideCardPropertyForCell {
     constructor() : this("")
 
@@ -160,10 +165,6 @@ class Card(var pageId: String, var name: String = "") : Ref(), ProvideCardProper
     override fun isSingleLine(): Boolean = !enableSomeStroke
 
     override fun getValutaType(): Int = valuta
-
-    init {
-        addColumn(ColumnType.NUMERATION, "№")
-    }
 }
 
 open class JsonValue(pageId: String, cardId: String) : BelongIds(pageId, cardId) {

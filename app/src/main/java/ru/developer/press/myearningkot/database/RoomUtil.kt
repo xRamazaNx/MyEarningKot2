@@ -214,12 +214,13 @@ class SampleHelper {
             val list = mutableListOf<Card>()
             // доход
             list.add(Card(samplePageName, name = context.getString(R.string.earning)).apply {
+                addColumn(ColumnType.NUMERATION, "№", width(7))
                 val summaColumn =
-                    addColumn(ColumnType.NUMBER, context.getString(R.string.summa), width(20))
+                    addColumn(ColumnType.NUMBER, context.getString(R.string.summa), width(18))
                 val avansColumn =
-                    addColumn(ColumnType.NUMBER, context.getString(R.string.avans), width(20))
-                addColumn(ColumnType.TEXT, context.getString(R.string.note), width(35))
-                addColumn(ColumnType.DATE, context.getString(R.string.date), width(25))
+                    addColumn(ColumnType.NUMBER, context.getString(R.string.avans), width(18))
+                addColumn(ColumnType.TEXT, context.getString(R.string.note), width(34))
+                addColumn(ColumnType.DATE, context.getString(R.string.date), width(23))
 
                 val summaTotal = addTotal().apply {
                     title = context.getString(R.string.SUMMA)
@@ -270,23 +271,24 @@ class SampleHelper {
             })
             // расход
             list.add(Card(samplePageName, name = context.getString(R.string.expenses)).apply {
+                addColumn(ColumnType.NUMERATION, "№", width(7))
                 val summaColumn =
                     addColumn(
                         ColumnType.NUMBER,
                         context.getString(R.string.budget),
-                        width(17)
+                        width(16)
                     ) as NumberColumn
 
                 val avansColumn =
                     addColumn(
                         ColumnType.NUMBER,
                         context.getString(R.string.expenses),
-                        width(17)
+                        width(16)
                     ) as NumberColumn
 
                 addColumn(ColumnType.LIST, context.getString(R.string.category), width(15))
-                addColumn(ColumnType.TEXT, context.getString(R.string.note), width(27))
-                addColumn(ColumnType.DATE, context.getString(R.string.date), width(24))
+                addColumn(ColumnType.TEXT, context.getString(R.string.note), width(25))
+                addColumn(ColumnType.DATE, context.getString(R.string.date), width(21))
                 val summaTotal = addTotal().apply {
                     title = context.getString(R.string.BUDGET)
                     formula = Formula().apply {
