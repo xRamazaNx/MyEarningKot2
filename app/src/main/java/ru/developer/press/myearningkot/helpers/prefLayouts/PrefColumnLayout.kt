@@ -471,7 +471,7 @@ class PrefSwitchColumnLayout(
                 container.foreground = ColorDrawable(Color.TRANSPARENT)
             } else {
                 container.foreground =
-                    ColorDrawable(context.getColorFromRes(R.color.colorBackground_transparent))
+                    ColorDrawable(context.colorRes(R.color.colorBackground_transparent))
             }
 
             enableTextSwitch.isChecked = switchMode

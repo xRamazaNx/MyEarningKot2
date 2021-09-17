@@ -259,7 +259,7 @@ fun Context.showItemChangeDialog(
     }.show()
 }
 
-fun Context.getColorFromRes(res: Int): Int = ContextCompat.getColor(this, res)
+fun Context.colorRes(res: Int): Int = ContextCompat.getColor(this, res)
 
 fun getColorFromText(): Int = Color.parseColor("#f1f1f1")
 

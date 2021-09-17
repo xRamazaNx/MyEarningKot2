@@ -206,7 +206,7 @@ open class CardActivity : CommonCardActivity() {
         setAppBarOffsetChangedListener()
         adapter.setCellClickListener(rowClickListener)
         activityBinding.fbAddRow.setButtonIconResource(R.drawable.ic_add_not_ring_white)
-        activityBinding.fbAddRow.setButtonBackgroundColour(getColorFromRes(R.color.colorSecondaryDark))
+        activityBinding.fbAddRow.setButtonBackgroundColour(colorRes(R.color.colorSecondaryDark))
 
         activityBinding.tableView.isLong.observe(this@CardActivity, {
             isLongClick = it

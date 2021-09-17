@@ -6,11 +6,11 @@ import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
 import android.view.View
-import androidx.core.content.ContextCompat
 import androidx.core.text.toSpannable
 import com.google.gson.annotations.SerializedName
+import org.jetbrains.anko.backgroundResource
 import ru.developer.press.myearningkot.R
-import ru.developer.press.myearningkot.helpers.getColorFromRes
+import ru.developer.press.myearningkot.helpers.colorRes
 import ru.developer.press.myearningkot.helpers.prefLayouts.multiplyChar
 import ru.developer.press.myearningkot.helpers.prefLayouts.subtractChar
 
@@ -22,8 +22,7 @@ interface Backgrounder {
 
     fun setBackground(backgroundRes: Int) {
         currentBackground = backgroundRes
-        val drawable = elementView.let { ContextCompat.getDrawable(it.context, currentBackground) }
-        elementView.background = drawable
+        elementView.backgroundResource = currentBackground
     }
 }
 
@@ -58,7 +57,7 @@ class PhoneTypeValue(
                 3 -> if (phoneTypePref.organization || !hideUnselect)
                     append = organization
             }
-            if (it != sort.first() && append.isNotEmpty()) {
+            if (infoBuilder.toString().isNotBlank() && append.isNotBlank()) {
                 infoBuilder.append(", ")
             }
             infoBuilder.append(append)
@@ -100,10 +99,10 @@ class Formula {
         columnList: List<NumberColumn>,
         totalList: List<Total>?
     ): Spannable {
-        val colorForColumn = context.getColorFromRes(R.color.formula_element_column)
-        val colorForSymbol = context.getColorFromRes(R.color.formula_element_symbol)
-        val colorForNumber = context.getColorFromRes(R.color.formula_element_number)
-        val colorForTotal = context.getColorFromRes(R.color.formula_element_total)
+        val colorForColumn = context.colorRes(R.color.formula_element_column)
+        val colorForSymbol = context.colorRes(R.color.formula_element_symbol)
+        val colorForNumber = context.colorRes(R.color.formula_element_number)
+        val colorForTotal = context.colorRes(R.color.formula_element_total)
 
 
         val spannable = SpannableStringBuilder()

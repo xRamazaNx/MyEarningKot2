@@ -22,7 +22,7 @@ import org.jetbrains.anko.layoutInflater
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.databinding.EditCellNumberBinding
 import ru.developer.press.myearningkot.databinding.FormulaSymbolsBinding
-import ru.developer.press.myearningkot.helpers.getColorFromRes
+import ru.developer.press.myearningkot.helpers.colorRes
 import ru.developer.press.myearningkot.helpers.prefLayouts.FormulaLayout
 import ru.developer.press.myearningkot.helpers.setAlertButtonColorsAfterShown
 import ru.developer.press.myearningkot.model.Column
@@ -72,7 +72,7 @@ class DialogEditCell(
         ).apply {
             //            datePicker.backgroundColor = Color.WHITE
             datePicker.post {
-                window?.setBackgroundDrawable(ColorDrawable(context.getColorFromRes(R.color.colorDialogBackground)))
+                window?.setBackgroundDrawable(ColorDrawable(context.colorRes(R.color.colorDialogBackground)))
             }
         }
     }

@@ -12,7 +12,7 @@ import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.databinding.FormulaLayoutBinding
 import ru.developer.press.myearningkot.databinding.FormulaSymbolsBinding
 import ru.developer.press.myearningkot.helpers.Calc
-import ru.developer.press.myearningkot.helpers.getColorFromRes
+import ru.developer.press.myearningkot.helpers.colorRes
 import ru.developer.press.myearningkot.model.Formula
 import ru.developer.press.myearningkot.model.Formula.Companion.COLUMN_ID
 import ru.developer.press.myearningkot.model.Formula.Companion.OTHER
@@ -82,7 +82,7 @@ class FormulaLayout(
             val textView = TextView(context).apply {
                 initParamTextView()
                 text = total.title
-                textColor = context.getColorFromRes(R.color.md_blue_200)
+                textColor = context.colorRes(R.color.md_blue_200)
                 setOnClickListener {
                     elementList.add(Formula.FormulaElement().apply {
                         type = TOTAL_ID
@@ -104,7 +104,7 @@ class FormulaLayout(
             val textView = TextView(context).apply {
                 initParamTextView()
                 text = column.name
-                textColor = context.getColorFromRes(R.color.md_green_300)
+                textColor = context.colorRes(R.color.md_green_300)
                 setOnClickListener {
                     elementList.add(Formula.FormulaElement().apply {
                         type = COLUMN_ID
@@ -120,7 +120,7 @@ class FormulaLayout(
 
     private fun TextView.initParamTextView() {
         padding = context.dip(16)
-        textColor = context.getColorFromRes(R.color.textColorPrimary)
+        textColor = context.colorRes(R.color.textColorPrimary)
         layoutParams = LinearLayout.LayoutParams(wrapContent, matchParent)
     }
 
@@ -190,7 +190,7 @@ class FormulaLayout(
     }
 
     fun errorFormula() {
-        displayTextView.textColor = displayTextView.context.getColorFromRes(R.color.colorRed)
+        displayTextView.textColor = displayTextView.context.colorRes(R.color.colorRed)
     }
 
     companion object{
@@ -218,7 +218,7 @@ class FormulaLayout(
                     padding = context.dip(18)
                     textSize = 18F
                     text = "Введите формулу"
-                    textColor = context.getColorFromRes(R.color.textColorPrimary)
+                    textColor = context.colorRes(R.color.textColorPrimary)
                 })
                 setView(formulaLayoutBinding.root)
                 setPositiveButton("OK") { dialog, _ ->
@@ -233,10 +233,10 @@ class FormulaLayout(
             }.apply {
                 show()
                 getButton(AlertDialog.BUTTON_POSITIVE).textColor =
-                    context.getColorFromRes(R.color.accent)
+                    context.colorRes(R.color.accent)
                 getButton(AlertDialog.BUTTON_NEGATIVE).textColor =
-                    context.getColorFromRes(R.color.accent)
-                window?.setBackgroundDrawable(ColorDrawable(context.getColorFromRes(R.color.colorPrimary)))
+                    context.colorRes(R.color.accent)
+                window?.setBackgroundDrawable(ColorDrawable(context.colorRes(R.color.colorPrimary)))
             }
         }
 

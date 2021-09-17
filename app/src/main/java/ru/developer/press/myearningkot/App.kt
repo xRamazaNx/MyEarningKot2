@@ -9,8 +9,6 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.bugsnag.android.Bugsnag
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import ru.developer.press.myearningkot.database.DataController
 import ru.developer.press.myearningkot.database.UpdatedRefData
 import ru.developer.press.myearningkot.helpers.*
@@ -47,9 +45,9 @@ class App : Application(), ActivityLifecycleCallbacks {
         runOnIO {
             registerActivityLifecycleCallbacks(this@App)
             filesFolder = filesDir.path + "/"
-            Column.titleColor = getColorFromRes(R.color.textColorTabsTitleNormal)
-            NumerationColumn.color = getColorFromRes(R.color.textColorSecondary)
-            PrefForCard.nameColor = getColorFromRes(R.color.colorTitle)
+            Column.titleColor = colorRes(R.color.textColorTabsTitleNormal)
+            NumerationColumn.color = colorRes(R.color.textColorSecondary)
+            PrefForCard.nameColor = colorRes(R.color.colorTitle)
 
             PhoneColumn.apply {
                 nameOfMan = getString(R.string.name_man)

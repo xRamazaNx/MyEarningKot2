@@ -193,9 +193,9 @@ class SwitchTypeControl(
             val frame = view as FrameLayout
             val image = frame.getChildAt(0) as ImageView
             if (toBoolean) {
-                image.setColorFilter(frame.context.getColorFromRes(R.color.colorControlEnabled))
+                image.setColorFilter(frame.context.colorRes(R.color.colorControlEnabled))
             } else
-                image.setColorFilter(frame.context.getColorFromRes(R.color.colorControlNormal))
+                image.setColorFilter(frame.context.colorRes(R.color.colorControlNormal))
         }
     }
 }

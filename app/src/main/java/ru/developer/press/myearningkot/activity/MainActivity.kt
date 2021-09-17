@@ -13,7 +13,6 @@ import android.widget.TableLayout
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.animation.doOnEnd
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.MarginPageTransformer
 import com.google.android.material.appbar.AppBarLayout
@@ -101,7 +100,7 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(root.toolbar)
         // он должен быть тут первым а то статусбар внизу оказывается из-за поздней инициализации
 //        initDrawer()
-        root.toolbar.setTitleTextColor(getColorFromRes(R.color.colorOnPrimary))
+        root.toolbar.setTitleTextColor(colorRes(R.color.colorOnPrimary))
 
         viewModelInitializer.start()
     }
@@ -422,7 +421,7 @@ class MainActivity : AppCompatActivity() {
         }
         val textView = customView as TextView
         textView.textColorResource = R.color.textColorTabsTitleSelected
-        parent?.setSelectedTabIndicatorColor(getColorFromRes(R.color.textColorTabsTitleSelected))
+        parent?.setSelectedTabIndicatorColor(colorRes(R.color.textColorTabsTitleSelected))
     }
 
     private fun linkViewPagerAndTabs() {

@@ -13,15 +13,15 @@ fun AlertDialog.setAlertButtonColors(
 ) {
     getButton(DialogInterface.BUTTON_POSITIVE).apply {
         backgroundColor = Color.TRANSPARENT
-        setTextColor(context.getColorFromRes(colorPositiveRes))
+        setTextColor(context.colorRes(colorPositiveRes))
     }
     getButton(DialogInterface.BUTTON_NEGATIVE).apply {
         backgroundColor = Color.TRANSPARENT
-        setTextColor(context.getColorFromRes(colorNegativeRes))
+        setTextColor(context.colorRes(colorNegativeRes))
     }
     getButton(DialogInterface.BUTTON_NEUTRAL).apply {
         backgroundColor = Color.TRANSPARENT
-        setTextColor(context.getColorFromRes(colorNeutralRes))
+        setTextColor(context.colorRes(colorNeutralRes))
     }
 }
 
@@ -32,15 +32,15 @@ fun android.app.AlertDialog.setAlertButtonColors(
 ) {
     getButton(DialogInterface.BUTTON_POSITIVE).apply {
         backgroundColor = Color.TRANSPARENT
-        setTextColor(context.getColorFromRes(colorPositiveRes))
+        setTextColor(context.colorRes(colorPositiveRes))
     }
     getButton(DialogInterface.BUTTON_NEGATIVE).apply {
         backgroundColor = Color.TRANSPARENT
-        setTextColor(context.getColorFromRes(colorNegativeRes))
+        setTextColor(context.colorRes(colorNegativeRes))
     }
     getButton(DialogInterface.BUTTON_NEUTRAL).apply {
         backgroundColor = Color.TRANSPARENT
-        setTextColor(context.getColorFromRes(colorNeutralRes))
+        setTextColor(context.colorRes(colorNeutralRes))
     }
 }
 

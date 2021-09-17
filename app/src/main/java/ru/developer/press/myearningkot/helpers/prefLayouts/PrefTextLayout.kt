@@ -6,8 +6,6 @@ import android.view.View
 import android.widget.ImageButton
 import android.widget.SeekBar
 import android.widget.TextView
-import com.jaredrummler.android.colorpicker.ColorPickerDialog
-import com.jaredrummler.android.colorpicker.ColorPickerDialogListener
 import kotlinx.android.synthetic.main.pref_column_date.view.*
 import kotlinx.android.synthetic.main.prefs_text_view.view.*
 import kotlinx.android.synthetic.main.prefs_total.view.*
@@ -18,7 +16,7 @@ import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.activity.CommonCardActivity
 import ru.developer.press.myearningkot.databinding.*
 import ru.developer.press.myearningkot.dialogs.colorDialog
-import ru.developer.press.myearningkot.helpers.getColorFromRes
+import ru.developer.press.myearningkot.helpers.colorRes
 import ru.developer.press.myearningkot.helpers.getDate
 import ru.developer.press.myearningkot.helpers.getDateTypeList
 import ru.developer.press.myearningkot.helpers.showItemChangeDialog
@@ -276,7 +274,7 @@ fun textPrefButtonsInit(
 
     val context = textViewBinding.root.context
     val initAlign = {
-        val colorFromRes = context.getColorFromRes(R.color.textColorPrimary)
+        val colorFromRes = context.colorRes(R.color.textColorPrimary)
         alignLeft.image?.setTint(colorFromRes)
         alignCenter.image?.setTint(colorFromRes)
         alignRight.image?.setTint(colorFromRes)
@@ -302,7 +300,7 @@ fun textPrefButtonsInit(
     if (!isWorkAlignPanel) {
         fun disable(imageButton: ImageButton) {
             setDefaultBackground(imageButton)
-            val colorFromRes = context.getColorFromRes(R.color.textColorSecondary)
+            val colorFromRes = context.colorRes(R.color.textColorSecondary)
             imageButton.setColorFilter(colorFromRes)
             imageButton.isClickable = false
 
@@ -410,7 +408,7 @@ fun textPrefButtonsInit(
 }
 
 private fun setPressedBackground(imageButton: ImageButton) {
-    imageButton.setColorFilter(imageButton.context.getColorFromRes(R.color.accent))
+    imageButton.setColorFilter(imageButton.context.colorRes(R.color.accent))
     imageButton.scaleX = 1.1F
     imageButton.scaleY = 1.1F
 //    imageButton.backgroundResource = R.drawable.shape_selected
@@ -454,6 +452,6 @@ fun setDefaultBackground(imageButton: ImageButton) {
 
     imageButton.scaleX = 1f
     imageButton.scaleY = 1f
-    imageButton.setColorFilter(imageButton.context.getColorFromRes(R.color.textColorPrimary))
+    imageButton.setColorFilter(imageButton.context.colorRes(R.color.textColorPrimary))
 //    view.setBackgroundResource(outValue.resourceId)
 }

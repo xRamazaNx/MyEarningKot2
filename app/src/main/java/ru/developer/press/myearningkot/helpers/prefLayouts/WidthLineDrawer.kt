@@ -10,7 +10,7 @@ import android.view.View
 import android.widget.LinearLayout
 import androidx.core.view.forEach
 import ru.developer.press.myearningkot.R
-import ru.developer.press.myearningkot.helpers.getColorFromRes
+import ru.developer.press.myearningkot.helpers.colorRes
 
 class WidthLineDrawer(context: Context, attributeSet: AttributeSet) : View(context, attributeSet) {
 
@@ -19,7 +19,7 @@ class WidthLineDrawer(context: Context, attributeSet: AttributeSet) : View(conte
         isAntiAlias = true
         style = Paint.Style.STROKE
         pathEffect = DashPathEffect(floatArrayOf(7f, 7f), 15f)
-        color = context.getColorFromRes(R.color.textColorSecondary)
+        color = context.colorRes(R.color.textColorSecondary)
         strokeWidth = 3f
     }
 

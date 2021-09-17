@@ -128,7 +128,7 @@ abstract class CommonCardActivity : AppCompatActivity(), UIControl {
         setSupportActionBar(activityBinding.toolbar)
         supportActionBar?.setHomeButtonEnabled(true)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        activityBinding.toolbar.setTitleTextColor(getColorFromRes(R.color.colorOnPrimary))
+        activityBinding.toolbar.setTitleTextColor(colorRes(R.color.colorOnPrimary))
 
         // для того что бы тоталвью не пропускал сквозь себя клики на ресайклер с записями
 //        totalAmountView.callOnClick()

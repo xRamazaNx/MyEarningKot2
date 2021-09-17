@@ -16,7 +16,7 @@ import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.RowClickListener
 import ru.developer.press.myearningkot.RowDataListener
 import ru.developer.press.myearningkot.helpers.animateColor
-import ru.developer.press.myearningkot.helpers.getColorFromRes
+import ru.developer.press.myearningkot.helpers.colorRes
 import ru.developer.press.myearningkot.helpers.prefLayouts.setSelectBackground
 import ru.developer.press.myearningkot.model.*
 
@@ -212,7 +212,7 @@ class RowHolder(view: View) : DragDropSwipeAdapter.ViewHolder(view), RowDataList
                     )
                 )
                 row.elementView.animateColor(
-                    context.getColorFromRes(R.color.colorSecondaryLight),
+                    context.colorRes(R.color.colorSecondaryLight),
                     Color.TRANSPARENT,
                     AdapterRow.animatedDuration
                 )
@@ -221,7 +221,7 @@ class RowHolder(view: View) : DragDropSwipeAdapter.ViewHolder(view), RowDataList
                 if (row.elementView.animation == null) {
                     row.elementView.animateColor(
                         colorFrom = Color.TRANSPARENT,
-                        colorTo = context.getColorFromRes(R.color.colorRemovedItem),
+                        colorTo = context.colorRes(R.color.colorRemovedItem),
                         duration = AdapterRow.animatedDuration
                     ) {
                         row.elementView.backgroundColor = Color.TRANSPARENT

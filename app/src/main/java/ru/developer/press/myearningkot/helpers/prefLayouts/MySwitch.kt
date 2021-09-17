@@ -6,7 +6,7 @@ import android.os.Build
 import android.util.AttributeSet
 import androidx.appcompat.widget.SwitchCompat
 import ru.developer.press.myearningkot.R
-import ru.developer.press.myearningkot.helpers.getColorFromRes
+import ru.developer.press.myearningkot.helpers.colorRes
 
 
 class MySwitch : SwitchCompat {
@@ -27,11 +27,11 @@ class MySwitch : SwitchCompat {
         val thumbColor: Int
         val trackColor: Int
         if (isChecked) {
-            thumbColor = context.getColorFromRes(R.color.colorControlEnabled)
+            thumbColor = context.colorRes(R.color.colorControlEnabled)
             trackColor = thumbColor
         } else {
-            thumbColor = context.getColorFromRes(R.color.colorControlNormal)
-            trackColor = context.getColorFromRes(R.color.textColorSecondary)
+            thumbColor = context.colorRes(R.color.colorControlNormal)
+            trackColor = context.colorRes(R.color.textColorSecondary)
         }
         try {
             post {

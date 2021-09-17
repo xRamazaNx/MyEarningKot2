@@ -16,7 +16,7 @@ import kotlinx.android.synthetic.main.create_card_activity.toolbar
 import org.jetbrains.anko.toast
 import ru.developer.press.myearningkot.App.Companion.dao
 import ru.developer.press.myearningkot.R
-import ru.developer.press.myearningkot.helpers.getColorFromRes
+import ru.developer.press.myearningkot.helpers.colorRes
 import ru.developer.press.myearningkot.helpers.main
 import ru.developer.press.myearningkot.helpers.runMainOnLifeCycle
 import ru.developer.press.myearningkot.helpers.runOnLifeCycle
@@ -53,7 +53,7 @@ class CreateCardActivity : AppCompatActivity() {
         setContentView(R.layout.create_card_activity)
 
         setSupportActionBar(toolbar)
-        toolbar.setTitleTextColor(getColorFromRes(R.color.colorOnPrimary))
+        toolbar.setTitleTextColor(colorRes(R.color.colorOnPrimary))
 
         runOnLifeCycle {
 
