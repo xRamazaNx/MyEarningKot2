@@ -65,3 +65,7 @@ fun <T : ElementPosition> List<T>.sortToPosition(): List<T> {
     sortedBy { it.position }
     return this
 }
+
+interface Width {
+    var width: Int
+}

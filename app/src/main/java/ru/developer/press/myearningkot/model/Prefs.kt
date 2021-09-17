@@ -1,12 +1,14 @@
 package ru.developer.press.myearningkot.model
 
+import android.graphics.Color
 import android.graphics.Typeface
+import android.text.format.DateFormat
 import android.widget.TextView
 import androidx.room.Embedded
 import com.google.gson.annotations.SerializedName
 import ru.developer.press.myearningkot.R
-import ru.developer.press.myearningkot.helpers.getColorFromText
 import ru.developer.press.myearningkot.helpers.setFont
+import java.util.*
 
 class PrefForCard(
     @Embedded(prefix = "name_pref")
@@ -83,6 +85,10 @@ class PrefForTextView(
         align = TextView.TEXT_ALIGNMENT_CENTER // 0 - left, 1 - center, 2 right
     }
 
+    companion object {
+        private fun getColorFromText(): Int = Color.parseColor("#f1f1f1")
+    }
+
 }
 
 open class PrefText(
@@ -131,6 +137,35 @@ class PrefDate(
     @SerializedName("et")
     var enableTime: Boolean = true
 ) : PrefText() {
+    companion object {
+        fun getDateTypeList(): MutableList<String> {
+            return mutableListOf<String>().apply {
+                add(getDate(0, enableTime = false))
+                add(getDate(1, enableTime = false))
+                add(getDate(2, enableTime = false))
+            }
+        }
+
+
+        fun getDate(variantDate: Int, time: Long = Date().time, enableTime: Boolean): String {
+//    val sDayOfWeek = arrayOf("вс, ", "пн, ", "вт, ", "ср, ", "чт, ", "пт, ", "сб, ")
+
+            val calendar = Calendar.getInstance().apply {
+                timeInMillis = time
+            }
+//    val dayName: String = sDayOfWeek[calendar.get(Calendar.DAY_OF_WEEK) - 1]
+            var timeFormat = ""
+            when (variantDate) {
+                0 -> timeFormat = "dd.MM.yy"
+                1 -> timeFormat = "dd.MM.yyyy"
+                2 -> timeFormat = "dd MMMM yyyy"
+            }
+            if (enableTime)
+                timeFormat += " hh:mm"
+            return DateFormat.format(timeFormat, calendar.time).toString()
+        }
+    }
+
     init {
         resetPref()
     }

@@ -12,7 +12,6 @@ import kotlinx.coroutines.delay
 import org.jetbrains.anko.layoutInflater
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.database.Card
-import ru.developer.press.myearningkot.helpers.getValutaTypeList
 import ru.developer.press.myearningkot.helpers.main
 import ru.developer.press.myearningkot.helpers.runOnLifeCycle
 import ru.developer.press.myearningkot.helpers.showItemChangeDialog
@@ -42,7 +41,8 @@ class DialogBasicPrefCard(
 
             // выбор валюты
             val textViewValutaType = layout.textViewValutaType
-            val listValutaType = getValutaTypeList(context)
+            val listValutaType =
+                context.resources.getStringArray(R.array.valuta_list).toMutableList()
             val valuta = "${getString(R.string.valuta)} (${listValutaType[card.valuta]})"
             textViewValutaType.text = valuta
             textViewValutaType.setOnClickListener {
@@ -121,9 +121,8 @@ class DialogBasicPrefCard(
 //            }
         }
 
-        val alertDialog = dialog.create()
-//        alertDialog.setAlertButtonColors(R.color.colorAccent, R.color.colorAccent)
-        return alertDialog
+        //        alertDialog.setAlertButtonColors(R.color.colorAccent, R.color.colorAccent)
+        return dialog.create()
     }
 
     private fun updateCard(typeOfChange: TypeOfChange) {

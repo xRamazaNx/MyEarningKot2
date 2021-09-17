@@ -383,7 +383,7 @@ class PrefDateColumnLayout(
 
         val updateDateType = {
             val dateType = view.context.getString(R.string.date_type)
-            val date: String = getDate(typePref.type, enableTime = false)
+            val date: String = PrefDate.getDate(typePref.type, enableTime = false)
             dateTypeTextView.text = "$dateType ($date)"
         }
         updateDateType()
@@ -394,7 +394,7 @@ class PrefDateColumnLayout(
             val context = view1.context
             context.showItemChangeDialog(
                 context.getString(R.string.date_type),
-                getDateTypeList(),
+                PrefDate.getDateTypeList(),
                 typePref.type,
                 null
             ) { type ->

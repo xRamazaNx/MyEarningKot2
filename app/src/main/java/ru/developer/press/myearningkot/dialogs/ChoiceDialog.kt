@@ -50,4 +50,3 @@ class ChoiceDialog : DialogFragment() {
     }
 }
 
-

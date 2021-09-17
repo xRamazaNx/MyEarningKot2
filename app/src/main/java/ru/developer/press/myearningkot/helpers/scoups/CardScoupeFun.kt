@@ -336,7 +336,7 @@ fun Card.getCellOfSample(position: Int): Cell {
         cellTypeControl = column.columnTypeControl
         sourceValue = when (column) {
             is ImageColumn -> {
-                Gson().toJson(ValueImage().apply { imagePathList.add(getPathForResource(R.drawable.ic_sample_image).toString()) })
+                Gson().toJson(ValueImage().apply { imagePathList.add(getPathForResource(R.drawable.ic_sample_image)) })
             }
             is SwitchColumn -> {
                 val newVal = (0..20).random() > 10

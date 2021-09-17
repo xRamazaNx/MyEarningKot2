@@ -17,8 +17,6 @@ import ru.developer.press.myearningkot.activity.CommonCardActivity
 import ru.developer.press.myearningkot.databinding.*
 import ru.developer.press.myearningkot.dialogs.colorDialog
 import ru.developer.press.myearningkot.helpers.colorRes
-import ru.developer.press.myearningkot.helpers.getDate
-import ru.developer.press.myearningkot.helpers.getDateTypeList
 import ru.developer.press.myearningkot.helpers.showItemChangeDialog
 import ru.developer.press.myearningkot.model.*
 
@@ -208,7 +206,7 @@ fun Context.getPrefDatePeriod(
 
     val typeText = dateTypeTextView.text
     val updateDateType = {
-        val date = getDate(typePref.type, enableTime = false)
+        val date = PrefDate.getDate(typePref.type, enableTime = false)
         val dateTypeString = "$typeText ($date)"
         dateTypeTextView.text = dateTypeString
     }
@@ -220,7 +218,7 @@ fun Context.getPrefDatePeriod(
         val context = view1.context
         context.showItemChangeDialog(
             context.getString(R.string.date_type),
-            getDateTypeList(),
+            PrefDate.getDateTypeList(),
             typePref.type,
             null
         ) { type ->

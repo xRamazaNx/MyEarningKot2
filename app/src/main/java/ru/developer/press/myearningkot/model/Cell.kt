@@ -7,7 +7,6 @@ import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import ru.developer.press.myearningkot.CellTypeControl
 import ru.developer.press.myearningkot.helpers.Calc
-import ru.developer.press.myearningkot.helpers.getDate
 import ru.developer.press.myearningkot.helpers.getDecimalFormatNumber
 
 data class Cell(
@@ -56,7 +55,7 @@ data class Cell(
                         ""
                     else {
                         val timeML: Long = sourceValue.toLong()
-                        getDate(pref.type, timeML, pref.enableTime)
+                        PrefDate.getDate(pref.type, timeML, pref.enableTime)
                     }
             }
             is PrefPhone -> {

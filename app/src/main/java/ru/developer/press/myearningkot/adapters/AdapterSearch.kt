@@ -15,9 +15,7 @@ class AdapterSearch(private val list: List<Search>) :
     private val item = 2
     private val total = 3
 
-    inner class SearchHolder(view: View) : RecyclerView.ViewHolder(view) {
-
-    }
+    inner class SearchHolder(view: View) : RecyclerView.ViewHolder(view)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchHolder {
         val context = parent.context

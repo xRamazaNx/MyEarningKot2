@@ -4,10 +4,7 @@ import androidx.room.*
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.Exclude
 import ru.developer.press.myearningkot.ProvideCardPropertyForCell
-import ru.developer.press.myearningkot.helpers.MyLiveData
 import ru.developer.press.myearningkot.helpers.SingleObserverLiveData
-import ru.developer.press.myearningkot.helpers.getDate
-import ru.developer.press.myearningkot.helpers.scoups.addColumn
 import ru.developer.press.myearningkot.model.*
 import java.util.*
 
@@ -157,8 +154,8 @@ class Card(var pageId: String, var name: String = "") : Ref(), ProvideCardProper
         get() {
             val variantDate = cardPref.dateOfPeriodPref.type
             val enableTime = cardPref.dateOfPeriodPref.enableTime
-            val first = getDate(variantDate, dateCreate, enableTime)
-            val last = getDate(variantDate, dateChange, enableTime)
+            val first = PrefDate.getDate(variantDate, dateCreate, enableTime)
+            val last = PrefDate.getDate(variantDate, dateChange, enableTime)
             return "$first - $last"
         }
 
