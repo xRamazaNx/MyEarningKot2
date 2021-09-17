@@ -32,20 +32,23 @@ class DataController(context: Context) {
 
     private fun inflateCard(card: Card): Card {
         // add columns
-        val columnsRef = columnDao.getAllOf(card.refId)
-        val columns = convertRefToColumn(columnsRef)
+        val columnsRefs = columnDao.getAllOf(card.refId)
+        val columns = columnsRefs.fold(mutableListOf<Column>()) { list, columnRef ->
+            list.add(Column.fromJson(columnRef.json))
+            list
+        }
         card.columns.addAll(columns.sortToPosition())
         // add rows
         val rowRefs = rowDao.getAllOf(card.refId)
         val rows = rowRefs.fold(mutableListOf<Row>()) { list, rowRef ->
-            list.add(gson.fromJson(rowRef.json, Row::class.java).apply { status = Status.NONE })
+            list.add(Row.fromJson(rowRef.json).apply { status = Status.NONE })
             list
         }
         card.rows.addAll(rows.sortToPosition())
         // add totals
         val totalRefs = totalDao.getAllOf(card.refId)
         val totals = totalRefs.fold(mutableListOf<Total>()) { list, totalRef ->
-            val total = gson.fromJson(totalRef.json, Total::class.java)
+            val total = Total.fromJson(totalRef.json)
             list.add(total)
             list
         }
@@ -391,19 +394,19 @@ class DataController(context: Context) {
         pageList.toMutableList()
     }
 
-    suspend fun getAllListType(): MutableList<ListType> = io {
+    suspend fun getAllListType(): MutableList<ValueList> = io {
         val allListJson = listTypeDao.getAll()
-        val list = mutableListOf<ListType>()
+        val list = mutableListOf<ValueList>()
         allListJson.forEach { listTypeJson ->
             val typeJson = listTypeJson.json
-            val listType = gson.fromJson(typeJson, ListType::class.java)
+            val listType = ValueList.fromJson(typeJson)
             list.add(listType)
         }
         list
     }
 
-    suspend fun addListType(listType: ListType) = io {
-        val json = gson.toJson(listType)
+    suspend fun addListType(valueList: ValueList) = io {
+        val json = gson.toJson(valueList)
         val listTypeJson = ListTypeJson().apply {
             this.json = json
         }

@@ -26,7 +26,7 @@ import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.adapters.AdapterViewPagerToImageCell
 import ru.developer.press.myearningkot.helpers.*
 import ru.developer.press.myearningkot.model.Column
-import ru.developer.press.myearningkot.model.ImageTypeValue
+import ru.developer.press.myearningkot.model.ValueImage
 import java.io.File
 
 
@@ -36,7 +36,7 @@ class DialogEditImageCell(
         private val changed: (sourceValue: String) -> Unit
 ) : DialogFragment() {
     private val imageFolder = "${filesFolder}images/".also { File(it).mkdirs() }
-    private val imageValue: ImageTypeValue = Gson().fromJson(value, ImageTypeValue::class.java)
+    private val imageValueImage: ValueImage = Gson().fromJson(value, ValueImage::class.java)
     private val choiceImageLauncher = ActivityResultHelper(this) { result ->
         val imageUriList = mutableListOf<Uri>()
         try {
@@ -74,11 +74,11 @@ class DialogEditImageCell(
                                 input.copyTo(output)
                             }
                         }
-                    imageValue.imagePathList.add(0, file.path)
+                    imageValueImage.imagePathList.add(0, file.path)
                 }
             }
             dialog?.let {
-                imageValue.changeImage = 0
+                imageValueImage.changeImage = 0
                 val layout = it.findViewById<LinearLayout>(R.id.imageViewerContainer)
                 initImageViewer(layout)
             }
@@ -105,7 +105,7 @@ class DialogEditImageCell(
     }
 
     private fun initImageViewer(imageViewer: View) {
-        val changeImage = imageValue.changeImage
+        val changeImage = imageValueImage.changeImage
         val viewPager = imageViewer.imagesPager
         val tabs = imageViewer.imagesTabs
 
@@ -113,7 +113,7 @@ class DialogEditImageCell(
         val adapter = AdapterViewPagerToImageCell(
                 fragmentManager = activity.supportFragmentManager,
                 lifecycle = lifecycle,
-                imageUriList = imageValue.imagePathList
+                imageUriList = imageValueImage.imagePathList
         )
         viewPager.adapter = adapter
         val dpsToPixels = activity.dip(48)
@@ -129,7 +129,7 @@ class DialogEditImageCell(
             tab.customView = image
             Glide
                     .with(this)
-                    .load(imageValue.imagePathList[position])
+                    .load(imageValueImage.imagePathList[position])
                     .error(R.drawable.ic_image_error)
                     .fitCenter()
                     .into(image)
@@ -142,9 +142,9 @@ class DialogEditImageCell(
                     }
         }.attach()
         viewPager.post {
-            if (imageValue.imagePathList.isNotEmpty()
+            if (imageValueImage.imagePathList.isNotEmpty()
                     && changeImage > -1
-                    && changeImage < imageValue.imagePathList.size
+                    && changeImage < imageValueImage.imagePathList.size
             ) {
                 tabs.getTabAt(changeImage)?.select()
             }
@@ -158,15 +158,15 @@ class DialogEditImageCell(
                 }
 
                 override fun onTabSelected(tab: TabLayout.Tab?) {
-                    imageValue.changeImage = tab?.position ?: -1
+                    imageValueImage.changeImage = tab?.position ?: -1
                 }
             })
         }
         imageViewer.imageDeleteButton.setOnClickListener {
-            if (imageValue.imagePathList.isEmpty())
+            if (imageValueImage.imagePathList.isEmpty())
                 return@setOnClickListener
             val selectedTabPosition = tabs.selectedTabPosition
-            imageValue.removePath(selectedTabPosition)
+            imageValueImage.removePath(selectedTabPosition)
             initImageViewer(imageViewer)
         }
     }
@@ -193,7 +193,7 @@ class DialogEditImageCell(
     private fun getAlertDialog(): AlertDialog.Builder {
         return AlertDialog.Builder(context).apply {
             setPositiveButton(R.string.OK) { _: DialogInterface, _: Int ->
-                changed(Gson().toJson(imageValue))
+                changed(Gson().toJson(imageValueImage))
             }
             setNegativeButton(R.string.CANCEL) { _: DialogInterface, _: Int ->
 

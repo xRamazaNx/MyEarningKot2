@@ -41,7 +41,7 @@
     <color name="colorControlEnabled">#096e80</color>
     <color name="colorControlNormal">#606060</color>
 
-    <color name="colorInputLayoutBackground">#FC2B2B2B</color>
+    <color name="colorInputLayoutBackground">#2B2B2B</color>
 
     <color name="colorIconItemMenu">#C6C6C6</color>
     <color name="colorIconItemMenuDisabled">#5A5A5A</color>

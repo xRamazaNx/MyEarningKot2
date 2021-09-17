@@ -22,9 +22,9 @@ import org.jetbrains.anko.padding
 import ru.developer.press.myearningkot.ColumnTypeControl
 import ru.developer.press.myearningkot.ProvideValueProperty
 import ru.developer.press.myearningkot.R
-import ru.developer.press.myearningkot.model.ImageTypePref
-import ru.developer.press.myearningkot.model.SwitchTypePref
-import ru.developer.press.myearningkot.model.TextTypePref
+import ru.developer.press.myearningkot.model.PrefImage
+import ru.developer.press.myearningkot.model.PrefSwitch
+import ru.developer.press.myearningkot.model.PrefText
 
 // общий класс для реализации cellType
 abstract class TypeControlImpl(
@@ -64,7 +64,7 @@ open class TextTypeControl(
 
     override fun display(view: View, value: String) {
         val textView = view as TextView
-        val typePref = provideValueProperty.typePref as TextTypePref
+        val typePref = provideValueProperty.typePref as PrefText
         typePref.prefForTextView.customize(textView)
         textView.text = value
     }
@@ -87,7 +87,7 @@ class NumerationTypeControl(
 
     override fun display(view: View, value: String) {
         val textView = view as TextView
-        val typePref = provideValueProperty.typePref as TextTypePref
+        val typePref = provideValueProperty.typePref as PrefText
         typePref.prefForTextView.customize(textView, R.font.roboto_light)
         textView.text = value
     }
@@ -129,7 +129,7 @@ class SwitchTypeControl(
 ) : TextTypeControl(provideValueProperty) {
 
     override fun createCellView(context: Context): View {
-        val typePref = provideValueProperty.typePref as SwitchTypePref
+        val typePref = provideValueProperty.typePref as PrefSwitch
         return if (typePref.isTextSwitchMode)
             TextView(context).apply {
                 configureTextView()
@@ -179,7 +179,7 @@ class SwitchTypeControl(
         val toBoolean = value.toBoolean()
 
         view.elevation = 5f
-        val typePref = provideValueProperty.typePref as SwitchTypePref
+        val typePref = provideValueProperty.typePref as PrefSwitch
         if (typePref.isTextSwitchMode) {
             val textView = view as TextView
             if (toBoolean) {
@@ -217,7 +217,7 @@ class ImageTypeControl(
     @SuppressLint("CheckResult")
     override fun display(view: View, value: String) {
         //todo потом поработать над тем что бы получать изображение и показать это если файл не найден
-        val imageTypePref = provideValueProperty.typePref as ImageTypePref
+        val imageTypePref = provideValueProperty.typePref as PrefImage
         
         val imageView = (view as FrameLayout).getChildAt(0) as ImageView
         Glide

@@ -26,11 +26,3 @@ class JsonDeserializerWithColumn : JsonDeserializer<Column> {
         return context.deserialize(jsonObject, clazz)
     }
 }
-
-fun getColumnFromJson(columnRef: JsonValue): Column {
-    val gson = GsonBuilder().registerTypeAdapter(
-        Column::class.java,
-        JsonDeserializerWithColumn()
-    ).create()
-    return gson.fromJson(columnRef.json, Column::class.java)
-}

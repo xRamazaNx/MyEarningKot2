@@ -1,8 +1,8 @@
 package ru.developer.press.myearningkot.helpers.prefLayouts
 
 import android.content.Context
-import android.graphics.*
-import android.os.Build
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
 import android.util.AttributeSet
 import androidx.appcompat.widget.SwitchCompat
 import ru.developer.press.myearningkot.R
@@ -10,8 +10,8 @@ import ru.developer.press.myearningkot.helpers.colorRes
 
 
 class MySwitch : SwitchCompat {
-    constructor(context: Context) : super(context) {}
-    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {}
+    constructor(context: Context) : super(context)
+    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
@@ -35,15 +35,11 @@ class MySwitch : SwitchCompat {
         }
         try {
             post {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    thumbDrawable.colorFilter =
-                        PorterDuffColorFilter(thumbColor, PorterDuff.Mode.MULTIPLY)
-                    trackDrawable.colorFilter =
-                        PorterDuffColorFilter(trackColor, PorterDuff.Mode.MULTIPLY)
-                } else {
-                    thumbDrawable.setColorFilter(thumbColor, PorterDuff.Mode.MULTIPLY)
-                    trackDrawable.setColorFilter(trackColor, PorterDuff.Mode.MULTIPLY)
-                }
+                thumbDrawable.colorFilter =
+                    PorterDuffColorFilter(thumbColor, PorterDuff.Mode.MULTIPLY)
+                trackDrawable.colorFilter =
+                    PorterDuffColorFilter(trackColor, PorterDuff.Mode.MULTIPLY)
+
             }
         } catch (e: NullPointerException) {
             e.printStackTrace()

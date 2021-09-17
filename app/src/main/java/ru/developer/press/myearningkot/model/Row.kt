@@ -9,11 +9,25 @@ import org.jetbrains.anko.backgroundColorResource
 import ru.developer.press.myearningkot.ElementPosition
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.database.BelongIds
+import ru.developer.press.myearningkot.database.gson
+import ru.developer.press.myearningkot.logD
 
 class Row(
     pageId: String,
     cardId: String
 ) : BelongIds(pageId, cardId), Backgrounder, ElementPosition {
+    private constructor() : this("", "")
+
+    companion object {
+        fun fromJson(json: String): Row {
+            return try {
+                gson.fromJson(json, Row::class.java)
+            } catch (ex: Exception) {
+                logD("error getting Row from: $json")
+                Row()
+            }
+        }
+    }
 
     @Transient
     var status = Status.NONE

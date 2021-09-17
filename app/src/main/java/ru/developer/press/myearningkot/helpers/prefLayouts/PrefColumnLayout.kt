@@ -622,12 +622,12 @@ class PrefListColumnLayout(
 
         val prefCardActivity = context as PrefCardActivity
         prefCardActivity.runOnLifeCycle {
-            var allList: MutableList<ListType> = dao.getAllListType()
+            var allValueList: MutableList<ValueList> = dao.getAllListType()
             val typeIndex = typePref.listTypeIndex
-            val listType: ListType? = if (typeIndex == -1) null else allList[typeIndex]
+            val valueList: ValueList? = if (typeIndex == -1) null else allValueList[typeIndex]
             fun updateListTextView() {
                 val listString = context.getString(R.string.list)
-                val listName: String = listType?.listName ?: ""
+                val listName: String = valueList?.listName ?: ""
                 val listText = "$listString ($listName)"
                 listTextView.text = listText
             }
@@ -643,7 +643,7 @@ class PrefListColumnLayout(
                 val create = context.getString(R.string.create)
                 val createListText = "$create ${newList.toLowerCase(Locale.getDefault())}"
 
-                allList.forEach { listType ->
+                allValueList.forEach { listType ->
                     val element = listType.listName
                     mutableList.add(element)
                 }
@@ -657,13 +657,13 @@ class PrefListColumnLayout(
                     prefCardActivity.runMainOnLifeCycle {
                         if (index == -1) {
                             io {
-                                dao.addListType(ListType().apply {
+                                dao.addListType(ValueList().apply {
                                     listName = newList
                                 })
                             }
-                            allList = dao.getAllListType()
+                            allValueList = dao.getAllListType()
                             columnList.filterIsInstance(ListColumn::class.java).forEach {
-                                it.pref().listTypeIndex = allList.size - 1
+                                it.pref().listTypeIndex = allValueList.size - 1
                             }
                         } else
                             columnList.filterIsInstance(ListColumn::class.java).forEach {

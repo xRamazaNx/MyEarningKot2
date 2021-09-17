@@ -6,9 +6,11 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Typeface
+import android.graphics.drawable.RippleDrawable
 import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import android.net.Uri
 import android.text.format.DateFormat
@@ -16,6 +18,7 @@ import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import android.view.View.GONE
+import android.view.ViewAnimationUtils
 import android.view.animation.AccelerateInterpolator
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -37,7 +40,7 @@ import ru.developer.press.myearningkot.App
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.logD
 import ru.developer.press.myearningkot.model.Column
-import ru.developer.press.myearningkot.model.NumberTypePref
+import ru.developer.press.myearningkot.model.PrefNumber
 import java.io.File
 import java.math.RoundingMode
 import java.text.DecimalFormat
@@ -45,6 +48,7 @@ import java.text.DecimalFormatSymbols
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.math.hypot
 import kotlin.math.roundToInt
 
 fun Activity.app(): App {
@@ -246,7 +250,7 @@ fun Context.showItemChangeDialog(
                     }
                 }
 
-                addRipple()
+                addClickEffectBackground()
             }
 
             itemListContainer.addView(itemTextView)
@@ -282,11 +286,11 @@ fun getPathForResource(resourceId: Int): String {
 
 fun getDecimalFormatNumber(
     value: Double,
-    numberTypePref: NumberTypePref = NumberTypePref()
+    pref: PrefNumber = PrefNumber()
 ): String {
-    val count = numberTypePref.digitsCount
-    val groupNumber = numberTypePref.isGrouping
-    val groupSize = numberTypePref.groupSize
+    val count = pref.digitsCount
+    val groupNumber = pref.isGrouping
+    val groupSize = pref.groupSize
 
     val format = StringBuilder("#")
     repeat(count) {
@@ -308,9 +312,37 @@ fun getDecimalFormatNumber(
     return decimalFormat.format(value)
 }
 
-fun View.addRipple() = with(TypedValue()) {
+fun View.addClickEffectBackground() = with(TypedValue()) {
     context.theme.resolveAttribute(android.R.attr.selectableItemBackground, this, true)
     setBackgroundResource(resourceId)
+}
+
+
+fun View.addClickEffectRippleBackground() {
+    val rippleDrawable = RippleDrawable(ColorStateList.valueOf(Color.GRAY), null, null)
+    background = rippleDrawable
+}
+
+fun View.animateRipple(
+    cx: Int = width / 2,
+    cy: Int = height / 2,
+    finalRadius: Float = hypot(cx.toDouble(), cy.toDouble()).toFloat()
+) {
+    val oldBackground = background
+    backgroundColor = Color.GRAY
+
+    // create the animator for this view (the start radius is zero)
+    val anim = ViewAnimationUtils.createCircularReveal(
+        this,
+        cx,
+        cy,
+        0f,
+        finalRadius
+    )
+    // make the view visible and start the animation
+    visibility = View.VISIBLE
+    anim.start()
+    background = oldBackground
 }
 
 fun View.animateColor(

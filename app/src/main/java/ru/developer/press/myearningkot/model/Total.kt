@@ -6,8 +6,10 @@ import ru.developer.press.myearningkot.ElementPosition
 import ru.developer.press.myearningkot.FormulaId
 import ru.developer.press.myearningkot.database.BelongIds
 import ru.developer.press.myearningkot.database.Card
+import ru.developer.press.myearningkot.database.gson
 import ru.developer.press.myearningkot.helpers.Calc
 import ru.developer.press.myearningkot.helpers.getDecimalFormatNumber
+import ru.developer.press.myearningkot.logD
 import java.math.BigDecimal
 import java.util.*
 import kotlin.random.Random
@@ -16,6 +18,18 @@ class Total(
     pageId: String,
     cardId: String
 ) : BelongIds(pageId, cardId), FormulaId, ElementPosition {
+
+    companion object {
+        fun fromJson(json: String): Total {
+            return try {
+                gson.fromJson(json, Total::class.java)
+            } catch (ex: Exception) {
+                logD("error getting Total from: $json")
+                Total("", "")
+            }
+        }
+    }
+
     override var idToFormula: Long = Random.nextLong()
     override var position: Int = -1
 
@@ -39,7 +53,7 @@ class Total(
     }
 
     @SerializedName("top")
-    var totalPref: NumberTypePref = NumberTypePref()
+    var totalPref: PrefNumber = PrefNumber()
 
     @SerializedName("iisw")
     var isIgnoreSwitchWork: Boolean = false

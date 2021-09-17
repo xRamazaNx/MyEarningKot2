@@ -192,7 +192,7 @@ fun Context.getPrefTotalLayout(
 }
 
 fun Context.getPrefDatePeriod(
-    typePref: DateTypePref,
+    typePref: PrefDate,
     prefChangedCallBack: PrefChangedCallBack
 ): View {
     val periodBinding = PrefDatePeriodBinding.inflate(layoutInflater)

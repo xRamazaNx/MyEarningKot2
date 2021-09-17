@@ -118,6 +118,8 @@
         app:layout_anchorGravity="bottom">
 
         <androidx.appcompat.widget.LinearLayoutCompat
+            android:clickable="true"
+            android:focusable="true"
             android:id="@+id/inputCellLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

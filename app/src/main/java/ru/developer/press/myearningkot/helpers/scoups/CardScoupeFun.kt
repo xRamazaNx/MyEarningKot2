@@ -21,7 +21,6 @@ import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.activity.CardActivity
 import ru.developer.press.myearningkot.database.Card
 import ru.developer.press.myearningkot.databinding.CardBinding
-import ru.developer.press.myearningkot.helpers.Width
 import ru.developer.press.myearningkot.helpers.getPathForResource
 import ru.developer.press.myearningkot.helpers.prefLayouts.ElementType
 import ru.developer.press.myearningkot.model.*
@@ -172,7 +171,7 @@ private fun getNewCell(column: Column): Cell = Cell().apply {
             Color.WHITE.toString()
         }
         is ImageColumn -> {
-            Gson().toJson(ImageTypeValue())
+            Gson().toJson(ValueImage())
         }
         is SwitchColumn -> {
             false.toString()
@@ -181,7 +180,7 @@ private fun getNewCell(column: Column): Cell = Cell().apply {
             ""
         is PhoneColumn ->
             gson.toJson(
-                PhoneTypeValue()
+                ValuePhone()
             )
 
         is DateColumn -> {
@@ -337,7 +336,7 @@ fun Card.getCellOfSample(position: Int): Cell {
         cellTypeControl = column.columnTypeControl
         sourceValue = when (column) {
             is ImageColumn -> {
-                Gson().toJson(ImageTypeValue().apply { imagePathList.add(getPathForResource(R.drawable.ic_sample_image).toString()) })
+                Gson().toJson(ValueImage().apply { imagePathList.add(getPathForResource(R.drawable.ic_sample_image).toString()) })
             }
             is SwitchColumn -> {
                 val newVal = (0..20).random() > 10
@@ -360,7 +359,7 @@ fun Card.getCellOfSample(position: Int): Cell {
                 "12345.987"
             }
             is PhoneColumn -> {
-                Gson().toJson(PhoneTypeValue(phone = "7 999 123-45-67"))
+                Gson().toJson(ValuePhone(phone = "7 999 123-45-67"))
             }
             is NumerationColumn -> {
                 "1"

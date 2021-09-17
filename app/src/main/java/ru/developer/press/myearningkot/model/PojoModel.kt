@@ -10,9 +10,11 @@ import androidx.core.text.toSpannable
 import com.google.gson.annotations.SerializedName
 import org.jetbrains.anko.backgroundResource
 import ru.developer.press.myearningkot.R
+import ru.developer.press.myearningkot.database.gson
 import ru.developer.press.myearningkot.helpers.colorRes
 import ru.developer.press.myearningkot.helpers.prefLayouts.multiplyChar
 import ru.developer.press.myearningkot.helpers.prefLayouts.subtractChar
+import ru.developer.press.myearningkot.logD
 
 // пздц имя
 interface Backgrounder {
@@ -32,7 +34,7 @@ class DisplayParam {
     var height: Int = 0
 }
 
-class PhoneTypeValue(
+class ValuePhone(
     @SerializedName("n")
     var name: String = "",
     @SerializedName("ln")
@@ -42,19 +44,30 @@ class PhoneTypeValue(
     @SerializedName("o")
     var organization: String = ""
 ) {
-    fun getPhoneInfo(phoneTypePref: PhoneTypePref, hideUnselect: Boolean = true): String {
+    companion object {
+        fun fromJson(json: String): ValuePhone {
+            return try {
+                gson.fromJson(json, ValuePhone::class.java)
+            } catch (ex: Exception) {
+                logD("error getting ValuePhone from: $json")
+                ValuePhone()
+            }
+        }
+    }
+
+    fun getPhoneInfo(prefPhone: PrefPhone, hideUnselect: Boolean = true): String {
         val infoBuilder = StringBuilder()
-        val sort = phoneTypePref.sort
+        val sort = prefPhone.sort
         sort.forEach {
             var append = ""
             when (it) {
-                0 -> if (phoneTypePref.name || !hideUnselect)
+                0 -> if (prefPhone.name || !hideUnselect)
                     append = name
-                1 -> if (phoneTypePref.lastName || !hideUnselect)
+                1 -> if (prefPhone.lastName || !hideUnselect)
                     append = lastName
-                2 -> if (phoneTypePref.phone || !hideUnselect)
+                2 -> if (prefPhone.phone || !hideUnselect)
                     append = phone
-                3 -> if (phoneTypePref.organization || !hideUnselect)
+                3 -> if (prefPhone.organization || !hideUnselect)
                     append = organization
             }
             if (infoBuilder.toString().isNotBlank() && append.isNotBlank()) {
@@ -69,8 +82,19 @@ class PhoneTypeValue(
 // примечание: фото копируются в папку в дирректории программы, и потом ячейка ссылается на него
 // если копировать эту ячейку, копируется путь к папке в дирректории в программе
 // при удалении строки в которой есть изображение - изображение не удаляется из папки, оно остается там как мусор
-// надо будет раз в неделю чтоб папка очищалась
-class ImageTypeValue {
+// после удаления надо будет проверять не ссылается ли на нее еще кто ни будь, если ссылается то оставить если нет то удалить
+class ValueImage {
+    companion object {
+        fun fromJson(json: String): ValueImage {
+            return try {
+                gson.fromJson(json, ValueImage::class.java)
+            } catch (ex: Exception) {
+                logD("error getting ValueImage from: $json")
+                ValueImage()
+            }
+        }
+    }
+
     fun removePath(selectedTabPosition: Int) {
         imagePathList.removeAt(selectedTabPosition)
         val size = imagePathList.size
@@ -85,7 +109,18 @@ class ImageTypeValue {
     var changeImage = -1
 }
 
-class ListType {
+class ValueList {
+    companion object {
+        fun fromJson(json: String): ValueList {
+            return try {
+                gson.fromJson(json, ValueList::class.java)
+            } catch (ex: Exception) {
+                logD("error getting ValueList from: $json")
+                ValueList()
+            }
+        }
+    }
+
     @SerializedName("ln")
     var listName: String = ""
 

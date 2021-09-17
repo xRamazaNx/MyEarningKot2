@@ -12,7 +12,7 @@ class PrefForCard(
     @Embedded(prefix = "name_pref")
     var namePref: PrefForTextView = PrefForTextView(),
     @Embedded(prefix = "date_period_pref")
-    var dateOfPeriodPref: DateTypePref = DateTypePref()
+    var dateOfPeriodPref: PrefDate = PrefDate()
 
 ) {
 
@@ -85,7 +85,7 @@ class PrefForTextView(
 
 }
 
-open class TextTypePref(
+open class PrefText(
     @SerializedName("pftv")
     @Embedded
     var prefForTextView: PrefForTextView = PrefForTextView().apply {
@@ -98,7 +98,7 @@ open class TextTypePref(
 }
 
 
-class PhoneTypePref : TextTypePref() {
+class PrefPhone : PrefText() {
     @SerializedName("s")
     var sort: MutableList<Int> = mutableListOf(0, 1, 2, 3)
 
@@ -125,12 +125,12 @@ class PhoneTypePref : TextTypePref() {
     }
 }
 
-class DateTypePref(
+class PrefDate(
     @SerializedName("t")
     var type: Int = 1,
     @SerializedName("et")
     var enableTime: Boolean = true
-) : TextTypePref() {
+) : PrefText() {
     init {
         resetPref()
     }
@@ -143,14 +143,14 @@ class DateTypePref(
     }
 }
 
-class NumberTypePref(
+class PrefNumber(
     @SerializedName("dc")
     var digitsCount: Int = 2,
     @SerializedName("ig")
     var isGrouping: Boolean = true,
     @SerializedName("gs")
     var groupSize: Int = 3
-) : TextTypePref() {
+) : PrefText() {
     init {
         prefForTextView.textSize = 16
     }
@@ -164,13 +164,13 @@ class NumberTypePref(
     }
 }
 
-class ColorTypePref : Prefs() {
+class PrefColor : Prefs() {
     override fun resetPref() {
 
     }
 }
 
-class SwitchTypePref : Prefs() {
+class PrefSwitch : Prefs() {
     @SerializedName("itsm")
     var isTextSwitchMode = false
 
@@ -207,7 +207,7 @@ class SwitchTypePref : Prefs() {
 
 }
 
-class ImageTypePref : Prefs() {
+class PrefImage : Prefs() {
     @SerializedName("ivm")
     var imageViewMode = 0
     override fun resetPref() {
@@ -215,7 +215,7 @@ class ImageTypePref : Prefs() {
     }
 }
 
-class ListTypePref : TextTypePref() {
+class ListTypePrefText : PrefText() {
 
     init {
         prefForTextView.isItalic = true

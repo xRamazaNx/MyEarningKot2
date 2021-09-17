@@ -38,7 +38,7 @@ data class Cell(
 
     fun updateTypeValue(pref: Prefs) {
         when (pref) {
-            is NumberTypePref -> {
+            is PrefNumber -> {
                 displayValue =
                     if (sourceValue == "")
                         ""
@@ -50,7 +50,7 @@ data class Cell(
                             "Error numbers"
                         }
             }
-            is DateTypePref -> {
+            is PrefDate -> {
                 displayValue =
                     if (sourceValue == "")
                         ""
@@ -59,9 +59,8 @@ data class Cell(
                         getDate(pref.type, timeML, pref.enableTime)
                     }
             }
-            is PhoneTypePref -> {
-                val typeValue =
-                    Gson().fromJson(sourceValue, PhoneTypeValue::class.java)
+            is PrefPhone -> {
+                val typeValue = ValuePhone.fromJson(sourceValue)
                 val number = typeValue.phone
 
 //                val formatNumber = if (number.isNotEmpty())
@@ -101,8 +100,8 @@ data class Cell(
                 }
                 displayValue = info.toString()
             }
-            is ImageTypePref -> {
-                val imageTypeValue = Gson().fromJson(sourceValue, ImageTypeValue::class.java)
+            is PrefImage -> {
+                val imageTypeValue = Gson().fromJson(sourceValue, ValueImage::class.java)
                 val imageUriList = imageTypeValue.imagePathList
                 displayValue =
                     if (imageUriList.isEmpty())
@@ -137,7 +136,7 @@ data class Cell(
     // опустошить
     fun clear() {
         sourceValue = when (type) {
-            ColumnType.PHONE -> Gson().toJson(PhoneTypeValue())
+            ColumnType.PHONE -> Gson().toJson(ValuePhone())
             ColumnType.COLOR -> Color.WHITE.toString()
             ColumnType.SWITCH -> false.toString()
             else -> {

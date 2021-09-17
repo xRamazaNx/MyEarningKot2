@@ -50,6 +50,7 @@ open class CardActivity : CommonCardActivity() {
         override fun cellClick(cellInfo: CellInfo) {
             if (isLongClick) {
                 viewModel.rowClicked(cellInfo.rowPosition)
+                viewModel.sortedRows[cellInfo.rowPosition].elementView.animateRipple()
             } else {
                 if (viewModel.selectMode() == SelectMode.ROW) {
                     isLongClick = true
@@ -68,6 +69,7 @@ open class CardActivity : CommonCardActivity() {
                             editCell()
                         }
                     } else {
+                        cellInfo.cell.elementView.animateRipple()
                         showInputCell()
                     }
                 }
@@ -202,6 +204,7 @@ open class CardActivity : CommonCardActivity() {
 
     override fun updateActivity() {
         super.updateActivity()
+        totalAmountView.root.setOnClickListener(null)
         hideUnnecessaryElementsFromTotalAmount()
         setAppBarOffsetChangedListener()
         adapter.setCellClickListener(rowClickListener)
@@ -279,7 +282,7 @@ open class CardActivity : CommonCardActivity() {
     }
 
     private fun hideUnnecessaryElementsFromTotalAmount() {
-        activityBinding.totalAmountView.apply {
+        totalAmountView.apply {
             datePeriodCard.visibility = GONE
             nameCard.visibility = GONE
         }

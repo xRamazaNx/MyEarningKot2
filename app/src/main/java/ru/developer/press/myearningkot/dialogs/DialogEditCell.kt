@@ -27,7 +27,7 @@ import ru.developer.press.myearningkot.helpers.prefLayouts.FormulaLayout
 import ru.developer.press.myearningkot.helpers.setAlertButtonColorsAfterShown
 import ru.developer.press.myearningkot.model.Column
 import ru.developer.press.myearningkot.model.ColumnType
-import ru.developer.press.myearningkot.model.PhoneTypeValue
+import ru.developer.press.myearningkot.model.ValuePhone
 import java.util.*
 
 const val editCellTag = "dialogEditCell"
@@ -123,7 +123,7 @@ class DialogEditCell(
             val family = view.editFamily
             val org = view.editOrganization
 
-            val phoneTypeValue = Gson().fromJson(value, PhoneTypeValue::class.java)
+            val phoneTypeValue = ValuePhone.fromJson(value)
 
             phone.setText(phoneTypeValue.phone)
             name.setText(phoneTypeValue.name)

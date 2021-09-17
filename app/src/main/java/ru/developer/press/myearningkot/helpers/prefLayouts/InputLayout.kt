@@ -1,5 +1,6 @@
 package ru.developer.press.myearningkot.helpers.prefLayouts
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
@@ -16,10 +17,12 @@ import org.jetbrains.anko.custom.ankoView
 import org.jetbrains.anko.sdk27.coroutines.onClick
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.database.Card
-import ru.developer.press.myearningkot.database.gson
+import ru.developer.press.myearningkot.helpers.addClickEffectRippleBackground
+import ru.developer.press.myearningkot.helpers.animateRipple
 import ru.developer.press.myearningkot.helpers.colorRes
 import ru.developer.press.myearningkot.model.*
 import java.util.*
+
 
 class InputLayout private constructor(
     private val cell: Cell,
@@ -37,16 +40,18 @@ class InputLayout private constructor(
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun inputView(context: Context): LinearLayout {
+        val type = cell.type
         return context.linearLayout {
             val padding = dip(16)
-            val height = dip(24)
+            val width = dip(24)
             lparams(matchParent, wrapContent)
             minimumHeight = dip(45)
             setPadding(padding, dip(4), padding, dip(4))
 
             var textCell: TextView? = null
-            when (cell.type) {
+            when (type) {
                 ColumnType.TEXT,
                 ColumnType.NUMBER,
                 ColumnType.PHONE,
@@ -54,16 +59,19 @@ class InputLayout private constructor(
                     imageView(R.drawable.ic_backspace) {
                         imageTintList =
                             ColorStateList.valueOf(context.colorRes(R.color.colorRed))
+                         addClickEffectRippleBackground()
                         onClick {
                             cell.clear()
                             textCell?.text = ""
                             inputCallBack.notifyCellChanged()
                         }
-                    }.lparams(height, matchParent)
+                    }.lparams(width, matchParent)
                 }
                 else -> {
-                    imageView(R.drawable.ic_fullscreen)
-                        .lparams((height * 1.2).toInt(), matchParent)
+                    imageView(R.drawable.ic_fullscreen){
+                        addClickEffectRippleBackground()
+                    }
+                        .lparams((width * 1.3).toInt(), matchParent)
                         .onClick {
                             inputCallBack.openCellDialog()
                         }
@@ -71,13 +79,28 @@ class InputLayout private constructor(
             }
 
             horizontalScrollView {
+//                val detector =
+//                    GestureDetectorCompat(
+//                        context,
+//                        object : GestureDetector.SimpleOnGestureListener() {
+//                            override fun onSingleTapUp(e: MotionEvent): Boolean {
+//                                inputCallBack.openCellDialog()
+//                                return super.onSingleTapConfirmed(e)
+//                            }
+//                        })
+//                setOnTouchListener { _, event ->
+//                    detector.onTouchEvent(event)
+//                    false
+//                }
+                isHorizontalScrollBarEnabled = false
                 setPadding(padding, 0, padding, 0)
-                when (cell.type) {
+                when (type) {
                     ColumnType.TEXT,
                     ColumnType.NUMBER,
                     ColumnType.PHONE,
                     ColumnType.DATE -> {
                         textCell = textView(text()) {
+                            addClickEffectRippleBackground()
                             textSize = 16f
                             gravity = Gravity.CENTER_VERTICAL
                             maxLines = 1
@@ -85,7 +108,7 @@ class InputLayout private constructor(
                             onClick {
                                 inputCallBack.openCellDialog()
                             }
-                        }.lparams(matchParent, matchParent, Gravity.START)
+                        }.lparams(wrapContent, matchParent)
                     }
                     ColumnType.COLOR -> {
                         val currentColor = cell.sourceValue.toInt()
@@ -117,7 +140,8 @@ class InputLayout private constructor(
 //                                            .scaleY(1.4f)
 //                                            .setDuration(200)
 //                                            .start()
-                                        backgroundResource = R.drawable.background_for_color_in_input_layout
+                                        backgroundResource =
+                                            R.drawable.background_for_color_in_input_layout
                                         oldCircleSelected = this
                                     }
                                     if (color == currentColor) {
@@ -125,10 +149,11 @@ class InputLayout private constructor(
                                     }
                                     onClick {
                                         select()
+                                        animateRipple()
                                         cell.sourceValue = color.toString()
                                         inputCallBack.notifyCellChanged()
                                     }
-                                }.lparams(dip(45), dip(45))
+                                }.lparams(dip(50), dip(50))
                             }
                         }.lparams(wrapContent, matchParent)
                     }
@@ -139,11 +164,28 @@ class InputLayout private constructor(
                 }
             }.lparams(0, matchParent, 1f)
 
+//            if (type == ColumnType.PHONE)
+//                imageView(R.drawable.ic_phone_white) {
+//                    val valuePhone = ValuePhone.fromJson(cell.sourceValue)
+//                    colorFilter = if (valuePhone.phone.isBlank()) {
+//                        PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.MULTIPLY)
+//                    } else {
+//                        onClick {
+//                            context.toast("call to.. ${cell.displayValue}")
+//                        }
+//                        PorterDuffColorFilter(Color.WHITE, PorterDuff.Mode.MULTIPLY)
+//                    }
+//                }.lparams(width, matchParent) {
+//                    marginEnd = dip(20)
+//                    gravity = Gravity.END
+//                }
+
             imageView(R.drawable.ic_check) {
+                addClickEffectRippleBackground()
                 onClick {
                     inputCallBack.close()
                 }
-            }.lparams((height * 1.2).toInt(), matchParent) {
+            }.lparams((width * 1.2).toInt(), matchParent) {
                 gravity = Gravity.END
             }
         }
@@ -170,8 +212,7 @@ class InputLayout private constructor(
                             text
                         }
                         ColumnType.PHONE -> {
-                            val typeValue: PhoneTypeValue =
-                                gson.fromJson(cell.sourceValue, PhoneTypeValue::class.java)
+                            val typeValue = ValuePhone.fromJson(cell.sourceValue)
                             val phoneTypePref = (column as PhoneColumn).pref()
                             typeValue.getPhoneInfo(phoneTypePref, false)
                         }

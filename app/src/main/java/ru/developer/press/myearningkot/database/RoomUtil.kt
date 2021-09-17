@@ -5,7 +5,6 @@ import androidx.room.*
 import androidx.room.Database
 import org.jetbrains.anko.displayMetrics
 import ru.developer.press.myearningkot.R
-import ru.developer.press.myearningkot.helpers.getColumnFromJson
 import ru.developer.press.myearningkot.helpers.scoups.addColumn
 import ru.developer.press.myearningkot.helpers.scoups.addTotal
 import ru.developer.press.myearningkot.model.*
@@ -192,14 +191,6 @@ interface PageDao {
     @Update
     fun update(page: Page)
 }
-
-fun convertRefToColumn(refs: List<JsonValue>): List<Column> {
-    return refs.fold(mutableListOf()) { list, columnRef ->
-        list.add(getColumnFromJson(columnRef))
-        list
-    }
-}
-
 //
 const val samplePageName = "|/*sample_cards*/|"
 
