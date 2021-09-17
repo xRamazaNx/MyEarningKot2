@@ -20,6 +20,7 @@ import android.view.View
 import android.view.View.GONE
 import android.view.ViewAnimationUtils
 import android.view.animation.AccelerateInterpolator
+import android.view.animation.DecelerateInterpolator
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -329,18 +330,20 @@ fun View.animateRipple(
     finalRadius: Float = hypot(cx.toDouble(), cy.toDouble()).toFloat()
 ) {
     val oldBackground = background
-    backgroundColor = Color.GRAY
-
+    backgroundColor = Color.TRANSPARENT
     // create the animator for this view (the start radius is zero)
+    val startRadius = finalRadius / 10
     val anim = ViewAnimationUtils.createCircularReveal(
         this,
         cx,
         cy,
-        0f,
+        startRadius,
         finalRadius
     )
     // make the view visible and start the animation
     visibility = View.VISIBLE
+    anim.interpolator = DecelerateInterpolator()
+    anim.duration = 250
     anim.start()
     background = oldBackground
 }
