@@ -2,7 +2,12 @@ package ru.developer.press.myearningkot
 
 //import ru.developer.press.myearningkot.model.card
 import android.content.Context
+import android.content.res.ColorStateList
+import android.graphics.Color
+import android.graphics.drawable.RippleDrawable
 import android.view.View
+import org.jetbrains.anko.backgroundResource
+import ru.developer.press.myearningkot.helpers.animateClick
 import ru.developer.press.myearningkot.model.CellInfo
 import ru.developer.press.myearningkot.model.Column
 import ru.developer.press.myearningkot.model.Prefs
@@ -68,4 +73,18 @@ fun <T : ElementPosition> List<T>.sortToPosition(): List<T> {
 
 interface Width {
     var width: Int
+}
+
+// пздц имя
+interface Backgrounder {
+    var currentBackground: Int
+
+    var elementView: View
+
+    fun setBackground(backgroundRes: Int) {
+        currentBackground = backgroundRes
+        elementView.backgroundResource = currentBackground
+        elementView.animateClick()
+    }
+
 }

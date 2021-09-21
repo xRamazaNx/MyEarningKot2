@@ -5,28 +5,14 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
-import android.view.View
 import androidx.core.text.toSpannable
 import com.google.gson.annotations.SerializedName
-import org.jetbrains.anko.backgroundResource
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.database.gson
 import ru.developer.press.myearningkot.helpers.colorRes
 import ru.developer.press.myearningkot.helpers.prefLayouts.multiplyChar
 import ru.developer.press.myearningkot.helpers.prefLayouts.subtractChar
 import ru.developer.press.myearningkot.logD
-
-// пздц имя
-interface Backgrounder {
-    var currentBackground: Int
-
-    var elementView: View
-
-    fun setBackground(backgroundRes: Int) {
-        currentBackground = backgroundRes
-        elementView.backgroundResource = currentBackground
-    }
-}
 
 // для отображения записи внутри карточки
 class DisplayParam {

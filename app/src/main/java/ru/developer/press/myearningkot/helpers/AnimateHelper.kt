@@ -1,7 +1,10 @@
 package ru.developer.press.myearningkot.helpers
 
+import android.animation.Animator
 import android.animation.ValueAnimator
+import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.drawable.RippleDrawable
 import android.view.View
 import android.view.ViewAnimationUtils
 import android.view.animation.AccelerateInterpolator
@@ -11,15 +14,27 @@ import androidx.core.graphics.ColorUtils
 import org.jetbrains.anko.backgroundColor
 import kotlin.math.hypot
 
+
+fun View.animateClick() {
+    val rippleDrawable = RippleDrawable(ColorStateList.valueOf(Color.LTGRAY), background, null)
+    rippleDrawable.setHotspot(
+        (width / 2).toFloat(),
+        (height / 2).toFloat()
+    )
+    background = rippleDrawable
+}
+
 fun View.animateRipple(
     cx: Int = width / 2,
     cy: Int = height / 2,
-    finalRadius: Float = hypot(cx.toDouble(), cy.toDouble()).toFloat()
+    startRadius: Float = 0f,
+    finalRadius: Float = hypot(cx.toDouble(), cy.toDouble()).toFloat(),
+    endAnimate: (Animator) -> Unit = {}
 ) {
     val oldBackground = background
+    visibility = View.VISIBLE
     backgroundColor = Color.TRANSPARENT
     // create the animator for this view (the start radius is zero)
-    val startRadius = finalRadius / 10
     val anim = ViewAnimationUtils.createCircularReveal(
         this,
         cx,
@@ -28,11 +43,25 @@ fun View.animateRipple(
         finalRadius
     )
     // make the view visible and start the animation
-    visibility = View.VISIBLE
+    anim.doOnEnd(endAnimate)
     anim.interpolator = DecelerateInterpolator()
-    anim.duration = 250
+    anim.duration = 500
     anim.start()
     background = oldBackground
+}
+
+fun View.animateClickAlpha() {
+    val duration: Long = 250
+    animate()
+        .setDuration(duration)
+        .alpha(0.5f)
+        .withEndAction {
+            animate()
+                .alpha(1f)
+                .setDuration(duration)
+                .start()
+        }
+        .start()
 }
 
 fun View.animateColor(

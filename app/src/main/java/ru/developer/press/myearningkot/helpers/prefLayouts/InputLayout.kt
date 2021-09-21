@@ -149,7 +149,7 @@ class InputLayout private constructor(
                                     }
                                     onClick {
                                         select()
-                                        animateRipple()
+                                        animateRipple(startRadius = dip(17).toFloat())
                                         cell.sourceValue = color.toString()
                                         inputCallBack.notifyCellChanged()
                                     }

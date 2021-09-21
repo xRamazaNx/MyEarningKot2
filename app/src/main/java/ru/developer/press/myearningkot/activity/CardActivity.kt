@@ -49,8 +49,9 @@ open class CardActivity : CommonCardActivity() {
         override var isOpenEditDialogProcess: Boolean = false
         override fun cellClick(cellInfo: CellInfo) {
             if (isLongClick) {
+                val elementView = viewModel.sortedRows[cellInfo.rowPosition].elementView
+                elementView.animateRipple(startRadius = elementView.width / 8F)
                 viewModel.rowClicked(cellInfo.rowPosition)
-                viewModel.sortedRows[cellInfo.rowPosition].elementView.animateRipple()
             } else {
                 if (viewModel.selectMode() == SelectMode.ROW) {
                     isLongClick = true
@@ -69,7 +70,6 @@ open class CardActivity : CommonCardActivity() {
                             editCell()
                         }
                     } else {
-                        cellInfo.cell.elementView.animateRipple()
                         showInputCell()
                     }
                 }

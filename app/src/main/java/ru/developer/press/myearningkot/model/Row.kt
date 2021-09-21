@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.FrameLayout
 import androidx.core.content.ContextCompat
 import org.jetbrains.anko.backgroundColorResource
+import ru.developer.press.myearningkot.Backgrounder
 import ru.developer.press.myearningkot.ElementPosition
 import ru.developer.press.myearningkot.R
 import ru.developer.press.myearningkot.database.BelongIds

@@ -46,12 +46,13 @@ fun ViewModel.postDelay(delay: Long, delayBlock: suspend () -> Unit) {
     }
 }
 
-fun View.postDelay(delay: Long, delayBlock: suspend () -> Unit) {
+fun View.postDelay(delay: Long = 0, delayBlock: suspend CoroutineScope.() -> Unit) {
     post {
         findViewTreeLifecycleOwner()?.runOnLifeCycle {
-            delay(delay)
+            if (delay > 0)
+                delay(delay)
             main {
-                delayBlock.invoke()
+                delayBlock.invoke(this)
             }
         }
     }
