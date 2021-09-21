@@ -323,7 +323,7 @@
     <string name="digits_count">Количество десятичных знаков</string>
     <string name="group_number">Группировка тысячных</string>
     <string name="width">Ширина</string>
-    <string name="show_time">Показывать время</string>
+    <string name="shown_hours">Показывать часы</string>
     <string name="date_type">Форматирование даты</string>
     <string name="save">Сохранить</string>
     <string name="change_type_data">Выберите тип данных</string>
